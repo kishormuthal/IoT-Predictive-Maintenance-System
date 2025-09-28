@@ -1,0 +1,443 @@
+"""
+Forecasting Service
+Clean service layer for Transformer-based forecasting
+"""
+
+import numpy as np
+import logging
+from typing import Dict, List, Any, Optional
+from datetime import datetime, timedelta
+from pathlib import Path
+
+from ..interfaces.forecaster_interface import ForecasterInterface
+from ..models.forecast import ForecastResult, ForecastSummary, ForecastPoint, ForecastConfidence, RiskLevel
+from ..models.sensor_data import SensorDataBatch
+from ...infrastructure.ml.transformer_wrapper import TransformerForecaster, TransformerConfig
+
+logger = logging.getLogger(__name__)
+
+
+class ForecastingService(ForecasterInterface):
+    """
+    Service for time series forecasting using Transformer models
+    """
+
+    def __init__(self, model_path: str = "models/transformers"):
+        """
+        Initialize forecasting service
+
+        Args:
+            model_path: Path to store/load trained models
+        """
+        self.model_path = Path(model_path)
+        self.model_path.mkdir(parents=True, exist_ok=True)
+
+        # Cache for loaded models
+        self._models: Dict[str, TransformerForecaster] = {}
+
+        # Forecast history for summary generation
+        self._forecast_history: Dict[str, List[ForecastResult]] = {}
+
+        logger.info("Forecasting Service initialized")
+
+    def _get_model(self, sensor_id: str) -> TransformerForecaster:
+        """Get or create Transformer model for sensor"""
+        if sensor_id not in self._models:
+            # Create new model instance
+            config = TransformerConfig()
+            model = TransformerForecaster(sensor_id, config)
+
+            # Try to load existing trained model
+            if not model.load_model(self.model_path):
+                logger.warning(f"No trained forecasting model found for sensor {sensor_id}")
+
+            self._models[sensor_id] = model
+
+        return self._models[sensor_id]
+
+    def _calculate_risk_level(self, predicted_value: float, confidence_interval: tuple,
+                            normal_range: tuple = None) -> RiskLevel:
+        """Calculate risk level based on prediction and confidence"""
+        try:
+            confidence_width = abs(confidence_interval[1] - confidence_interval[0])
+            relative_confidence = confidence_width / abs(predicted_value) if predicted_value != 0 else 1.0
+
+            # Risk based on confidence and range violations
+            if normal_range:
+                lower_bound, upper_bound = normal_range
+                if predicted_value < lower_bound or predicted_value > upper_bound:
+                    if relative_confidence > 0.5:
+                        return RiskLevel.CRITICAL
+                    else:
+                        return RiskLevel.HIGH
+
+            # Risk based on confidence alone
+            if relative_confidence > 0.8:
+                return RiskLevel.HIGH
+            elif relative_confidence > 0.5:
+                return RiskLevel.MEDIUM
+            else:
+                return RiskLevel.LOW
+
+        except:
+            return RiskLevel.MEDIUM
+
+    def _calculate_forecast_confidence(self, confidence_interval: tuple, predicted_value: float) -> ForecastConfidence:
+        """Calculate forecast confidence level"""
+        try:
+            confidence_width = abs(confidence_interval[1] - confidence_interval[0])
+            relative_confidence = confidence_width / abs(predicted_value) if predicted_value != 0 else 1.0
+
+            if relative_confidence < 0.2:
+                return ForecastConfidence.HIGH
+            elif relative_confidence < 0.5:
+                return ForecastConfidence.MEDIUM
+            else:
+                return ForecastConfidence.LOW
+        except:
+            return ForecastConfidence.MEDIUM
+
+    def _calculate_accuracy_metrics(self, actual: np.ndarray, predicted: np.ndarray) -> Dict[str, float]:
+        """Calculate forecast accuracy metrics"""
+        try:
+            mae = np.mean(np.abs(actual - predicted))
+            mse = np.mean((actual - predicted) ** 2)
+            rmse = np.sqrt(mse)
+
+            # MAPE (handling division by zero)
+            mape = np.mean(np.abs((actual - predicted) / np.where(actual != 0, actual, 1))) * 100
+
+            # R² score
+            ss_res = np.sum((actual - predicted) ** 2)
+            ss_tot = np.sum((actual - np.mean(actual)) ** 2)
+            r2 = 1 - (ss_res / ss_tot) if ss_tot != 0 else 0
+
+            return {
+                'mae': float(mae),
+                'mse': float(mse),
+                'rmse': float(rmse),
+                'mape': float(mape),
+                'r2_score': float(r2)
+            }
+        except Exception as e:
+            logger.warning(f"Error calculating accuracy metrics: {e}")
+            return {
+                'mae': 0.0,
+                'mse': 0.0,
+                'rmse': 0.0,
+                'mape': 0.0,
+                'r2_score': 0.0
+            }
+
+    def generate_forecast(self, sensor_id: str, data: np.ndarray, horizon_hours: int = 24) -> Dict[str, Any]:
+        """
+        Generate forecast for sensor data using Transformer
+
+        Args:
+            sensor_id: Unique sensor identifier
+            data: Historical time series data
+            horizon_hours: Forecast horizon in hours
+
+        Returns:
+            Dictionary containing forecast results
+        """
+        start_time = datetime.now()
+
+        try:
+            # Get model for sensor
+            model = self._get_model(sensor_id)
+
+            if not model.is_trained:
+                logger.warning(f"Model not trained for sensor {sensor_id}, using fallback forecasting")
+                return self._fallback_forecast(sensor_id, data, horizon_hours)
+
+            # Generate forecast
+            forecast_result = model.predict(data, horizon_hours)
+
+            # Create timestamps for forecast
+            last_timestamp = datetime.now()
+            forecast_timestamps = [
+                last_timestamp + timedelta(hours=i+1)
+                for i in range(len(forecast_result['forecast_values']))
+            ]
+
+            # Create historical timestamps (assuming hourly data)
+            historical_timestamps = [
+                last_timestamp - timedelta(hours=len(data)-i-1)
+                for i in range(len(data))
+            ]
+
+            # Calculate confidence intervals
+            confidence_intervals = {
+                'upper': forecast_result['confidence_upper'],
+                'lower': forecast_result['confidence_lower']
+            }
+
+            # Create forecast points with risk assessment
+            forecast_points = []
+            for i, (timestamp, value) in enumerate(zip(forecast_timestamps, forecast_result['forecast_values'])):
+                upper = forecast_result['confidence_upper'][i] if i < len(forecast_result['confidence_upper']) else value
+                lower = forecast_result['confidence_lower'][i] if i < len(forecast_result['confidence_lower']) else value
+
+                confidence_level = self._calculate_forecast_confidence((lower, upper), value)
+                risk_level = self._calculate_risk_level(value, (lower, upper))
+
+                forecast_point = ForecastPoint(
+                    timestamp=timestamp,
+                    predicted_value=value,
+                    confidence_lower=lower,
+                    confidence_upper=upper,
+                    confidence_level=confidence_level,
+                    risk_level=risk_level
+                )
+                forecast_points.append(forecast_point)
+
+            # Mock accuracy metrics (would be calculated with validation data)
+            accuracy_metrics = self._calculate_accuracy_metrics(
+                data[-horizon_hours:] if len(data) >= horizon_hours else data,
+                np.array(forecast_result['forecast_values'][:len(data)])
+            )
+
+            processing_time = (datetime.now() - start_time).total_seconds()
+
+            # Create result object
+            result = ForecastResult(
+                sensor_id=sensor_id,
+                forecast_horizon_hours=horizon_hours,
+                historical_timestamps=historical_timestamps,
+                historical_values=data,
+                forecast_timestamps=forecast_timestamps,
+                forecast_values=np.array(forecast_result['forecast_values']),
+                confidence_intervals=confidence_intervals,
+                accuracy_metrics=accuracy_metrics,
+                model_version="Transformer-1.0",
+                generated_at=datetime.now(),
+                risk_assessment={
+                    'high_risk_points': sum(1 for fp in forecast_points if fp.risk_level in [RiskLevel.HIGH, RiskLevel.CRITICAL]),
+                    'average_confidence': np.mean([fp.confidence_upper - fp.confidence_lower for fp in forecast_points]),
+                    'quality_score': forecast_result.get('forecast_quality', 'unknown')
+                }
+            )
+
+            # Store in history
+            if sensor_id not in self._forecast_history:
+                self._forecast_history[sensor_id] = []
+            self._forecast_history[sensor_id].append(result)
+
+            # Keep only recent forecasts (last 100)
+            self._forecast_history[sensor_id] = self._forecast_history[sensor_id][-100:]
+
+            logger.info(f"Generated {horizon_hours}h forecast for sensor {sensor_id}")
+
+            return {
+                'sensor_id': sensor_id,
+                'historical_timestamps': [ts.isoformat() for ts in historical_timestamps],
+                'historical_values': data.tolist(),
+                'forecast_timestamps': [ts.isoformat() for ts in forecast_timestamps],
+                'forecast_values': forecast_result['forecast_values'],
+                'confidence_upper': forecast_result['confidence_upper'],
+                'confidence_lower': forecast_result['confidence_lower'],
+                'accuracy_metrics': accuracy_metrics,
+                'risk_assessment': result.risk_assessment,
+                'processing_time': processing_time,
+                'model_status': 'trained'
+            }
+
+        except Exception as e:
+            logger.error(f"Error generating forecast for sensor {sensor_id}: {e}")
+            return self._fallback_forecast(sensor_id, data, horizon_hours)
+
+    def _fallback_forecast(self, sensor_id: str, data: np.ndarray, horizon_hours: int) -> Dict[str, Any]:
+        """Fallback forecasting when model is not available"""
+        try:
+            if len(data) < 2:
+                # Not enough data for any forecast
+                last_value = data[-1] if len(data) > 0 else 0.0
+                forecast_values = [last_value] * horizon_hours
+            else:
+                # Simple linear trend extrapolation
+                x = np.arange(len(data))
+                coeffs = np.polyfit(x, data, 1)
+
+                # Extrapolate
+                future_x = np.arange(len(data), len(data) + horizon_hours)
+                forecast_values = np.polyval(coeffs, future_x).tolist()
+
+            # Simple confidence intervals (±10% of forecast value)
+            confidence_upper = [v * 1.1 for v in forecast_values]
+            confidence_lower = [v * 0.9 for v in forecast_values]
+
+            # Create timestamps
+            now = datetime.now()
+            historical_timestamps = [now - timedelta(hours=len(data)-i-1) for i in range(len(data))]
+            forecast_timestamps = [now + timedelta(hours=i+1) for i in range(horizon_hours)]
+
+            return {
+                'sensor_id': sensor_id,
+                'historical_timestamps': [ts.isoformat() for ts in historical_timestamps],
+                'historical_values': data.tolist(),
+                'forecast_timestamps': [ts.isoformat() for ts in forecast_timestamps],
+                'forecast_values': forecast_values,
+                'confidence_upper': confidence_upper,
+                'confidence_lower': confidence_lower,
+                'accuracy_metrics': {
+                    'mae': 0.0, 'mse': 0.0, 'rmse': 0.0, 'mape': 0.0, 'r2_score': 0.0
+                },
+                'risk_assessment': {
+                    'high_risk_points': 0,
+                    'average_confidence': np.mean([u - l for u, l in zip(confidence_upper, confidence_lower)]),
+                    'quality_score': 'fallback'
+                },
+                'processing_time': 0.001,
+                'model_status': 'fallback'
+            }
+
+        except Exception as e:
+            logger.error(f"Fallback forecasting failed for sensor {sensor_id}: {e}")
+            return {
+                'sensor_id': sensor_id,
+                'historical_timestamps': [],
+                'historical_values': [],
+                'forecast_timestamps': [],
+                'forecast_values': [],
+                'confidence_upper': [],
+                'confidence_lower': [],
+                'accuracy_metrics': {},
+                'risk_assessment': {},
+                'processing_time': 0.0,
+                'model_status': 'error'
+            }
+
+    def is_model_trained(self, sensor_id: str) -> bool:
+        """Check if forecasting model is trained for given sensor"""
+        try:
+            model = self._get_model(sensor_id)
+            return model.is_trained
+        except Exception:
+            return False
+
+    def get_forecast_accuracy(self, sensor_id: str) -> Dict[str, float]:
+        """Get forecast accuracy metrics for sensor"""
+        try:
+            if sensor_id in self._forecast_history and self._forecast_history[sensor_id]:
+                latest_forecast = self._forecast_history[sensor_id][-1]
+                return latest_forecast.accuracy_metrics
+            else:
+                return {
+                    'mae': 0.0,
+                    'mse': 0.0,
+                    'rmse': 0.0,
+                    'mape': 0.0,
+                    'r2_score': 0.0
+                }
+        except Exception as e:
+            logger.error(f"Error getting forecast accuracy for sensor {sensor_id}: {e}")
+            return {}
+
+    def get_forecast_summary(self, sensor_id: str = None, hours_back: int = 24) -> Dict[str, Any]:
+        """Get summary of recent forecasts"""
+        try:
+            cutoff_time = datetime.now() - timedelta(hours=hours_back)
+
+            if sensor_id:
+                # Summary for specific sensor
+                sensor_forecasts = self._forecast_history.get(sensor_id, [])
+                recent_forecasts = [f for f in sensor_forecasts if f.generated_at >= cutoff_time]
+
+                if recent_forecasts:
+                    latest_forecast = recent_forecasts[-1]
+                    avg_accuracy = np.mean([f.accuracy_metrics.get('r2_score', 0) for f in recent_forecasts])
+
+                    return {
+                        'sensor_id': sensor_id,
+                        'total_forecasts': len(recent_forecasts),
+                        'average_accuracy': float(avg_accuracy),
+                        'latest_forecast': {
+                            'generated_at': latest_forecast.generated_at.isoformat(),
+                            'horizon_hours': latest_forecast.forecast_horizon_hours,
+                            'accuracy_metrics': latest_forecast.accuracy_metrics
+                        },
+                        'model_trained': self.is_model_trained(sensor_id)
+                    }
+                else:
+                    return {
+                        'sensor_id': sensor_id,
+                        'total_forecasts': 0,
+                        'average_accuracy': 0.0,
+                        'latest_forecast': None,
+                        'model_trained': self.is_model_trained(sensor_id)
+                    }
+            else:
+                # Summary across all sensors
+                all_forecasts = []
+                sensor_performance = {}
+
+                for sid, forecasts in self._forecast_history.items():
+                    recent_forecasts = [f for f in forecasts if f.generated_at >= cutoff_time]
+                    all_forecasts.extend(recent_forecasts)
+
+                    if recent_forecasts:
+                        avg_accuracy = np.mean([f.accuracy_metrics.get('r2_score', 0) for f in recent_forecasts])
+                        sensor_performance[sid] = {
+                            'forecast_count': len(recent_forecasts),
+                            'average_accuracy': float(avg_accuracy),
+                            'model_trained': self.is_model_trained(sid)
+                        }
+
+                # Overall statistics
+                total_sensors_forecasted = len(sensor_performance)
+                average_confidence = np.mean([
+                    f.risk_assessment.get('average_confidence', 0)
+                    for f in all_forecasts
+                ]) if all_forecasts else 0
+
+                # Risk distribution
+                risk_distribution = {'LOW': 0, 'MEDIUM': 0, 'HIGH': 0, 'CRITICAL': 0}
+                for forecast in all_forecasts:
+                    high_risk_points = forecast.risk_assessment.get('high_risk_points', 0)
+                    if high_risk_points > 10:
+                        risk_distribution['HIGH'] += 1
+                    elif high_risk_points > 5:
+                        risk_distribution['MEDIUM'] += 1
+                    else:
+                        risk_distribution['LOW'] += 1
+
+                return {
+                    'total_sensors_forecasted': total_sensors_forecasted,
+                    'average_confidence': float(average_confidence),
+                    'risk_distribution': risk_distribution,
+                    'recent_forecasts': [
+                        {
+                            'sensor_id': f.sensor_id,
+                            'generated_at': f.generated_at.isoformat(),
+                            'horizon_hours': f.forecast_horizon_hours,
+                            'accuracy': f.accuracy_metrics.get('r2_score', 0)
+                        }
+                        for f in sorted(all_forecasts, key=lambda x: x.generated_at, reverse=True)[:10]
+                    ],
+                    'model_performance': sensor_performance,
+                    'generated_at': datetime.now().isoformat()
+                }
+
+        except Exception as e:
+            logger.error(f"Error generating forecast summary: {e}")
+            return {
+                'total_sensors_forecasted': 0,
+                'average_confidence': 0.0,
+                'risk_distribution': {},
+                'recent_forecasts': [],
+                'model_performance': {},
+                'error': str(e)
+            }
+
+    def get_model_status(self) -> Dict[str, Any]:
+        """Get status of all loaded forecasting models"""
+        status = {}
+        for sensor_id, model in self._models.items():
+            status[sensor_id] = {
+                'is_trained': model.is_trained,
+                'model_parameters': getattr(model.model, 'count_params', lambda: 0)() if model.model else 0,
+                'last_forecast': self._forecast_history.get(sensor_id, [])[-1].generated_at.isoformat()
+                              if self._forecast_history.get(sensor_id) else None
+            }
+        return status
