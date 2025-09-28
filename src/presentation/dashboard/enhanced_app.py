@@ -34,6 +34,26 @@ from config.equipment_config import get_equipment_list, get_equipment_by_id
 # Import dashboard components
 from src.presentation.dashboard.components.config_manager import create_config_management_layout, register_config_callbacks
 
+# Import real dashboard layouts
+from src.presentation.dashboard.layouts.overview import create_layout as create_overview_layout
+from src.presentation.dashboard.layouts.anomaly_monitor import create_layout as create_anomaly_layout
+from src.presentation.dashboard.layouts.forecast_view import create_layout as create_forecast_layout
+
+# Import real dashboard components for Session 5
+from src.presentation.dashboard.components.training_hub import create_training_hub_layout
+from src.presentation.dashboard.components.model_registry import create_model_registry_layout
+
+# Import real dashboard components for Session 6
+from src.presentation.dashboard.components.system_admin import create_system_admin_layout
+
+# Import additional dashboard layouts for Session 6 completion
+from src.presentation.dashboard.layouts.maintenance_scheduler import create_layout as create_maintenance_layout
+from src.presentation.dashboard.layouts.work_orders import create_layout as create_work_orders_layout
+from src.presentation.dashboard.layouts.pipeline_dashboard import pipeline_dashboard
+
+# Import consolidated System Performance layout
+from src.presentation.dashboard.layouts.system_performance import create_layout as create_system_performance_layout
+
 logger = logging.getLogger(__name__)
 
 
@@ -108,16 +128,15 @@ class EnhancedIoTDashboard:
         # Enhanced header with system status
         header = self._create_header()
 
-        # Enhanced navigation with new tabs
+        # Reorganized navigation with 7 core tabs (6 IoT + 1 consolidated system)
         nav_tabs = dbc.Tabs([
-            dbc.Tab(label="🏠 Overview", tab_id="overview", active_label_style={"color": "#0d6efd"}),
-            dbc.Tab(label="📊 Monitoring", tab_id="monitoring"),
-            dbc.Tab(label="🚨 Anomalies", tab_id="anomalies"),
-            dbc.Tab(label="📈 Forecasting", tab_id="forecasting"),
-            dbc.Tab(label="🤖 Training Hub", tab_id="training"),
-            dbc.Tab(label="📋 Models", tab_id="models"),
-            dbc.Tab(label="🔧 Configuration", tab_id="configuration"),
-            dbc.Tab(label="⚙️ System Admin", tab_id="admin")
+            dbc.Tab(label="Overview", tab_id="overview", active_label_style={"color": "#0d6efd"}),
+            dbc.Tab(label="Monitoring", tab_id="monitoring"),
+            dbc.Tab(label="Anomalies", tab_id="anomalies"),
+            dbc.Tab(label="Forecasting", tab_id="forecasting"),
+            dbc.Tab(label="Maintenance", tab_id="maintenance"),
+            dbc.Tab(label="Work Orders", tab_id="work_orders"),
+            dbc.Tab(label="System Performance", tab_id="system_performance")
         ], id="main-tabs", active_tab="overview", className="custom-tabs")
 
         # Main content area
@@ -336,14 +355,12 @@ class EnhancedIoTDashboard:
                     return self._create_enhanced_anomalies_tab()
                 elif active_tab == "forecasting":
                     return self._create_enhanced_forecasting_tab()
-                elif active_tab == "training":
-                    return self._create_training_hub_tab()
-                elif active_tab == "models":
-                    return self._create_models_tab()
-                elif active_tab == "configuration":
-                    return self._create_configuration_tab()
-                elif active_tab == "admin":
-                    return self._create_admin_tab()
+                elif active_tab == "maintenance":
+                    return self._create_maintenance_tab()
+                elif active_tab == "work_orders":
+                    return self._create_work_orders_tab()
+                elif active_tab == "system_performance":
+                    return self._create_system_performance_tab()
                 else:
                     return dbc.Alert("Tab not found", color="warning")
             except Exception as e:
@@ -388,97 +405,9 @@ class EnhancedIoTDashboard:
                 return []
 
     def _create_enhanced_overview_tab(self, dashboard_state):
-        """Create enhanced overview tab with comprehensive metrics"""
-        return dbc.Container([
-            # Key metrics row
-            dbc.Row([
-                dbc.Col([
-                    dbc.Card([
-                        dbc.CardBody([
-                            html.Div([
-                                html.I(className="fas fa-server fa-2x text-primary mb-2"),
-                                html.H3(f"{dashboard_state.get('equipment_count', 0)}", className="mb-1"),
-                                html.P("Equipment Units", className="text-muted mb-0")
-                            ], className="text-center")
-                        ])
-                    ], className="metric-card h-100")
-                ], width=3),
-                dbc.Col([
-                    dbc.Card([
-                        dbc.CardBody([
-                            html.Div([
-                                html.I(className="fas fa-exclamation-triangle fa-2x text-danger mb-2"),
-                                html.H3(f"{dashboard_state.get('total_anomalies', 0)}", className="mb-1"),
-                                html.P("Active Anomalies", className="text-muted mb-0")
-                            ], className="text-center")
-                        ])
-                    ], className="metric-card h-100")
-                ], width=3),
-                dbc.Col([
-                    dbc.Card([
-                        dbc.CardBody([
-                            html.Div([
-                                html.I(className="fas fa-robot fa-2x text-success mb-2"),
-                                html.H3(id="trained-models-count", className="mb-1"),
-                                html.P("Trained Models", className="text-muted mb-0")
-                            ], className="text-center")
-                        ])
-                    ], className="metric-card h-100")
-                ], width=3),
-                dbc.Col([
-                    dbc.Card([
-                        dbc.CardBody([
-                            html.Div([
-                                html.I(className="fas fa-bell fa-2x text-warning mb-2"),
-                                html.H3(f"{dashboard_state.get('alert_count', 0)}", className="mb-1"),
-                                html.P("System Alerts", className="text-muted mb-0")
-                            ], className="text-center")
-                        ])
-                    ], className="metric-card h-100")
-                ], width=3)
-            ], className="mb-4"),
-
-            # Equipment status grid
-            dbc.Row([
-                dbc.Col([
-                    dbc.Card([
-                        dbc.CardHeader([
-                            html.I(className="fas fa-list-ul me-2"),
-                            "Equipment Status Overview"
-                        ]),
-                        dbc.CardBody([
-                            html.Div(id="equipment-status-grid")
-                        ])
-                    ])
-                ], width=8),
-                dbc.Col([
-                    dbc.Card([
-                        dbc.CardHeader([
-                            html.I(className="fas fa-chart-pie me-2"),
-                            "System Health"
-                        ]),
-                        dbc.CardBody([
-                            dcc.Graph(id="system-health-chart")
-                        ])
-                    ])
-                ], width=4)
-            ], className="mb-4"),
-
-            # Recent activity
-            dbc.Row([
-                dbc.Col([
-                    dbc.Card([
-                        dbc.CardHeader([
-                            html.I(className="fas fa-clock me-2"),
-                            "Recent Activity"
-                        ]),
-                        dbc.CardBody([
-                            html.Div(id="recent-activity-feed")
-                        ])
-                    ])
-                ])
-            ])
-        ])
+        """Create enhanced overview tab using real NASA 12-sensor overview layout"""
+        # Use the real comprehensive overview layout (1,080 lines of functionality)
+        return create_overview_layout()
 
     def _create_enhanced_monitoring_tab(self):
         """Create enhanced monitoring tab with real-time features"""
@@ -486,7 +415,7 @@ class EnhancedIoTDashboard:
             dbc.Row([
                 dbc.Col([
                     dbc.Card([
-                        dbc.CardHeader("📈 Real-time Sensor Monitoring"),
+                        dbc.CardHeader("Real-time Sensor Monitoring"),
                         dbc.CardBody([
                             dbc.Row([
                                 dbc.Col([
@@ -523,7 +452,7 @@ class EnhancedIoTDashboard:
             dbc.Row([
                 dbc.Col([
                     dbc.Card([
-                        dbc.CardHeader("📊 Sensor Data Visualization"),
+                        dbc.CardHeader("Sensor Data Visualization"),
                         dbc.CardBody([
                             dcc.Graph(id="enhanced-realtime-chart", style={'height': '500px'})
                         ])
@@ -531,13 +460,13 @@ class EnhancedIoTDashboard:
                 ], width=8),
                 dbc.Col([
                     dbc.Card([
-                        dbc.CardHeader("ℹ️ Sensor Details"),
+                        dbc.CardHeader("Sensor Details"),
                         dbc.CardBody([
                             html.Div(id="enhanced-sensor-info")
                         ])
                     ], className="mb-3"),
                     dbc.Card([
-                        dbc.CardHeader("📈 Live Statistics"),
+                        dbc.CardHeader("Live Statistics"),
                         dbc.CardBody([
                             html.Div(id="live-sensor-stats")
                         ])
@@ -547,140 +476,45 @@ class EnhancedIoTDashboard:
         ])
 
     def _create_enhanced_anomalies_tab(self):
-        """Create enhanced anomalies tab with detailed analysis"""
-        return dbc.Container([
-            dbc.Row([
-                dbc.Col([
-                    dbc.Card([
-                        dbc.CardHeader([
-                            html.I(className="fas fa-exclamation-triangle me-2"),
-                            "Anomaly Detection Dashboard - NASA Telemanom"
-                        ]),
-                        dbc.CardBody([
-                            dbc.Row([
-                                dbc.Col([
-                                    html.Div(id="anomaly-summary-cards")
-                                ], width=4),
-                                dbc.Col([
-                                    dcc.Graph(id="anomaly-timeline-chart")
-                                ], width=8)
-                            ])
-                        ])
-                    ])
-                ], width=12)
-            ], className="mb-4"),
-
-            dbc.Row([
-                dbc.Col([
-                    dbc.Card([
-                        dbc.CardHeader("🚨 Recent Anomalies"),
-                        dbc.CardBody([
-                            html.Div(id="enhanced-anomaly-list")
-                        ])
-                    ])
-                ], width=8),
-                dbc.Col([
-                    dbc.Card([
-                        dbc.CardHeader("📊 Anomaly Analysis"),
-                        dbc.CardBody([
-                            html.Div(id="anomaly-analysis")
-                        ])
-                    ])
-                ], width=4)
-            ])
-        ])
+        """Create enhanced anomalies tab using real NASA Telemanom anomaly detection layout"""
+        # Use the real comprehensive anomaly monitor layout (3,373 lines of functionality)
+        # Includes: subsystem failure analysis, detection details panel, alert action manager, threshold management
+        return create_anomaly_layout()
 
     def _create_enhanced_forecasting_tab(self):
-        """Create enhanced forecasting tab with advanced features"""
-        return dbc.Container([
-            dbc.Row([
-                dbc.Col([
-                    dbc.Card([
-                        dbc.CardHeader("🔮 Predictive Forecasting - Transformer Model"),
-                        dbc.CardBody([
-                            dbc.Row([
-                                dbc.Col([
-                                    html.Label("Select Sensor:", className="fw-bold"),
-                                    dcc.Dropdown(
-                                        id='forecast-sensor-selector',
-                                        options=[
-                                            {'label': f"{eq.equipment_id} - {eq.name}", 'value': eq.equipment_id}
-                                            for eq in self.equipment_list
-                                        ],
-                                        value=self.equipment_list[0].equipment_id if self.equipment_list else None
-                                    )
-                                ], width=4),
-                                dbc.Col([
-                                    html.Label("Forecast Horizon (hours):", className="fw-bold"),
-                                    dcc.Dropdown(
-                                        id='forecast-horizon',
-                                        options=[
-                                            {'label': '6 Hours', 'value': 6},
-                                            {'label': '12 Hours', 'value': 12},
-                                            {'label': '24 Hours', 'value': 24},
-                                            {'label': '48 Hours', 'value': 48}
-                                        ],
-                                        value=24
-                                    )
-                                ], width=4),
-                                dbc.Col([
-                                    html.Label("Model Mode:", className="fw-bold"),
-                                    dcc.Dropdown(
-                                        id='forecast-mode',
-                                        options=[
-                                            {'label': 'Standard', 'value': 'standard'},
-                                            {'label': 'High Precision', 'value': 'precision'},
-                                            {'label': 'Fast', 'value': 'fast'}
-                                        ],
-                                        value='standard'
-                                    )
-                                ], width=4)
-                            ])
-                        ])
-                    ])
-                ], width=12)
-            ], className="mb-4"),
+        """Create enhanced forecasting tab using real Transformer-based forecasting layout"""
+        # Use the real comprehensive forecasting layout (1,482 lines of functionality)
+        # Includes: Transformer models, uncertainty quantification, failure prediction, what-if analysis
+        return create_forecast_layout()
 
-            dbc.Row([
-                dbc.Col([
-                    dbc.Card([
-                        dbc.CardHeader("📈 Forecast Visualization"),
-                        dbc.CardBody([
-                            dcc.Graph(id="enhanced-forecast-chart", style={'height': '500px'})
-                        ])
-                    ])
-                ], width=9),
-                dbc.Col([
-                    dbc.Card([
-                        dbc.CardHeader("📊 Forecast Metrics"),
-                        dbc.CardBody([
-                            html.Div(id="forecast-metrics")
-                        ])
-                    ])
-                ], width=3)
-            ])
-        ])
+    def _create_maintenance_tab(self):
+        """Create maintenance scheduling tab using real maintenance scheduler layout"""
+        # Use the real comprehensive maintenance scheduler layout (1,081 lines)
+        return create_maintenance_layout()
 
-    def _create_training_hub_tab(self):
-        """Create training management hub"""
-        return html.Div(id="training-hub-content")
+    def _create_work_orders_tab(self):
+        """Create work orders management tab using real work orders layout"""
+        # Use the real comprehensive work orders layout (855 lines)
+        return create_work_orders_layout()
 
-    def _create_models_tab(self):
-        """Create model management tab"""
-        return html.Div(id="models-tab-content")
-
-    def _create_configuration_tab(self):
-        """Create configuration management tab"""
-        return create_config_management_layout()
-
-    def _create_admin_tab(self):
-        """Create system administration tab"""
-        return html.Div(id="admin-tab-content")
+    def _create_system_performance_tab(self):
+        """Create consolidated system performance tab"""
+        # Use the consolidated system performance layout that combines:
+        # Training Hub, Models, ML Pipeline, Configuration, and System Admin
+        return create_system_performance_layout()
 
     def run(self, host: str = '127.0.0.1', port: int = 8050, debug: bool = False):
         """Run the enhanced dashboard"""
         logger.info(f"Starting Enhanced IoT Dashboard at http://{host}:{port}")
-        logger.info("Features: Training Management | Model Registry | Performance Monitoring")
+        logger.info("Complete IoT Predictive Maintenance System with Real NASA Algorithms")
+        logger.info("Dashboard Tabs (Reorganized):")
+        logger.info("  Overview: NASA 12-sensor system monitoring")
+        logger.info("  Monitoring: Real-time sensor data visualization")
+        logger.info("  Anomalies: NASA Telemanom advanced detection")
+        logger.info("  Forecasting: Transformer-based predictions")
+        logger.info("  Maintenance: Predictive maintenance scheduling")
+        logger.info("  Work Orders: Maintenance work order management")
+        logger.info("  System Performance: Consolidated training, models, pipeline, config & admin")
         try:
             self.app.run(host=host, port=port, debug=debug)
         finally:

@@ -19,6 +19,7 @@ from .components.training_hub import register_training_hub_callbacks, create_tra
 from .components.model_registry import register_model_registry_callbacks, create_model_registry_layout
 from .components.performance_analytics import register_performance_analytics_callbacks, create_performance_analytics_layout
 from .components.system_admin import register_system_admin_callbacks, create_system_admin_layout
+from .layouts.system_performance import register_callbacks as register_system_performance_callbacks
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ def register_enhanced_callbacks(app, services):
     register_model_registry_callbacks(app, model_registry, training_use_case, config_manager)
     register_performance_analytics_callbacks(app, performance_monitor, model_registry, training_use_case)
     register_system_admin_callbacks(app, performance_monitor, config_manager, model_registry, training_use_case)
+    register_system_performance_callbacks(app, services)
 
     # Enhanced tab content callbacks
     @app.callback(

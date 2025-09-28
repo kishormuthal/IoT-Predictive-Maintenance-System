@@ -7,7 +7,7 @@ The **IoT Predictive Maintenance System** is a comprehensive, enterprise-grade s
 ### ✨ Key Features
 
 - 🤖 **Advanced Machine Learning**: NASA Telemanom anomaly detection + Transformer forecasting
-- 📊 **Interactive Dashboard**: Modern, responsive web interface with 8 comprehensive tabs
+- 📊 **Interactive Dashboard**: Modern, responsive web interface with 7 focused tabs
 - 🚀 **Training Management**: Complete ML pipeline management with batch training capabilities
 - 📈 **Real-time Monitoring**: Live system metrics and performance analytics
 - ⚙️ **System Administration**: Comprehensive admin tools and configuration management
@@ -21,13 +21,14 @@ The **IoT Predictive Maintenance System** is a comprehensive, enterprise-grade s
 
 ```
 Enhanced IoT Predictive Maintenance System
-├── 🎛️ Enhanced Dashboard (Batch 3)
-│   ├── Training Hub - ML pipeline management
-│   ├── Model Registry - Model versioning & comparison
-│   ├── Performance Analytics - Real-time monitoring
-│   ├── System Admin - Configuration & health monitoring
-│   ├── Alert System - Real-time notifications
-│   └── Configuration Manager - Multi-environment config
+├── 🎛️ Enhanced Dashboard (Reorganized)
+│   ├── Overview - NASA 12-sensor system monitoring
+│   ├── Monitoring - Real-time sensor data visualization
+│   ├── Anomalies - NASA Telemanom advanced detection
+│   ├── Forecasting - Transformer-based predictions
+│   ├── Maintenance - Predictive maintenance scheduling
+│   ├── Work Orders - Maintenance work order management
+│   └── System Performance - Consolidated admin & training
 ├── 🤖 Core ML Services (Batch 2)
 │   ├── Anomaly Detection Service (NASA Telemanom)
 │   ├── Forecasting Service (Transformer)
@@ -100,10 +101,10 @@ Enhanced IoT Predictive Maintenance System
 
 6. **Access the dashboard**
    - Open your browser to `http://localhost:8050`
-   - Navigate through the 8 dashboard tabs
-   - Explore training management and monitoring features
+   - Navigate through the 7 reorganized dashboard tabs
+   - Explore core IoT predictive maintenance and system performance features
 
-## 📊 Dashboard Features
+## 📊 Dashboard Features (Reorganized)
 
 ### 🏠 Overview Tab
 - System health indicators
@@ -129,29 +130,25 @@ Enhanced IoT Predictive Maintenance System
 - Confidence intervals
 - Forecast horizon configuration
 
-### 🤖 Training Hub Tab
-- **Batch Training**: Train all 12 sensors simultaneously
-- **Individual Control**: Granular per-sensor training
-- **Progress Monitoring**: Real-time training status
-- **Validation**: Automated model validation
+### 🔧 Maintenance Tab
+- Predictive maintenance scheduling
+- Equipment maintenance history
+- Maintenance recommendations
+- Resource planning and allocation
 
-### 📋 Models Tab
-- **Model Browser**: Complete model registry
-- **Performance Comparison**: Side-by-side model analysis
-- **Version Management**: Model versioning and promotion
-- **Analytics**: Performance trends and insights
+### 📋 Work Orders Tab
+- Work order creation and management
+- Task assignment and tracking
+- Maintenance workflow automation
+- Historical work order analysis
 
-### 🔧 Configuration Tab
-- **Multi-Environment**: Development, testing, production configs
-- **Live Editing**: Real-time configuration updates
-- **Validation**: Built-in config validation
-- **Import/Export**: Configuration backup and restore
-
-### ⚙️ System Admin Tab
-- **Health Dashboard**: Visual system health monitoring
-- **Log Management**: Real-time log viewing and filtering
-- **Backup Operations**: Automated backup and restore
-- **Maintenance Tools**: System diagnostic utilities
+### ⚙️ System Performance Tab (Consolidated)
+- **Training Hub**: ML pipeline management with batch training
+- **Model Registry**: Model versioning, comparison & analytics
+- **ML Pipeline**: Pipeline monitoring and analytics
+- **Configuration**: Multi-environment config management
+- **System Admin**: Health monitoring, logs & backup operations
+- **Expandable Sections**: Detailed views for each component
 
 ## 🛠️ Development
 
@@ -349,14 +346,14 @@ def detect_anomalies(self, sensor_data: pd.DataFrame) -> AnomalyResult:
 
 ## 🎉 Achievements
 
-### Batch 3 Completion (100% Complete)
-- ✅ Enhanced dashboard architecture with state management
-- ✅ Complete training management interface
-- ✅ Advanced monitoring and analytics
-- ✅ System administration tools
-- ✅ User experience enhancements
-- ✅ Comprehensive testing suite
-- ✅ Production deployment preparation
+### Dashboard Reorganization (100% Complete)
+- ✅ Focused 7-tab structure for core IoT functionality
+- ✅ Consolidated System Performance tab for admin tasks
+- ✅ Enhanced user experience with simplified navigation
+- ✅ Maintained all original functionality via expandable sections
+- ✅ Comprehensive testing and validation
+- ✅ Updated documentation and deployment guides
+- ✅ Production-ready reorganized dashboard
 
 ### Technical Milestones
 - 🏆 15+ dashboard components implemented
@@ -372,6 +369,6 @@ This project is developed for educational and research purposes in predictive ma
 
 ---
 
-**Last Updated**: December 2024
-**Version**: Batch 3 Enhanced Dashboard
+**Last Updated**: September 2024
+**Version**: Reorganized Dashboard (7 Tabs)
 **Status**: Production Ready ✅
