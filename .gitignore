@@ -42,13 +42,16 @@ nul
 logs/
 *.log
 
-# Models and data
-models/
+# Models and data (excluding source model definitions)
+/models/
 data/raw/
 data/processed/
 *.pkl
 *.h5
 *.joblib
+
+# But include source model definitions
+!src/core/models/
 
 # Jupyter
 .ipynb_checkpoints/

@@ -1,0 +1,12 @@
+{
+  "total_sensors": 80,
+  "successful_models": 0,
+  "failed_models": 0,
+  "quick_mode": false,
+  "sensor_range": [
+    0,
+    80
+  ],
+  "timestamp": "2025-09-20T16:57:16.748741",
+  "results": {}
+}

@@ -1,0 +1,29 @@
+{
+  "equipment_id": "SMAP-THM-001",
+  "config": {
+    "epochs": 25,
+    "batch_size": 32,
+    "sequence_length": 40,
+    "encoder_units": [
+      24,
+      12
+    ],
+    "latent_dim": 6
+  },
+  "metrics": {
+    "training_time": 647.4776380062103,
+    "final_epoch": 25,
+    "best_train_loss": 0.002587925409898162,
+    "best_val_loss": 0.002371812704950571,
+    "convergence_ratio": 0.916491911196121,
+    "training_samples": 3372,
+    "validation_samples": 745
+  },
+  "training_date": "2025-09-17T15:56:33.338562",
+  "scaler_params": {
+    "scale_": null,
+    "min_": null,
+    "data_min_": null,
+    "data_max_": null
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "equipment_id": "MSL-ENV-001",
+  "config": {
+    "epochs": 30,
+    "batch_size": 32,
+    "sequence_length": 40,
+    "encoder_units": [
+      32,
+      16
+    ],
+    "latent_dim": 8
+  },
+  "metrics": {
+    "training_time": 178.4837646484375,
+    "final_epoch": 10,
+    "best_train_loss": 0.003296587150543928,
+    "best_val_loss": 0.0031805599573999643,
+    "convergence_ratio": 0.9648038447505264,
+    "training_samples": 3372,
+    "validation_samples": 745
+  },
+  "training_date": "2025-09-17T15:47:39.014207",
+  "scaler_params": {
+    "scale_": null,
+    "min_": null,
+    "data_min_": null,
+    "data_max_": null
+  }
+}

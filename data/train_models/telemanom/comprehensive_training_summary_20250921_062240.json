@@ -1,0 +1,567 @@
+{
+  "timestamp": "2025-09-21T06:22:40.876587",
+  "total_sensors": 80,
+  "successful": 79,
+  "failed": 1,
+  "success_rate": 98.75,
+  "results": [
+    {
+      "sensor_id": "SMAP_00",
+      "model_path": "data\\models\\telemanom\\SMAP_00.pkl",
+      "threshold": 2.429744808425374,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_01",
+      "model_path": "data\\models\\telemanom\\SMAP_01.pkl",
+      "threshold": 2.3690560546858412,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_02",
+      "model_path": "data\\models\\telemanom\\SMAP_02.pkl",
+      "threshold": 4.71586708824832,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_03",
+      "model_path": "data\\models\\telemanom\\SMAP_03.pkl",
+      "threshold": 2.5594907868525767,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_04",
+      "model_path": "data\\models\\telemanom\\SMAP_04.pkl",
+      "threshold": 2.2297854762010836,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_05",
+      "model_path": "data\\models\\telemanom\\SMAP_05.pkl",
+      "threshold": 4.138581186415869,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_06",
+      "model_path": "data\\models\\telemanom\\SMAP_06.pkl",
+      "threshold": 2.881937065564812,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_07",
+      "model_path": "data\\models\\telemanom\\SMAP_07.pkl",
+      "threshold": 2.5418953247488414,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_08",
+      "model_path": "data\\models\\telemanom\\SMAP_08.pkl",
+      "threshold": 4.075759507958796,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_09",
+      "model_path": "data\\models\\telemanom\\SMAP_09.pkl",
+      "threshold": 2.888235123532696,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_10",
+      "model_path": "data\\models\\telemanom\\SMAP_10.pkl",
+      "threshold": 2.8123638451903745,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_11",
+      "model_path": "data\\models\\telemanom\\SMAP_11.pkl",
+      "threshold": 3.787013518380589,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_12",
+      "model_path": "data\\models\\telemanom\\SMAP_12.pkl",
+      "threshold": 2.5553118739495226,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_13",
+      "model_path": "data\\models\\telemanom\\SMAP_13.pkl",
+      "threshold": 2.8937581510141412,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_14",
+      "model_path": "data\\models\\telemanom\\SMAP_14.pkl",
+      "threshold": 4.981954931716341,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_15",
+      "model_path": "data\\models\\telemanom\\SMAP_15.pkl",
+      "threshold": 2.3175441072898413,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_16",
+      "model_path": "data\\models\\telemanom\\SMAP_16.pkl",
+      "threshold": 2.488077887186974,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_17",
+      "model_path": "data\\models\\telemanom\\SMAP_17.pkl",
+      "threshold": 4.079126775790214,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_18",
+      "model_path": "data\\models\\telemanom\\SMAP_18.pkl",
+      "threshold": 2.587244612151479,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_19",
+      "model_path": "data\\models\\telemanom\\SMAP_19.pkl",
+      "threshold": 2.7023350505368358,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_20",
+      "model_path": "data\\models\\telemanom\\SMAP_20.pkl",
+      "threshold": 4.4383057035591085,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_21",
+      "model_path": "data\\models\\telemanom\\SMAP_21.pkl",
+      "threshold": 2.371488562551349,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_22",
+      "model_path": "data\\models\\telemanom\\SMAP_22.pkl",
+      "threshold": 2.3537008326192406,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_23",
+      "model_path": "data\\models\\telemanom\\SMAP_23.pkl",
+      "threshold": 4.1875209568887115,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "SMAP_24",
+      "model_path": "data\\models\\telemanom\\SMAP_24.pkl",
+      "threshold": 2.695700691785481,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_25",
+      "model_path": "data\\models\\telemanom\\MSL_25.pkl",
+      "threshold": 3.3559563990351045,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_26",
+      "model_path": "data\\models\\telemanom\\MSL_26.pkl",
+      "threshold": 2.5181761743345144,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_27",
+      "model_path": "data\\models\\telemanom\\MSL_27.pkl",
+      "threshold": 4.215697121069584,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_28",
+      "model_path": "data\\models\\telemanom\\MSL_28.pkl",
+      "threshold": 2.7032028234153156,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_29",
+      "model_path": "data\\models\\telemanom\\MSL_29.pkl",
+      "threshold": 2.522267394817701,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_30",
+      "model_path": "data\\models\\telemanom\\MSL_30.pkl",
+      "threshold": 4.351723371312886,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_31",
+      "model_path": "data\\models\\telemanom\\MSL_31.pkl",
+      "threshold": 2.6503078850486133,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_32",
+      "model_path": "data\\models\\telemanom\\MSL_32.pkl",
+      "threshold": 2.6710402727345843,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_33",
+      "model_path": "data\\models\\telemanom\\MSL_33.pkl",
+      "threshold": 4.391155300481427,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_34",
+      "model_path": "data\\models\\telemanom\\MSL_34.pkl",
+      "threshold": 2.4464129869999764,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_35",
+      "model_path": "data\\models\\telemanom\\MSL_35.pkl",
+      "threshold": 2.438253898149793,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_36",
+      "model_path": "data\\models\\telemanom\\MSL_36.pkl",
+      "threshold": 4.250590859249816,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_37",
+      "model_path": "data\\models\\telemanom\\MSL_37.pkl",
+      "threshold": 2.7189659828731614,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_38",
+      "model_path": "data\\models\\telemanom\\MSL_38.pkl",
+      "threshold": 2.711710312323236,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_39",
+      "model_path": "data\\models\\telemanom\\MSL_39.pkl",
+      "threshold": 4.1993168404498356,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_40",
+      "model_path": "data\\models\\telemanom\\MSL_40.pkl",
+      "threshold": 2.60855665012471,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_41",
+      "model_path": "data\\models\\telemanom\\MSL_41.pkl",
+      "threshold": 2.7696849319383383,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_42",
+      "model_path": "data\\models\\telemanom\\MSL_42.pkl",
+      "threshold": 4.323462348631863,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_43",
+      "model_path": "data\\models\\telemanom\\MSL_43.pkl",
+      "threshold": 3.090934701674183,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_44",
+      "model_path": "data\\models\\telemanom\\MSL_44.pkl",
+      "threshold": 2.76352912863258,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_45",
+      "model_path": "data\\models\\telemanom\\MSL_45.pkl",
+      "threshold": 4.377447592252392,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_46",
+      "model_path": "data\\models\\telemanom\\MSL_46.pkl",
+      "threshold": 2.5977572006194727,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_47",
+      "model_path": "data\\models\\telemanom\\MSL_47.pkl",
+      "threshold": 2.9900577551976117,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_48",
+      "model_path": "data\\models\\telemanom\\MSL_48.pkl",
+      "threshold": 4.031215095958398,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_49",
+      "model_path": "data\\models\\telemanom\\MSL_49.pkl",
+      "threshold": 2.626651819060672,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_50",
+      "model_path": "data\\models\\telemanom\\MSL_50.pkl",
+      "threshold": 2.5466909904120536,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_51",
+      "model_path": "data\\models\\telemanom\\MSL_51.pkl",
+      "threshold": 4.768327701125246,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_52",
+      "model_path": "data\\models\\telemanom\\MSL_52.pkl",
+      "threshold": 2.737549033431157,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_53",
+      "model_path": "data\\models\\telemanom\\MSL_53.pkl",
+      "threshold": 2.636636225599054,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_54",
+      "model_path": "data\\models\\telemanom\\MSL_54.pkl",
+      "threshold": 4.146941495851564,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_55",
+      "model_path": "data\\models\\telemanom\\MSL_55.pkl",
+      "threshold": 2.823044206023604,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_56",
+      "model_path": "data\\models\\telemanom\\MSL_56.pkl",
+      "threshold": 2.4333468056429544,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_57",
+      "model_path": "data\\models\\telemanom\\MSL_57.pkl",
+      "threshold": 4.3615966390766525,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_58",
+      "model_path": "data\\models\\telemanom\\MSL_58.pkl",
+      "threshold": 2.6764040111967207,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_59",
+      "model_path": "data\\models\\telemanom\\MSL_59.pkl",
+      "threshold": 2.6370654861749516,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_60",
+      "model_path": "data\\models\\telemanom\\MSL_60.pkl",
+      "threshold": 4.455464635534891,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_61",
+      "model_path": "data\\models\\telemanom\\MSL_61.pkl",
+      "threshold": 2.5795346422886434,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_62",
+      "model_path": "data\\models\\telemanom\\MSL_62.pkl",
+      "threshold": 2.591449388776578,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_63",
+      "model_path": "data\\models\\telemanom\\MSL_63.pkl",
+      "threshold": 4.484946332995006,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_64",
+      "status": "failed",
+      "error": "Graph execution error:\n\nDetected at node 'gradient_tape/sequential_64/lstm_129/TensorArrayUnstack/TensorListStack' defined at (most recent call last):\n    File \"D:\\IOT Predictive Maintenece System_copy\\IOT Predictive Maintenece System\\train_80_sensors_direct.py\", line 186, in <module>\n      summary = train_all_80_sensors()\n    File \"D:\\IOT Predictive Maintenece System_copy\\IOT Predictive Maintenece System\\train_80_sensors_direct.py\", line 152, in train_all_80_sensors\n      result = train_sensor_model(sensor_id, sensor_data, models_dir, quick_mode=True)\n    File \"D:\\IOT Predictive Maintenece System_copy\\IOT Predictive Maintenece System\\train_80_sensors_direct.py\", line 72, in train_sensor_model\n      model.fit(data)\n    File \"D:\\IOT Predictive Maintenece System_copy\\IOT Predictive Maintenece System\\src\\anomaly_detection\\nasa_telemanom.py\", line 203, in fit\n      history = self.model.fit(\n    File \"D:\\IOT Predictive Maintenece System_copy\\IOT Predictive Maintenece System\\.venv\\Lib\\site-packages\\keras\\src\\utils\\traceback_utils.py\", line 65, in error_handler\n      return fn(*args, **kwargs)\n    File \"D:\\IOT Predictive Maintenece System_copy\\IOT Predictive Maintenece System\\.venv\\Lib\\site-packages\\keras\\src\\engine\\training.py\", line 1742, in fit\n      tmp_logs = self.train_function(iterator)\n    File \"D:\\IOT Predictive Maintenece System_copy\\IOT Predictive Maintenece System\\.venv\\Lib\\site-packages\\keras\\src\\engine\\training.py\", line 1338, in train_function\n      return step_function(self, iterator)\n    File \"D:\\IOT Predictive Maintenece System_copy\\IOT Predictive Maintenece System\\.venv\\Lib\\site-packages\\keras\\src\\engine\\training.py\", line 1322, in step_function\n      outputs = model.distribute_strategy.run(run_step, args=(data,))\n    File \"D:\\IOT Predictive Maintenece System_copy\\IOT Predictive Maintenece System\\.venv\\Lib\\site-packages\\keras\\src\\engine\\training.py\", line 1303, in run_step\n      outputs = model.train_step(data)\n    File \"D:\\IOT Predictive Maintenece System_copy\\IOT Predictive Maintenece System\\.venv\\Lib\\site-packages\\keras\\src\\engine\\training.py\", line 1084, in train_step\n      self.optimizer.minimize(loss, self.trainable_variables, tape=tape)\n    File \"D:\\IOT Predictive Maintenece System_copy\\IOT Predictive Maintenece System\\.venv\\Lib\\site-packages\\keras\\src\\optimizers\\optimizer.py\", line 543, in minimize\n      grads_and_vars = self.compute_gradients(loss, var_list, tape)\n    File \"D:\\IOT Predictive Maintenece System_copy\\IOT Predictive Maintenece System\\.venv\\Lib\\site-packages\\keras\\src\\optimizers\\optimizer.py\", line 276, in compute_gradients\n      grads = tape.gradient(loss, var_list)\nNode: 'gradient_tape/sequential_64/lstm_129/TensorArrayUnstack/TensorListStack'\nOOM when allocating tensor with shape[100,64,50] and type float on /job:localhost/replica:0/task:0/device:CPU:0 by allocator cpu\n\t [[{{node gradient_tape/sequential_64/lstm_129/TensorArrayUnstack/TensorListStack}}]]\nHint: If you want to see a list of allocated tensors when OOM happens, add report_tensor_allocations_upon_oom to RunOptions for current allocation info. This isn't available when running in Eager mode.\n [Op:__inference_train_function_741179]"
+    },
+    {
+      "sensor_id": "MSL_65",
+      "model_path": "data\\models\\telemanom\\MSL_65.pkl",
+      "threshold": 2.571408089360526,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_66",
+      "model_path": "data\\models\\telemanom\\MSL_66.pkl",
+      "threshold": 3.748799957470577,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_67",
+      "model_path": "data\\models\\telemanom\\MSL_67.pkl",
+      "threshold": 2.409250079313158,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_68",
+      "model_path": "data\\models\\telemanom\\MSL_68.pkl",
+      "threshold": 2.595043690135881,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_69",
+      "model_path": "data\\models\\telemanom\\MSL_69.pkl",
+      "threshold": 4.4565980871344,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_70",
+      "model_path": "data\\models\\telemanom\\MSL_70.pkl",
+      "threshold": 2.4403595136944762,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_71",
+      "model_path": "data\\models\\telemanom\\MSL_71.pkl",
+      "threshold": 2.4572010898868317,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_72",
+      "model_path": "data\\models\\telemanom\\MSL_72.pkl",
+      "threshold": 4.4386977109118835,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_73",
+      "model_path": "data\\models\\telemanom\\MSL_73.pkl",
+      "threshold": 2.724940261598993,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_74",
+      "model_path": "data\\models\\telemanom\\MSL_74.pkl",
+      "threshold": 2.5913038305886125,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_75",
+      "model_path": "data\\models\\telemanom\\MSL_75.pkl",
+      "threshold": 4.678078753812943,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_76",
+      "model_path": "data\\models\\telemanom\\MSL_76.pkl",
+      "threshold": 2.5891595699340173,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_77",
+      "model_path": "data\\models\\telemanom\\MSL_77.pkl",
+      "threshold": 2.5985644651606665,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_78",
+      "model_path": "data\\models\\telemanom\\MSL_78.pkl",
+      "threshold": 3.715017701704695,
+      "data_samples": 5000,
+      "status": "success"
+    },
+    {
+      "sensor_id": "MSL_79",
+      "model_path": "data\\models\\telemanom\\MSL_79.pkl",
+      "threshold": 2.494661877540712,
+      "data_samples": 5000,
+      "status": "success"
+    }
+  ]
+}

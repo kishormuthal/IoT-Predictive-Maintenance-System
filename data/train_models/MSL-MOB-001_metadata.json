@@ -1,0 +1,29 @@
+{
+  "equipment_id": "MSL-MOB-001",
+  "config": {
+    "epochs": 35,
+    "batch_size": 32,
+    "sequence_length": 40,
+    "encoder_units": [
+      48,
+      24
+    ],
+    "latent_dim": 12
+  },
+  "metrics": {
+    "training_time": 645.0570356845856,
+    "final_epoch": 35,
+    "best_train_loss": 0.0029715686105191708,
+    "best_val_loss": 0.002837566426023841,
+    "convergence_ratio": 0.9549052362375311,
+    "training_samples": 3372,
+    "validation_samples": 745
+  },
+  "training_date": "2025-09-17T15:35:37.343716",
+  "scaler_params": {
+    "scale_": null,
+    "min_": null,
+    "data_min_": null,
+    "data_max_": null
+  }
+}

@@ -1,0 +1,409 @@
+{
+  "timestamp": "2025-09-20T17:00:58.434712",
+  "total_sensors": 80,
+  "successful": 0,
+  "failed": 80,
+  "success_rate": 0.0,
+  "results": [
+    {
+      "sensor_id": "SMAP_00",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_01",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_02",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_03",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_04",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_05",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_06",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_07",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_08",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_09",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_10",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_11",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_12",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_13",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_14",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_15",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_16",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_17",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_18",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_19",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_20",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_21",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_22",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_23",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "SMAP_24",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_25",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_26",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_27",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_28",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_29",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_30",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_31",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_32",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_33",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_34",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_35",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_36",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_37",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_38",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_39",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_40",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_41",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_42",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_43",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_44",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_45",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_46",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_47",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_48",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_49",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_50",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_51",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_52",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_53",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_54",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_55",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_56",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_57",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_58",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_59",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_60",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_61",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_62",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_63",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_64",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_65",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_66",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_67",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_68",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_69",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_70",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_71",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_72",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_73",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_74",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_75",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_76",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_77",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_78",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    },
+    {
+      "sensor_id": "MSL_79",
+      "status": "failed",
+      "error": "Telemanom_Config.__init__() got an unexpected keyword argument 'lstm_batch_size'"
+    }
+  ]
+}
