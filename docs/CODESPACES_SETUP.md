@@ -392,6 +392,45 @@ Clean Launch with All Trained Models
 
 ## 🚨 Troubleshooting
 
+### Issue: Claude Code requires Node.js 18+
+
+**Symptom:** "Claude Code requires Node.js version 18 or higher to be installed"
+
+**Solution for NEW Codespaces (Automatic):**
+- Node.js 20 is now configured in `.devcontainer/devcontainer.json`
+- Just create a new Codespace and it will install automatically
+
+**Solution for EXISTING Codespaces (Manual Install):**
+
+**Option 1: Rebuild Codespace (Recommended)**
+1. Press `Ctrl+Shift+P`
+2. Type: **"Codespaces: Rebuild Container"**
+3. Wait for rebuild (installs Node.js automatically)
+4. Claude Code will work after rebuild
+
+**Option 2: Install Node.js Manually**
+```bash
+# Install Node.js 20 using nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+source ~/.bashrc
+nvm install 20
+nvm use 20
+nvm alias default 20
+
+# Verify installation
+node --version  # Should show v20.x.x
+
+# Reload VSCode window
+# Press Ctrl+Shift+P → "Developer: Reload Window"
+```
+
+**Option 3: Create Fresh Codespace**
+1. Stop current Codespace
+2. Delete it (if you've committed your changes)
+3. Create new Codespace (Node.js 20 auto-installs)
+
+---
+
 ### Issue: Claude Code not showing
 
 **Symptom:** No Claude icon in sidebar
@@ -406,6 +445,7 @@ Clean Launch with All Trained Models
 1. Check extensions: Click Extensions icon
 2. Find "Claude Code"
 3. Click "Reload" or "Enable"
+4. If error about Node.js, see section above
 
 ---
 
