@@ -1,0 +1,52 @@
+{
+  "model_id": "transformer_SMAP-SYS-001",
+  "sensor_id": "SMAP-SYS-001",
+  "model_type": "transformer",
+  "version": "8ec49cdd",
+  "created_at": "2025-09-30T00:05:05.715705",
+  "training_config": {
+    "sequence_length": 48,
+    "forecast_horizon": 12,
+    "d_model": 64,
+    "num_heads": 4,
+    "num_layers": 2,
+    "dff": 256,
+    "dropout_rate": 0.1,
+    "epochs": 10,
+    "batch_size": 16,
+    "learning_rate": 0.001,
+    "validation_split": 0.1,
+    "patience": 5
+  },
+  "training_metrics": {
+    "sensor_id": "SMAP-SYS-001",
+    "training_samples": 5541,
+    "model_parameters": 219276,
+    "final_loss": 0.9499017000198364,
+    "final_val_loss": 1.3598277568817139
+  },
+  "validation_metrics": {
+    "validation_performed": true,
+    "validation_sequences": 5,
+    "mae": 0.4564217538375315,
+    "mse": 0.4330774670311709,
+    "rmse": 0.6580862155000444,
+    "mape": 99.25633857419298,
+    "r2_score": -0.003152570189477455,
+    "forecast_horizon_tested": 12,
+    "validation_quality": "needs_improvement"
+  },
+  "model_size_bytes": 2738760,
+  "training_time_seconds": 104.40502715110779,
+  "data_hash": "fc293fb6",
+  "model_hash": "6f66074a2ce6307ed2be5ad8cb746d30",
+  "description": "Transformer forecaster for System Monitor",
+  "tags": [
+    "transformer",
+    "forecasting",
+    "time_series",
+    "payload"
+  ],
+  "is_active": true,
+  "performance_score": 0.0022309842774210554
+}

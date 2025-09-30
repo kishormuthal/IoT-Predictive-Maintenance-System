@@ -1,0 +1,52 @@
+{
+  "model_id": "transformer_SMAP-PWR-001",
+  "sensor_id": "SMAP-PWR-001",
+  "model_type": "transformer",
+  "version": "7f282096",
+  "created_at": "2025-09-29T23:57:26.679550",
+  "training_config": {
+    "sequence_length": 48,
+    "forecast_horizon": 12,
+    "d_model": 64,
+    "num_heads": 4,
+    "num_layers": 2,
+    "dff": 256,
+    "dropout_rate": 0.1,
+    "epochs": 10,
+    "batch_size": 16,
+    "learning_rate": 0.001,
+    "validation_split": 0.1,
+    "patience": 5
+  },
+  "training_metrics": {
+    "sensor_id": "SMAP-PWR-001",
+    "training_samples": 5541,
+    "model_parameters": 219276,
+    "final_loss": 0.36432743072509766,
+    "final_val_loss": 0.8612104654312134
+  },
+  "validation_metrics": {
+    "validation_performed": true,
+    "validation_sequences": 5,
+    "mae": 0.10568379491218668,
+    "mse": 0.01744016010163292,
+    "rmse": 0.13206119831969163,
+    "mape": 105.36107500190181,
+    "r2_score": 0.12070156122836917,
+    "forecast_horizon_tested": 12,
+    "validation_quality": "needs_improvement"
+  },
+  "model_size_bytes": 2738220,
+  "training_time_seconds": 121.39823412895203,
+  "data_hash": "68fef220",
+  "model_hash": "6514b471126fc05c27720ec2a66351a9",
+  "description": "Transformer forecaster for Primary Power System",
+  "tags": [
+    "transformer",
+    "forecasting",
+    "time_series",
+    "power"
+  ],
+  "is_active": true,
+  "performance_score": 0.08449109285985841
+}

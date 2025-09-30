@@ -1,0 +1,52 @@
+{
+  "model_id": "transformer_SMAP-COM-001",
+  "sensor_id": "SMAP-COM-001",
+  "model_type": "transformer",
+  "version": "ebd1bbbb",
+  "created_at": "2025-09-29T23:59:27.671710",
+  "training_config": {
+    "sequence_length": 48,
+    "forecast_horizon": 12,
+    "d_model": 64,
+    "num_heads": 4,
+    "num_layers": 2,
+    "dff": 256,
+    "dropout_rate": 0.1,
+    "epochs": 10,
+    "batch_size": 16,
+    "learning_rate": 0.001,
+    "validation_split": 0.1,
+    "patience": 5
+  },
+  "training_metrics": {
+    "sensor_id": "SMAP-COM-001",
+    "training_samples": 5541,
+    "model_parameters": 219276,
+    "final_loss": 0.33419814705848694,
+    "final_val_loss": 0.8612979650497437
+  },
+  "validation_metrics": {
+    "validation_performed": true,
+    "validation_sequences": 5,
+    "mae": 0.12023255173211653,
+    "mse": 0.06347436245432408,
+    "rmse": 0.2519411884831936,
+    "mape": 11.582350176320041,
+    "r2_score": -0.14036105963990186,
+    "forecast_horizon_tested": 12,
+    "validation_quality": "needs_improvement"
+  },
+  "model_size_bytes": 2738495,
+  "training_time_seconds": 120.8986656665802,
+  "data_hash": "13c2dfcc",
+  "model_hash": "23c1fe9ab0ded97751ffeb4d8af69a69",
+  "description": "Transformer forecaster for Communication System",
+  "tags": [
+    "transformer",
+    "forecasting",
+    "time_series",
+    "communication"
+  ],
+  "is_active": true,
+  "performance_score": 0.26525294947103983
+}

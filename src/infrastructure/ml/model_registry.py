@@ -429,6 +429,146 @@ class ModelRegistry:
             logger.error(f"Error during cleanup: {e}")
             return cleaned
 
+    def is_model_available(self, sensor_id: str, model_type: str) -> bool:
+        """Check if a model is available for given sensor and type"""
+        try:
+            active_version = self.get_active_model_version(sensor_id, model_type)
+            if not active_version:
+                return False
+
+            # Check if metadata exists
+            metadata = self.get_model_metadata(active_version)
+            return metadata is not None and metadata.is_active
+        except Exception as e:
+            logger.error(f"Error checking model availability for {sensor_id} ({model_type}): {e}")
+            return False
+
+    def get_model_availability_report(self) -> Dict[str, Any]:
+        """Get comprehensive model availability report"""
+        try:
+            from config.equipment_config import EQUIPMENT_REGISTRY
+
+            availability_report = {
+                'telemanom_models': {},
+                'transformer_models': {},
+                'availability_summary': {
+                    'total_sensors': len(EQUIPMENT_REGISTRY),
+                    'telemanom_available': 0,
+                    'transformer_available': 0,
+                    'both_available': 0,
+                    'none_available': 0
+                }
+            }
+
+            for sensor_id in EQUIPMENT_REGISTRY.keys():
+                # Check Telemanom availability
+                telemanom_available = self.is_model_available(sensor_id, 'telemanom')
+                transformer_available = self.is_model_available(sensor_id, 'transformer')
+
+                availability_report['telemanom_models'][sensor_id] = {
+                    'available': telemanom_available,
+                    'active_version': self.get_active_model_version(sensor_id, 'telemanom') if telemanom_available else None
+                }
+
+                availability_report['transformer_models'][sensor_id] = {
+                    'available': transformer_available,
+                    'active_version': self.get_active_model_version(sensor_id, 'transformer') if transformer_available else None
+                }
+
+                # Update summary counts
+                if telemanom_available:
+                    availability_report['availability_summary']['telemanom_available'] += 1
+                if transformer_available:
+                    availability_report['availability_summary']['transformer_available'] += 1
+                if telemanom_available and transformer_available:
+                    availability_report['availability_summary']['both_available'] += 1
+                if not telemanom_available and not transformer_available:
+                    availability_report['availability_summary']['none_available'] += 1
+
+            availability_report['availability_summary']['coverage_percentage'] = (
+                (availability_report['availability_summary']['both_available'] / len(EQUIPMENT_REGISTRY)) * 100
+                if EQUIPMENT_REGISTRY else 0
+            )
+
+            return availability_report
+
+        except Exception as e:
+            logger.error(f"Error generating model availability report: {e}")
+            return {
+                'error': str(e),
+                'availability_summary': {
+                    'total_sensors': 0,
+                    'telemanom_available': 0,
+                    'transformer_available': 0,
+                    'both_available': 0,
+                    'none_available': 0,
+                    'coverage_percentage': 0
+                }
+            }
+
+    def get_model_health_status(self, sensor_id: str, model_type: str) -> Dict[str, Any]:
+        """Get detailed health status for a specific model"""
+        try:
+            active_version = self.get_active_model_version(sensor_id, model_type)
+            if not active_version:
+                return {
+                    'status': 'not_available',
+                    'message': f'No {model_type} model available for sensor {sensor_id}'
+                }
+
+            metadata = self.get_model_metadata(active_version)
+            if not metadata:
+                return {
+                    'status': 'metadata_missing',
+                    'message': f'Model metadata missing for {sensor_id} {model_type}'
+                }
+
+            # Check model file existence
+            model_path = None
+            if model_type == 'telemanom':
+                model_path = Path(f"data/models/telemanom/{sensor_id}")
+            elif model_type == 'transformer':
+                model_path = Path(f"data/models/transformer/{sensor_id}")
+
+            model_files_exist = False
+            if model_path and model_path.exists():
+                if model_type == 'telemanom':
+                    model_files_exist = (model_path / 'metadata.json').exists() and (model_path / 'scaler.pkl').exists()
+                elif model_type == 'transformer':
+                    model_files_exist = (model_path / 'transformer_metadata.json').exists() and (model_path / 'scaler.pkl').exists()
+
+            # Determine overall health
+            if metadata.is_active and model_files_exist and metadata.performance_score > 0.5:
+                status = 'healthy'
+                message = f'Model is healthy and ready for inference'
+            elif metadata.is_active and model_files_exist:
+                status = 'available_low_performance'
+                message = f'Model available but performance score is {metadata.performance_score:.3f}'
+            elif metadata.is_active and not model_files_exist:
+                status = 'metadata_only'
+                message = f'Model registered but files missing'
+            else:
+                status = 'inactive'
+                message = f'Model is inactive or has issues'
+
+            return {
+                'status': status,
+                'message': message,
+                'version_id': active_version,
+                'performance_score': metadata.performance_score,
+                'model_size_mb': metadata.model_size_bytes / (1024 * 1024),
+                'created_at': metadata.created_at,
+                'files_exist': model_files_exist,
+                'is_active': metadata.is_active
+            }
+
+        except Exception as e:
+            logger.error(f"Error checking model health for {sensor_id} ({model_type}): {e}")
+            return {
+                'status': 'error',
+                'message': f'Error checking model health: {e}'
+            }
+
     def get_registry_stats(self) -> Dict[str, Any]:
         """Get registry statistics"""
         try:

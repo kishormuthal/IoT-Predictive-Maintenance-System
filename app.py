@@ -49,11 +49,11 @@ def check_dependencies():
 
 def main():
     """Main application launcher"""
-    logger.info("🚀 Starting IoT Predictive Maintenance System (Clean Architecture)")
+    logger.info("Starting IoT Predictive Maintenance System (Clean Architecture)")
 
     # Check dependencies
     if not check_dependencies():
-        logger.error("❌ Missing required dependencies. Please install requirements.txt")
+        logger.error("Missing required dependencies. Please install requirements.txt")
         return 1
 
     try:
@@ -64,9 +64,9 @@ def main():
         dashboard = EnhancedIoTDashboard(debug=True)
 
         # Start the dashboard
-        logger.info("🌟 Starting Enhanced IoT Dashboard...")
-        logger.info("📊 Dashboard will be available at: http://127.0.0.1:8050")
-        logger.info("🎯 Features:")
+        logger.info("Starting Enhanced IoT Dashboard...")
+        logger.info("Dashboard will be available at: http://127.0.0.1:8050")
+        logger.info("Features:")
         logger.info("   - Training Hub: ML pipeline management")
         logger.info("   - Model Registry: Model versioning & comparison")
         logger.info("   - Performance Analytics: Real-time monitoring")
@@ -87,12 +87,12 @@ def main():
         logger.info("🛑 Application stopped by user")
         return 0
     except ImportError as e:
-        logger.error(f"❌ Import error: {e}")
-        logger.error("💡 Make sure you're running from the project root directory")
-        logger.error("💡 Try: python app_clean.py")
+        logger.error(f"Import error: {e}")
+        logger.error("Make sure you're running from the project root directory")
+        logger.error("Try: python app_clean.py")
         return 1
     except Exception as e:
-        logger.error(f"❌ Unexpected error: {e}")
+        logger.error(f"Unexpected error: {e}")
         logger.exception("Full error details:")
         return 1
 

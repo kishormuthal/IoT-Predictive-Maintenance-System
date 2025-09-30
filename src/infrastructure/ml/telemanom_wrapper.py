@@ -17,48 +17,63 @@ from sklearn.preprocessing import StandardScaler
 from scipy import stats
 import warnings
 
-# TensorFlow imports with fallback
-try:
-    import tensorflow as tf
-    from tensorflow import keras
-    from tensorflow.keras import layers
-    TENSORFLOW_AVAILABLE = True
-    print("[INFO] TensorFlow available for Telemanom")
-except ImportError:
-    TENSORFLOW_AVAILABLE = False
-    print("[WARNING] TensorFlow not available, using mock implementation for Telemanom")
+# TensorFlow lazy loading to prevent hanging
+TENSORFLOW_AVAILABLE = False
+tf = None
+keras = None
+layers = None
 
-    # Mock implementations for when TensorFlow is not available
-    class keras:
+def _load_tensorflow():
+    """Lazy load TensorFlow only when needed"""
+    global TENSORFLOW_AVAILABLE, tf, keras, layers
+    if not TENSORFLOW_AVAILABLE:
+        try:
+            import tensorflow as tf_module
+            from tensorflow import keras as keras_module
+            from tensorflow.keras import layers as layers_module
+            tf = tf_module
+            keras = keras_module
+            layers = layers_module
+            TENSORFLOW_AVAILABLE = True
+            print("[INFO] TensorFlow loaded successfully for Telemanom")
+        except ImportError:
+            print("[WARNING] TensorFlow not available, using mock implementation")
+            _setup_mock_implementations()
+    return TENSORFLOW_AVAILABLE
+
+# Mock implementations for when TensorFlow is not available
+def _setup_mock_implementations():
+    """Setup mock TensorFlow implementations"""
+    global keras, tf, layers
+
+    class MockKeras:
         class Sequential:
             def __init__(self, layers=None):
                 self.layers = layers or []
-
             def compile(self, **kwargs):
                 pass
-
             def fit(self, X, y, **kwargs):
-                return MockHistory()
-
+                return type('MockHistory', (), {'history': {'loss': [0.1]}})()
             def predict(self, X):
-                return np.random.randn(len(X), 1)
+                return np.zeros((len(X), 1))
 
-            def count_params(self):
-                return 1000
+    keras = MockKeras()
+    tf = None
+    layers = None
 
-        class callbacks:
-            class EarlyStopping:
-                def __init__(self, **kwargs):
-                    pass
+    class callbacks:
+        class EarlyStopping:
+            def __init__(self, **kwargs):
+                pass
 
-            class ReduceLROnPlateau:
-                def __init__(self, **kwargs):
-                    pass
+        class ReduceLROnPlateau:
+            def __init__(self, **kwargs):
+                pass
 
-        class optimizers:
-            class Adam:
-                def __init__(self, **kwargs):
-                    pass
+    class optimizers:
+        class Adam:
+            def __init__(self, **kwargs):
+                pass
 
     class layers:
         class LSTM:

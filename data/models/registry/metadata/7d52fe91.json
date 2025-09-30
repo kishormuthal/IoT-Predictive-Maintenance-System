@@ -1,0 +1,52 @@
+{
+  "model_id": "transformer_MSL-COM-001",
+  "sensor_id": "MSL-COM-001",
+  "model_type": "transformer",
+  "version": "7d52fe91",
+  "created_at": "2025-09-30T00:12:50.129452",
+  "training_config": {
+    "sequence_length": 48,
+    "forecast_horizon": 12,
+    "d_model": 64,
+    "num_heads": 4,
+    "num_layers": 2,
+    "dff": 256,
+    "dropout_rate": 0.1,
+    "epochs": 10,
+    "batch_size": 16,
+    "learning_rate": 0.001,
+    "validation_split": 0.1,
+    "patience": 5
+  },
+  "training_metrics": {
+    "sensor_id": "MSL-COM-001",
+    "training_samples": 5541,
+    "model_parameters": 219276,
+    "final_loss": 0.3864399790763855,
+    "final_val_loss": 0.9204097390174866
+  },
+  "validation_metrics": {
+    "validation_performed": true,
+    "validation_sequences": 5,
+    "mae": 0.3231813237732088,
+    "mse": 0.18037702938865902,
+    "rmse": 0.42470816967496516,
+    "mape": 175.4674710932346,
+    "r2_score": 0.3152885119973555,
+    "forecast_horizon_tested": 12,
+    "validation_quality": "needs_improvement"
+  },
+  "model_size_bytes": 2738501,
+  "training_time_seconds": 89.08807492256165,
+  "data_hash": "aae622e7",
+  "model_hash": "b5692a8f76ab43588764cf739d88c3a7",
+  "description": "Transformer forecaster for Communication Array",
+  "tags": [
+    "transformer",
+    "forecasting",
+    "time_series",
+    "communication"
+  ],
+  "is_active": true,
+  "performance_score": 0.22070195839814885
+}

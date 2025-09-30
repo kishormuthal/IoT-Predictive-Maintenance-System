@@ -597,6 +597,64 @@ body {
 }
 
 /* ========================================
+   Tab Navigation
+   ======================================== */
+
+/* Dashboard tabs styling */
+.tab-content {
+  min-height: 500px;
+  padding: 1rem 0;
+}
+
+/* Ensure tabs are visible and properly styled */
+.nav-tabs {
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  border-radius: 0;
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.nav-tabs .nav-link:hover {
+  border-color: transparent;
+  color: var(--primary-color);
+  background: var(--surface-hover);
+}
+
+.nav-tabs .nav-link.active {
+  color: var(--primary-color);
+  background: transparent;
+  border-color: transparent;
+  font-weight: 600;
+}
+
+.nav-tabs .nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary-color);
+}
+
+/* Bootstrap tabs override */
+.tab-pane {
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+/* ========================================
    Dashboard Specific Components
    ======================================== */
 

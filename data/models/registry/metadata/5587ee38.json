@@ -1,0 +1,52 @@
+{
+  "model_id": "transformer_MSL-ENV-001",
+  "sensor_id": "MSL-ENV-001",
+  "model_type": "transformer",
+  "version": "5587ee38",
+  "created_at": "2025-09-30T00:09:38.483028",
+  "training_config": {
+    "sequence_length": 48,
+    "forecast_horizon": 12,
+    "d_model": 64,
+    "num_heads": 4,
+    "num_layers": 2,
+    "dff": 256,
+    "dropout_rate": 0.1,
+    "epochs": 10,
+    "batch_size": 16,
+    "learning_rate": 0.001,
+    "validation_split": 0.1,
+    "patience": 5
+  },
+  "training_metrics": {
+    "sensor_id": "MSL-ENV-001",
+    "training_samples": 5541,
+    "model_parameters": 219276,
+    "final_loss": 0.9448603391647339,
+    "final_val_loss": 1.345523715019226
+  },
+  "validation_metrics": {
+    "validation_performed": true,
+    "validation_sequences": 5,
+    "mae": 0.435073065861003,
+    "mse": 0.42052697490149293,
+    "rmse": 0.6484805123529103,
+    "mape": 99.58663381413916,
+    "r2_score": -0.0022564839360499356,
+    "forecast_horizon_tested": 12,
+    "validation_quality": "needs_improvement"
+  },
+  "model_size_bytes": 2738347,
+  "training_time_seconds": 71.77137923240662,
+  "data_hash": "2af04d94",
+  "model_hash": "dd69080182768506aab5e529e9e4cb8a",
+  "description": "Transformer forecaster for Environmental Monitoring",
+  "tags": [
+    "transformer",
+    "forecasting",
+    "time_series",
+    "environmental"
+  ],
+  "is_active": true,
+  "performance_score": 0.001240098557582525
+}

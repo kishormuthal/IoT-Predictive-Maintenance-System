@@ -50,7 +50,7 @@ class DropdownStateManager:
         # NASA Equipment Hierarchy
         self.nasa_equipment_hierarchy = {
             'SMAP': {
-                'name': '🛰️ SMAP Satellite',
+                'name': 'SMAP Satellite',
                 'subsystems': ['POWER', 'COMMUNICATION', 'ATTITUDE', 'THERMAL', 'PAYLOAD'],
                 'total_sensors': 25,
                 'criticality_map': {
@@ -227,7 +227,7 @@ class DropdownStateManager:
             # Add 'All Sensors' option for specific equipment
             if include_all:
                 options.append(DropdownOption(
-                    label="📊 All Sensors",
+                    label="All Sensors",
                     value="ALL",
                     title=f"Show data from all sensors on {equipment_id}"
                 ))

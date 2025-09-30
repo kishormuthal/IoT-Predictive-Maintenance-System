@@ -24,7 +24,7 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
     Service for anomaly detection using NASA Telemanom algorithm
     """
 
-    def __init__(self, model_path: str = "models/telemanom", registry_path: str = "models/registry"):
+    def __init__(self, model_path: str = "data/models/nasa_equipment_models", registry_path: str = "data/models"):
         """
         Initialize anomaly detection service
 

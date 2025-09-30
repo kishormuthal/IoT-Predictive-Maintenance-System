@@ -1,0 +1,399 @@
+{
+  "session_id": "20250929_235525",
+  "timestamp": "2025-09-30T00:14:30.704330",
+  "model_type": "transformer_forecasting",
+  "total_sensors": 12,
+  "successful_trains": 12,
+  "failed_trains": 0,
+  "total_time_seconds": 1145.6539087295532,
+  "average_time_per_sensor": 95.4711590607961,
+  "tensorflow_available": true,
+  "configuration": {
+    "sequence_length": 48,
+    "forecast_horizon": 12,
+    "d_model": 64,
+    "num_heads": 4,
+    "num_layers": 2,
+    "dff": 256,
+    "dropout_rate": 0.1,
+    "epochs": 10,
+    "batch_size": 16,
+    "learning_rate": 0.001,
+    "validation_split": 0.1,
+    "patience": 5
+  },
+  "results": {
+    "SMAP-PWR-001": {
+      "sensor_id": "SMAP-PWR-001",
+      "version_id": "7f282096",
+      "training_time_seconds": 121.39823412895203,
+      "training_metrics": {
+        "sensor_id": "SMAP-PWR-001",
+        "training_samples": 5541,
+        "model_parameters": 219276,
+        "final_loss": 0.36432743072509766,
+        "final_val_loss": 0.8612104654312134
+      },
+      "validation_metrics": {
+        "validation_performed": true,
+        "validation_sequences": 5,
+        "mae": 0.10568379491218668,
+        "mse": 0.01744016010163292,
+        "rmse": 0.13206119831969163,
+        "mape": 105.36107500190181,
+        "r2_score": 0.12070156122836917,
+        "forecast_horizon_tested": 12,
+        "validation_quality": "needs_improvement"
+      },
+      "model_path": "data\\models\\transformer\\SMAP-PWR-001",
+      "data_quality": "real",
+      "equipment_info": {
+        "name": "Primary Power System",
+        "type": "POWER",
+        "criticality": "CRITICAL",
+        "data_source": "smap"
+      }
+    },
+    "SMAP-COM-001": {
+      "sensor_id": "SMAP-COM-001",
+      "version_id": "ebd1bbbb",
+      "training_time_seconds": 120.8986656665802,
+      "training_metrics": {
+        "sensor_id": "SMAP-COM-001",
+        "training_samples": 5541,
+        "model_parameters": 219276,
+        "final_loss": 0.33419814705848694,
+        "final_val_loss": 0.8612979650497437
+      },
+      "validation_metrics": {
+        "validation_performed": true,
+        "validation_sequences": 5,
+        "mae": 0.12023255173211653,
+        "mse": 0.06347436245432408,
+        "rmse": 0.2519411884831936,
+        "mape": 11.582350176320041,
+        "r2_score": -0.14036105963990186,
+        "forecast_horizon_tested": 12,
+        "validation_quality": "needs_improvement"
+      },
+      "model_path": "data\\models\\transformer\\SMAP-COM-001",
+      "data_quality": "real",
+      "equipment_info": {
+        "name": "Communication System",
+        "type": "COMMUNICATION",
+        "criticality": "HIGH",
+        "data_source": "smap"
+      }
+    },
+    "SMAP-ATT-001": {
+      "sensor_id": "SMAP-ATT-001",
+      "version_id": "a343fa25",
+      "training_time_seconds": 71.58288931846619,
+      "training_metrics": {
+        "sensor_id": "SMAP-ATT-001",
+        "training_samples": 5541,
+        "model_parameters": 219276,
+        "final_loss": 0.9582441449165344,
+        "final_val_loss": 1.3999762535095215
+      },
+      "validation_metrics": {
+        "validation_performed": true,
+        "validation_sequences": 5,
+        "mae": 0.3605844401603297,
+        "mse": 0.18555783746631882,
+        "rmse": 0.43076424812920444,
+        "mape": 99.25740077349302,
+        "r2_score": -0.0030697329717483957,
+        "forecast_horizon_tested": 12,
+        "validation_quality": "needs_improvement"
+      },
+      "model_path": "data\\models\\transformer\\SMAP-ATT-001",
+      "data_quality": "real",
+      "equipment_info": {
+        "name": "Attitude Control System",
+        "type": "ATTITUDE",
+        "criticality": "CRITICAL",
+        "data_source": "smap"
+      }
+    },
+    "SMAP-THM-001": {
+      "sensor_id": "SMAP-THM-001",
+      "version_id": "59c65ca3",
+      "training_time_seconds": 99.21352577209473,
+      "training_metrics": {
+        "sensor_id": "SMAP-THM-001",
+        "training_samples": 5541,
+        "model_parameters": 219276,
+        "final_loss": 0.36791449785232544,
+        "final_val_loss": 0.7726505994796753
+      },
+      "validation_metrics": {
+        "validation_performed": true,
+        "validation_sequences": 5,
+        "mae": 0.14492970040366568,
+        "mse": 0.14913094726718154,
+        "rmse": 0.38617476259743017,
+        "mape": 16.726082418417313,
+        "r2_score": -0.03726838444872582,
+        "forecast_horizon_tested": 12,
+        "validation_quality": "needs_improvement"
+      },
+      "model_path": "data\\models\\transformer\\SMAP-THM-001",
+      "data_quality": "real",
+      "equipment_info": {
+        "name": "Thermal Management System",
+        "type": "THERMAL",
+        "criticality": "HIGH",
+        "data_source": "smap"
+      }
+    },
+    "SMAP-PAY-001": {
+      "sensor_id": "SMAP-PAY-001",
+      "version_id": "f287c84e",
+      "training_time_seconds": 62.557854413986206,
+      "training_metrics": {
+        "sensor_id": "SMAP-PAY-001",
+        "training_samples": 5541,
+        "model_parameters": 219276,
+        "final_loss": 0.32415473461151123,
+        "final_val_loss": 1.0074416399002075
+      },
+      "validation_metrics": {
+        "validation_performed": true,
+        "validation_sequences": 5,
+        "mae": 0.22421110573449965,
+        "mse": 0.07338346788003929,
+        "rmse": 0.27089383138056,
+        "mape": 154.12684218982105,
+        "r2_score": 0.5438918135406893,
+        "forecast_horizon_tested": 12,
+        "validation_quality": "good"
+      },
+      "model_path": "data\\models\\transformer\\SMAP-PAY-001",
+      "data_quality": "real",
+      "equipment_info": {
+        "name": "Payload System",
+        "type": "PAYLOAD",
+        "criticality": "HIGH",
+        "data_source": "smap"
+      }
+    },
+    "SMAP-SYS-001": {
+      "sensor_id": "SMAP-SYS-001",
+      "version_id": "8ec49cdd",
+      "training_time_seconds": 104.40502715110779,
+      "training_metrics": {
+        "sensor_id": "SMAP-SYS-001",
+        "training_samples": 5541,
+        "model_parameters": 219276,
+        "final_loss": 0.9499017000198364,
+        "final_val_loss": 1.3598277568817139
+      },
+      "validation_metrics": {
+        "validation_performed": true,
+        "validation_sequences": 5,
+        "mae": 0.4564217538375315,
+        "mse": 0.4330774670311709,
+        "rmse": 0.6580862155000444,
+        "mape": 99.25633857419298,
+        "r2_score": -0.003152570189477455,
+        "forecast_horizon_tested": 12,
+        "validation_quality": "needs_improvement"
+      },
+      "model_path": "data\\models\\transformer\\SMAP-SYS-001",
+      "data_quality": "real",
+      "equipment_info": {
+        "name": "System Monitor",
+        "type": "PAYLOAD",
+        "criticality": "MEDIUM",
+        "data_source": "smap"
+      }
+    },
+    "MSL-MOB-001": {
+      "sensor_id": "MSL-MOB-001",
+      "version_id": "73125395",
+      "training_time_seconds": 98.56947445869446,
+      "training_metrics": {
+        "sensor_id": "MSL-MOB-001",
+        "training_samples": 5541,
+        "model_parameters": 219276,
+        "final_loss": 0.5324702262878418,
+        "final_val_loss": 0.529691219329834
+      },
+      "validation_metrics": {
+        "validation_performed": true,
+        "validation_sequences": 5,
+        "mae": 0.21586036341140571,
+        "mse": 0.5518506118829324,
+        "rmse": 0.7428664832141321,
+        "mape": 160.81521923410793,
+        "r2_score": 0.007093068050521567,
+        "forecast_horizon_tested": 12,
+        "validation_quality": "needs_improvement"
+      },
+      "model_path": "data\\models\\transformer\\MSL-MOB-001",
+      "data_quality": "real",
+      "equipment_info": {
+        "name": "Mobility System Primary",
+        "type": "MOBILITY",
+        "criticality": "CRITICAL",
+        "data_source": "msl"
+      }
+    },
+    "MSL-PWR-001": {
+      "sensor_id": "MSL-PWR-001",
+      "version_id": "1ecf6575",
+      "training_time_seconds": 102.19889092445374,
+      "training_metrics": {
+        "sensor_id": "MSL-PWR-001",
+        "training_samples": 5541,
+        "model_parameters": 219276,
+        "final_loss": 0.42716148495674133,
+        "final_val_loss": 0.6400575041770935
+      },
+      "validation_metrics": {
+        "validation_performed": true,
+        "validation_sequences": 5,
+        "mae": 0.2828547325802064,
+        "mse": 0.8955566565174974,
+        "rmse": 0.9463385528010033,
+        "mape": 17.339018691027782,
+        "r2_score": -0.037176749502653594,
+        "forecast_horizon_tested": 12,
+        "validation_quality": "needs_improvement"
+      },
+      "model_path": "data\\models\\transformer\\MSL-PWR-001",
+      "data_quality": "real",
+      "equipment_info": {
+        "name": "Power Management Unit",
+        "type": "POWER",
+        "criticality": "CRITICAL",
+        "data_source": "msl"
+      }
+    },
+    "MSL-ENV-001": {
+      "sensor_id": "MSL-ENV-001",
+      "version_id": "5587ee38",
+      "training_time_seconds": 71.77137923240662,
+      "training_metrics": {
+        "sensor_id": "MSL-ENV-001",
+        "training_samples": 5541,
+        "model_parameters": 219276,
+        "final_loss": 0.9448603391647339,
+        "final_val_loss": 1.345523715019226
+      },
+      "validation_metrics": {
+        "validation_performed": true,
+        "validation_sequences": 5,
+        "mae": 0.435073065861003,
+        "mse": 0.42052697490149293,
+        "rmse": 0.6484805123529103,
+        "mape": 99.58663381413916,
+        "r2_score": -0.0022564839360499356,
+        "forecast_horizon_tested": 12,
+        "validation_quality": "needs_improvement"
+      },
+      "model_path": "data\\models\\transformer\\MSL-ENV-001",
+      "data_quality": "real",
+      "equipment_info": {
+        "name": "Environmental Monitoring",
+        "type": "ENVIRONMENTAL",
+        "criticality": "MEDIUM",
+        "data_source": "msl"
+      }
+    },
+    "MSL-SCI-001": {
+      "sensor_id": "MSL-SCI-001",
+      "version_id": "98a57190",
+      "training_time_seconds": 102.40443587303162,
+      "training_metrics": {
+        "sensor_id": "MSL-SCI-001",
+        "training_samples": 5541,
+        "model_parameters": 219276,
+        "final_loss": 0.4286557137966156,
+        "final_val_loss": 0.7667326927185059
+      },
+      "validation_metrics": {
+        "validation_performed": true,
+        "validation_sequences": 5,
+        "mae": 0.28529959802337834,
+        "mse": 0.4427929215284768,
+        "rmse": 0.6654268716609488,
+        "mape": 27.742163742072655,
+        "r2_score": 0.04138341804381496,
+        "forecast_horizon_tested": 12,
+        "validation_quality": "needs_improvement"
+      },
+      "model_path": "data\\models\\transformer\\MSL-SCI-001",
+      "data_quality": "real",
+      "equipment_info": {
+        "name": "Scientific Instrument Package",
+        "type": "SCIENTIFIC",
+        "criticality": "HIGH",
+        "data_source": "msl"
+      }
+    },
+    "MSL-COM-001": {
+      "sensor_id": "MSL-COM-001",
+      "version_id": "7d52fe91",
+      "training_time_seconds": 89.08807492256165,
+      "training_metrics": {
+        "sensor_id": "MSL-COM-001",
+        "training_samples": 5541,
+        "model_parameters": 219276,
+        "final_loss": 0.3864399790763855,
+        "final_val_loss": 0.9204097390174866
+      },
+      "validation_metrics": {
+        "validation_performed": true,
+        "validation_sequences": 5,
+        "mae": 0.3231813237732088,
+        "mse": 0.18037702938865902,
+        "rmse": 0.42470816967496516,
+        "mape": 175.4674710932346,
+        "r2_score": 0.3152885119973555,
+        "forecast_horizon_tested": 12,
+        "validation_quality": "needs_improvement"
+      },
+      "model_path": "data\\models\\transformer\\MSL-COM-001",
+      "data_quality": "real",
+      "equipment_info": {
+        "name": "Communication Array",
+        "type": "COMMUNICATION",
+        "criticality": "HIGH",
+        "data_source": "msl"
+      }
+    },
+    "MSL-NAV-001": {
+      "sensor_id": "MSL-NAV-001",
+      "version_id": "7a6034be",
+      "training_time_seconds": 100.47547125816345,
+      "training_metrics": {
+        "sensor_id": "MSL-NAV-001",
+        "training_samples": 5541,
+        "model_parameters": 219276,
+        "final_loss": 0.9906297922134399,
+        "final_val_loss": 1.1449799537658691
+      },
+      "validation_metrics": {
+        "validation_performed": true,
+        "validation_sequences": 5,
+        "mae": 0.5587984221603892,
+        "mse": 1.125339876221393,
+        "rmse": 1.0608203788678803,
+        "mape": 102.81107854258953,
+        "r2_score": -0.0012157392906897435,
+        "forecast_horizon_tested": 12,
+        "validation_quality": "needs_improvement"
+      },
+      "model_path": "data\\models\\transformer\\MSL-NAV-001",
+      "data_quality": "real",
+      "equipment_info": {
+        "name": "Navigation System",
+        "type": "NAVIGATION",
+        "criticality": "CRITICAL",
+        "data_source": "msl"
+      }
+    }
+  }
+}

@@ -12,7 +12,8 @@ from pathlib import Path
 from ..interfaces.forecaster_interface import ForecasterInterface
 from ..models.forecast import ForecastResult, ForecastSummary, ForecastPoint, ForecastConfidence, RiskLevel
 from ..models.sensor_data import SensorDataBatch
-from ...infrastructure.ml.transformer_wrapper import TransformerForecaster, TransformerConfig
+from ...infrastructure.ml.model_registry import ModelRegistry
+from ...infrastructure.ml.transformer_wrapper import TransformerForecaster
 
 logger = logging.getLogger(__name__)
 
@@ -22,36 +23,52 @@ class ForecastingService(ForecasterInterface):
     Service for time series forecasting using Transformer models
     """
 
-    def __init__(self, model_path: str = "models/transformers"):
+    def __init__(self, model_path: str = "data/models"):
         """
         Initialize forecasting service
 
         Args:
-            model_path: Path to store/load trained models
+            model_path: Path to trained models registry
         """
         self.model_path = Path(model_path)
         self.model_path.mkdir(parents=True, exist_ok=True)
 
-        # Cache for loaded models
+        # Initialize model registry
+        self.model_registry = ModelRegistry(str(self.model_path / "registry"))
+
+        # Cache for loaded Transformer models
         self._models: Dict[str, TransformerForecaster] = {}
 
         # Forecast history for summary generation
         self._forecast_history: Dict[str, List[ForecastResult]] = {}
 
-        logger.info("Forecasting Service initialized")
+        logger.info("Forecasting Service initialized with model registry")
 
-    def _get_model(self, sensor_id: str) -> TransformerForecaster:
-        """Get or create Transformer model for sensor"""
+    def _get_model(self, sensor_id: str) -> Optional[TransformerForecaster]:
+        """Get or load Transformer forecasting model from registry"""
         if sensor_id not in self._models:
-            # Create new model instance
-            config = TransformerConfig()
-            model = TransformerForecaster(sensor_id, config)
+            try:
+                # Get active Transformer model version from registry
+                active_version = self.model_registry.get_active_model_version(sensor_id, "transformer")
 
-            # Try to load existing trained model
-            if not model.load_model(self.model_path):
-                logger.warning(f"No trained forecasting model found for sensor {sensor_id}")
+                if active_version:
+                    # Load Transformer model from registry
+                    transformer = TransformerForecaster(sensor_id)
+                    model_path = self.model_path / "transformer"
 
-            self._models[sensor_id] = model
+                    if transformer.load_model(model_path):
+                        self._models[sensor_id] = transformer
+                        logger.info(f"Loaded Transformer model from registry: {sensor_id} v{active_version}")
+                    else:
+                        logger.warning(f"Failed to load Transformer model for {sensor_id}")
+                        self._models[sensor_id] = None
+                else:
+                    logger.warning(f"No active Transformer model found in registry for sensor {sensor_id}")
+                    self._models[sensor_id] = None
+
+            except Exception as e:
+                logger.error(f"Error loading Transformer model for {sensor_id}: {e}")
+                self._models[sensor_id] = None
 
         return self._models[sensor_id]
 
@@ -147,8 +164,8 @@ class ForecastingService(ForecasterInterface):
             # Get model for sensor
             model = self._get_model(sensor_id)
 
-            if not model.is_trained:
-                logger.warning(f"Model not trained for sensor {sensor_id}, using fallback forecasting")
+            if not model or not model.is_trained:
+                logger.warning(f"Model not available or not trained for sensor {sensor_id}, using fallback forecasting")
                 return self._fallback_forecast(sensor_id, data, horizon_hours)
 
             # Generate forecast
@@ -312,7 +329,7 @@ class ForecastingService(ForecasterInterface):
         """Check if forecasting model is trained for given sensor"""
         try:
             model = self._get_model(sensor_id)
-            return model.is_trained
+            return model is not None and model.is_trained
         except Exception:
             return False
 
@@ -434,10 +451,17 @@ class ForecastingService(ForecasterInterface):
         """Get status of all loaded forecasting models"""
         status = {}
         for sensor_id, model in self._models.items():
-            status[sensor_id] = {
-                'is_trained': model.is_trained,
-                'model_parameters': getattr(model.model, 'count_params', lambda: 0)() if model.model else 0,
-                'last_forecast': self._forecast_history.get(sensor_id, [])[-1].generated_at.isoformat()
-                              if self._forecast_history.get(sensor_id) else None
-            }
+            if model is not None:
+                status[sensor_id] = {
+                    'is_trained': model.is_trained,
+                    'model_parameters': getattr(model.model, 'count_params', lambda: 0)() if hasattr(model, 'model') and model.model else 0,
+                    'last_forecast': self._forecast_history.get(sensor_id, [])[-1].generated_at.isoformat()
+                                  if self._forecast_history.get(sensor_id) else None
+                }
+            else:
+                status[sensor_id] = {
+                    'is_trained': False,
+                    'model_parameters': 0,
+                    'last_forecast': None
+                }
         return status

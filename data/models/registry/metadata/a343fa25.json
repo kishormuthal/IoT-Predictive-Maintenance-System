@@ -1,0 +1,52 @@
+{
+  "model_id": "transformer_SMAP-ATT-001",
+  "sensor_id": "SMAP-ATT-001",
+  "model_type": "transformer",
+  "version": "a343fa25",
+  "created_at": "2025-09-30T00:00:39.322138",
+  "training_config": {
+    "sequence_length": 48,
+    "forecast_horizon": 12,
+    "d_model": 64,
+    "num_heads": 4,
+    "num_layers": 2,
+    "dff": 256,
+    "dropout_rate": 0.1,
+    "epochs": 10,
+    "batch_size": 16,
+    "learning_rate": 0.001,
+    "validation_split": 0.1,
+    "patience": 5
+  },
+  "training_metrics": {
+    "sensor_id": "SMAP-ATT-001",
+    "training_samples": 5541,
+    "model_parameters": 219276,
+    "final_loss": 0.9582441449165344,
+    "final_val_loss": 1.3999762535095215
+  },
+  "validation_metrics": {
+    "validation_performed": true,
+    "validation_sequences": 5,
+    "mae": 0.3605844401603297,
+    "mse": 0.18555783746631882,
+    "rmse": 0.43076424812920444,
+    "mape": 99.25740077349302,
+    "r2_score": -0.0030697329717483957,
+    "forecast_horizon_tested": 12,
+    "validation_quality": "needs_improvement"
+  },
+  "model_size_bytes": 2738351,
+  "training_time_seconds": 71.58288931846619,
+  "data_hash": "a175ecb9",
+  "model_hash": "7799d42fbdad1baca9713cf4e9927b00",
+  "description": "Transformer forecaster for Attitude Control System",
+  "tags": [
+    "transformer",
+    "forecasting",
+    "time_series",
+    "attitude"
+  ],
+  "is_active": true,
+  "performance_score": 0.0022277976795209375
+}
