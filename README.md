@@ -54,7 +54,41 @@ Enhanced IoT Predictive Maintenance System
 
 ## 🚀 Quick Start
 
-### **Fastest Way to Run (Recommended)**
+### **Method 1: GitHub Codespaces (Recommended - Cloud Development) ⭐**
+
+**One-click cloud development with Claude Code Pro AI assistant!**
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/kishormuthal/IoT-Predictive-Maintenance-System)
+
+**What you get:**
+- ✅ Full VSCode in browser (no local setup)
+- ✅ Claude Code Pro AI assistant (unlimited with your subscription)
+- ✅ 4-8GB RAM (TensorFlow runs smoothly)
+- ✅ Full debugging (breakpoints, variable inspection)
+- ✅ Public dashboard URL (share instantly)
+- ✅ Git integration built-in
+- ✅ 60 hours FREE/month
+
+**Quick steps:**
+1. Click button above or go to repo → Code → Codespaces → Create
+2. Wait 2-3 minutes for setup (auto-installs everything)
+3. Authenticate Claude Code (first time only - OAuth, no API key needed)
+4. Run: `python start_dashboard.py`
+5. Dashboard URL appears automatically
+
+**📚 Complete guide:** [docs/CODESPACES_SETUP.md](docs/CODESPACES_SETUP.md)
+
+---
+
+### **Method 2: Gitpod (Alternative Cloud Platform)**
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/kishormuthal/IoT-Predictive-Maintenance-System)
+
+Similar to Codespaces, 50 hours/month free.
+
+---
+
+### **Method 3: Local Development**
 
 ```bash
 # Step 1: Quick validation (Windows-compatible)
@@ -135,6 +169,17 @@ python scripts/setup_models.py
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/kishormuthal/IoT-Predictive-Maintenance-System)
 
 Codespaces includes pre-configured environment with all dependencies
+
+## 🎯 Unified Dashboard (Single Source of Truth)
+
+**NEW:** The system now uses a **single unified dashboard** with ALL features:
+- ✅ File: `src/presentation/dashboard/unified_dashboard.py`
+- ✅ ALL features from src/ directory included
+- ✅ ZERO feature loss
+- ✅ Clear, maintainable code
+- ✅ Production ready
+
+See [UNIFIED_DASHBOARD_SUMMARY.md](UNIFIED_DASHBOARD_SUMMARY.md) for details.
 
 ## 📊 Dashboard Features (Reorganized)
 

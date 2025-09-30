@@ -1,0 +1,50 @@
+# Gitpod Configuration for IoT Predictive Maintenance System
+# Alternative to GitHub Codespaces with Claude Code support
+
+tasks:
+  - name: Setup Environment
+    init: |
+      echo "🚀 Setting up IoT Predictive Maintenance System..."
+      pip install -r requirements.txt
+      echo "✅ Dependencies installed!"
+      echo ""
+      echo "📊 Validating setup..."
+      python quick_start.py
+    command: |
+      echo "============================================================"
+      echo "IoT PREDICTIVE MAINTENANCE SYSTEM - Gitpod"
+      echo "============================================================"
+      echo ""
+      echo "🎯 Quick Commands:"
+      echo "  python start_dashboard.py  - Start dashboard"
+      echo "  python quick_start.py      - Validate system"
+      echo ""
+      echo "📚 Documentation:"
+      echo "  docs/CODESPACES_SETUP.md   - Setup guide (works for Gitpod too)"
+      echo "  docs/UNIFIED_DASHBOARD.md  - Dashboard documentation"
+      echo ""
+      echo "✨ Ready to code! Type 'python start_dashboard.py' to start."
+      echo "============================================================"
+
+ports:
+  - port: 8050
+    name: IoT Dashboard
+    description: Main IoT Predictive Maintenance Dashboard
+    onOpen: open-browser
+    visibility: public
+
+vscode:
+  extensions:
+    - ms-python.python
+    - ms-python.vscode-pylance
+    - ms-toolsai.jupyter
+    - anthropic.claude-code
+
+github:
+  prebuilds:
+    master: true
+    branches: true
+    pullRequests: true
+    addCheck: true
+    addComment: true
+    addBadge: true
