@@ -1012,6 +1012,20 @@ def create_optimized_dashboard(debug: bool = False) -> OptimizedIoTDashboard:
     return OptimizedIoTDashboard(debug=debug)
 
 
+def create_app(debug: bool = False):
+    """
+    Create and return Dash app instance for use with start_dashboard.py
+
+    Args:
+        debug: Enable debug mode
+
+    Returns:
+        Dash app instance
+    """
+    dashboard = OptimizedIoTDashboard(debug=debug)
+    return dashboard.app
+
+
 if __name__ == "__main__":
     dashboard = create_optimized_dashboard(debug=True)
     dashboard.run(debug=True)

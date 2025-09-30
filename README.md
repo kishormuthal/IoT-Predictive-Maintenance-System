@@ -54,30 +54,25 @@ Enhanced IoT Predictive Maintenance System
 
 ## 🚀 Quick Start
 
-### **GitHub Codespaces (Recommended)**
+### **Fastest Way to Run (Recommended)**
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/kishormuthal/IoT-Predictive-Maintenance-System)
-
-#### **Option 1: One-Command Setup**
 ```bash
-# Train both anomaly detection + forecasting models (quick mode)
-python setup_models.py --quick
+# Step 1: Quick validation (Windows-compatible)
+python quick_start.py
 
-# Launch dashboard
+# Step 2: Install dependencies (if needed)
+pip install -r requirements.txt
+
+# Step 3: Launch dashboard
 python start_dashboard.py
+
+# Step 4: Access in browser
+# http://localhost:8050
 ```
 
-#### **Option 2: Individual Model Training**
-```bash
-# Train forecasting models only
-python train_forecasting_models.py --quick
+**That's it!** Dashboard works immediately with built-in mock data. Optional model training below.
 
-# Train anomaly detection models only
-python train_anomaly_models.py --quick
-
-# Launch dashboard
-python start_dashboard.py
-```
+---
 
 ### **Local Development**
 
@@ -100,14 +95,9 @@ python start_dashboard.py
    pip install -r requirements.txt
    ```
 
-3. **Train ML models**
+3. **Quick validation**
    ```bash
-   # Quick training (~5-10 minutes)
-   python setup_models.py --quick
-
-   # OR individual training
-   python train_forecasting_models.py --quick
-   python train_anomaly_models.py --quick
+   python quick_start.py
    ```
 
 4. **Launch dashboard**
@@ -117,8 +107,34 @@ python start_dashboard.py
 
 5. **Access the dashboard**
    - Open your browser to `http://localhost:8050`
-   - Navigate through the 7 tabs with your trained models
+   - Navigate through the 7 tabs
    - Explore NASA telemetry data and predictive analytics
+
+---
+
+### **Optional: Train ML Models**
+
+Dashboard works without models (uses mock data). To enable real forecasting:
+
+```bash
+# Quick training (~10-15 minutes)
+python scripts/setup_models.py --quick
+
+# OR individual training
+python scripts/train_forecasting_models.py --quick
+python scripts/train_anomaly_models.py --quick
+
+# Full training (~1-2 hours, better accuracy)
+python scripts/setup_models.py
+```
+
+---
+
+### **GitHub Codespaces**
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/kishormuthal/IoT-Predictive-Maintenance-System)
+
+Codespaces includes pre-configured environment with all dependencies
 
 ## 📊 Dashboard Features (Reorganized)
 
@@ -172,36 +188,64 @@ python start_dashboard.py
 
 ```
 IOT Predictive Maintenece System/
-├── src/
-│   ├── core/                    # Domain layer
-│   │   ├── entities/           # Business entities
-│   │   ├── repositories/       # Repository interfaces
-│   │   └── services/          # Core services
-│   ├── infrastructure/         # External concerns
-│   │   ├── data/              # Data access
-│   │   ├── ml/                # ML implementations
-│   │   └── monitoring/        # System monitoring
-│   ├── application/           # Use cases
-│   │   ├── use_cases/         # Business use cases
-│   │   └── services/          # Application services
-│   └── presentation/          # UI layer
-│       └── dashboard/         # Enhanced dashboard
-│           ├── components/    # Dashboard components
-│           ├── styles/        # CSS and styling
-│           ├── enhanced_app.py # Main dashboard app
-│           └── enhanced_callbacks.py # Callback integration
-├── tests/
-│   ├── unit/                  # Unit tests
-│   ├── integration/           # Integration tests
-│   └── conftest.py           # Test configuration
-├── config/                    # Configuration files
-├── data/                      # Data storage
-├── logs/                      # Application logs
-├── requirements.txt           # Python dependencies
-├── pytest.ini               # Test configuration
-├── run_tests.py              # Test runner
-├── DEPLOYMENT_GUIDE.md       # Deployment instructions
-└── BATCH_3_COMPLETION_REPORT.md # Implementation report
+├── 📄 Main Files (Root Directory)
+│   ├── start_dashboard.py     # 🚀 Main launcher
+│   ├── quick_start.py         # ⚡ Quick validation
+│   ├── app.py                 # Gunicorn entry
+│   ├── requirements.txt       # Dependencies
+│   └── README.md              # This file
+│
+├── 📂 src/ (Clean Architecture)
+│   ├── core/                  # Domain layer
+│   │   ├── models/           # Domain models
+│   │   ├── services/         # Core services
+│   │   └── interfaces/       # Repository interfaces
+│   ├── application/          # Use cases
+│   │   ├── use_cases/        # Business logic
+│   │   └── services/         # Application services
+│   ├── infrastructure/       # Technical concerns
+│   │   ├── data/            # Data access (NASA)
+│   │   ├── ml/              # ML implementations
+│   │   └── monitoring/      # Performance monitoring
+│   └── presentation/        # UI layer
+│       └── dashboard/       # Enhanced dashboard
+│           ├── components/  # 22+ rich components
+│           ├── layouts/     # 7 tab layouts
+│           ├── enhanced_app.py              # ✅ NEW
+│           ├── enhanced_app_optimized.py    # ✅ FIXED
+│           └── enhanced_callbacks_simplified.py  # ✅ NEW
+│
+├── 📂 scripts/ (Training & Validation)
+│   ├── README.md                      # Scripts documentation
+│   ├── train_forecasting_models.py    # Train forecasting
+│   ├── train_anomaly_models.py        # Train anomaly detection
+│   ├── setup_models.py                # Train all models
+│   ├── validate_startup.py            # Full validation
+│   ├── verify_deployment.py           # Deployment test
+│   └── preflight_check.py             # Quick check
+│
+├── 📂 docs/ (Documentation)
+│   ├── PRODUCTION_DEPLOYMENT.md       # Complete deployment guide
+│   ├── TROUBLESHOOTING.md             # Problem solving
+│   ├── DEPLOYMENT_COMPLETE.md         # Completion summary
+│   └── DEPLOYMENT.md                  # Deployment info
+│
+├── 📂 config/                 # Configuration
+│   ├── config.yaml           # Main configuration
+│   ├── equipment_config.py   # 12 sensors
+│   └── settings.py           # Settings manager
+│
+├── 📂 data/                  # Data storage
+│   ├── raw/                 # NASA SMAP/MSL data
+│   ├── models/              # Trained models
+│   ├── processed/           # Processed data
+│   └── registry/            # Model registry
+│
+├── 📂 logs/                  # Application logs
+└── 📂 tests/                 # Test suite
+    ├── unit/                # Unit tests
+    ├── integration/         # Integration tests
+    └── dashboard/           # Dashboard tests
 ```
 
 ### Running Tests
@@ -310,8 +354,11 @@ See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for comprehensive deployment inst
 ## 📚 Documentation
 
 ### Available Documentation
-- **[Deployment Guide](DEPLOYMENT_GUIDE.md)**: Complete deployment instructions
-- **[Completion Report](BATCH_3_COMPLETION_REPORT.md)**: Batch 3 implementation details
+- **[Production Deployment Guide](docs/PRODUCTION_DEPLOYMENT.md)**: Complete deployment instructions
+- **[Troubleshooting Guide](docs/TROUBLESHOOTING.md)**: Common issues and solutions
+- **[Deployment Complete](docs/DEPLOYMENT_COMPLETE.md)**: Final summary and checklist
+- **[Scripts Documentation](scripts/README.md)**: Training and validation scripts
+- **[Deployment Info](docs/DEPLOYMENT.md)**: Deployment information
 - **API Documentation**: Auto-generated from code
 - **Component Documentation**: Inline code documentation
 
