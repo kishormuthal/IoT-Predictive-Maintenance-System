@@ -54,55 +54,71 @@ Enhanced IoT Predictive Maintenance System
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### **GitHub Codespaces (Recommended)**
 
-- Python 3.9 or higher
-- PostgreSQL (optional, for production)
-- Redis (optional, for caching)
-- 8GB+ RAM recommended
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/kishormuthal/IoT-Predictive-Maintenance-System)
 
-### Installation
+#### **Option 1: One-Command Setup**
+```bash
+# Train both anomaly detection + forecasting models (quick mode)
+python setup_models.py --quick
+
+# Launch dashboard
+python start_dashboard.py
+```
+
+#### **Option 2: Individual Model Training**
+```bash
+# Train forecasting models only
+python train_forecasting_models.py --quick
+
+# Train anomaly detection models only
+python train_anomaly_models.py --quick
+
+# Launch dashboard
+python start_dashboard.py
+```
+
+### **Local Development**
+
+#### Prerequisites
+
+- Python 3.8+ (3.11 recommended)
+- 4GB+ RAM recommended
+- Git
+
+#### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd "IOT Predictive Maintenece System"
+   git clone https://github.com/kishormuthal/IoT-Predictive-Maintenance-System.git
+   cd IoT-Predictive-Maintenance-System
    ```
 
-2. **Set up virtual environment**
+2. **Install dependencies**
    ```bash
-   python -m venv venv
-   # Windows
-   venv\Scripts\activate
-   # Linux/macOS
-   source venv/bin/activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install --upgrade pip
    pip install -r requirements.txt
    ```
 
-4. **Configure environment**
+3. **Train ML models**
    ```bash
-   cp .env.example .env
-   # Edit .env with your settings
+   # Quick training (~5-10 minutes)
+   python setup_models.py --quick
+
+   # OR individual training
+   python train_forecasting_models.py --quick
+   python train_anomaly_models.py --quick
    ```
 
-5. **Run the enhanced dashboard**
+4. **Launch dashboard**
    ```bash
-   # Development mode
-   python src/presentation/dashboard/enhanced_app.py
-
-   # Or use the main launcher
-   python app.py --dashboard=enhanced
+   python start_dashboard.py
    ```
 
-6. **Access the dashboard**
+5. **Access the dashboard**
    - Open your browser to `http://localhost:8050`
-   - Navigate through the 7 reorganized dashboard tabs
-   - Explore core IoT predictive maintenance and system performance features
+   - Navigate through the 7 tabs with your trained models
+   - Explore NASA telemetry data and predictive analytics
 
 ## 📊 Dashboard Features (Reorganized)
 
