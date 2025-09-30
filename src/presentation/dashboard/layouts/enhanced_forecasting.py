@@ -31,6 +31,15 @@ from config.equipment_config import get_equipment_list
 logger = logging.getLogger(__name__)
 
 
+def get_config():
+    """Get configuration (fallback implementation)"""
+    return {
+        'forecast_horizon': 24,
+        'confidence_levels': [0.8, 0.9, 0.95],
+        'update_interval': 30
+    }
+
+
 class EnhancedForecastingDashboard:
     """Enhanced forecasting dashboard with advanced uncertainty quantification"""
 

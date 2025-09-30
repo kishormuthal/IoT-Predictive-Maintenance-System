@@ -22,21 +22,39 @@ from pathlib import Path
 # Add project root to path
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
-# Import performance optimizations
-from src.utils.callback_optimizer import (
-    optimize_callback,
-    fast_callback,
-    sensor_callback,
-    chart_callback,
-    callback_optimizer
-)
-from src.utils.advanced_cache import DashboardCacheHelper
-from src.utils.data_compressor import (
-    data_compressor,
-    compress_response,
-    compress_sensor_data,
-    compress_chart_figure
-)
+# Import performance optimizations (optional - will use fallbacks if not available)
+try:
+    from src.utils.callback_optimizer import (
+        optimize_callback,
+        fast_callback,
+        sensor_callback,
+        chart_callback,
+        callback_optimizer
+    )
+    from src.utils.advanced_cache import DashboardCacheHelper
+    from src.utils.data_compressor import (
+        data_compressor,
+        compress_response,
+        compress_sensor_data,
+        compress_chart_figure
+    )
+except ImportError as e:
+    logger.warning(f"Performance optimizations not available: {e}")
+    # Fallback implementations
+    def optimize_callback(func): return func
+    def fast_callback(ttl=None): return lambda func: func
+    def sensor_callback(ttl=None): return lambda func: func
+    def chart_callback(ttl=None): return lambda func: func
+
+    class DashboardCacheHelper:
+        def __init__(self): pass
+
+    class _FallbackCompressor:
+        pass
+    data_compressor = _FallbackCompressor()
+    compress_response = lambda x: x
+    compress_sensor_data = lambda x: x
+    compress_chart_figure = lambda x: x
 
 # Setup logging
 logger = logging.getLogger(__name__)

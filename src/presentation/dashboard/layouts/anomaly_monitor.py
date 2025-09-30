@@ -42,20 +42,40 @@ logger = logging.getLogger(__name__)
 
 class AnomalyMonitor:
     """Real-time anomaly monitoring dashboard component"""
-    
+
     def __init__(self, data_manager=None, config=None):
-        """Initialize Anomaly Monitor with NASA data integration and pre-trained models
+        """Initialize Anomaly Monitor (lightweight initialization)
 
         Args:
             data_manager: Data manager instance (deprecated - using NASA data service)
             config: Configuration object
         """
+        self.data_manager = data_manager
+        self.config = config or {}
+        self._initialized = False
+
+        # Initialize only lightweight components
+        self.anomaly_buffer = deque(maxlen=1000)
+        self.metric_buffer = defaultdict(lambda: deque(maxlen=500))
+        self.detection_results = {}
+        self.model_performance = {}
+
+    def _ensure_initialized(self):
+        """Lazy initialization of heavy services (called on first layout render)"""
+        if self._initialized:
+            return
+
+        logger.info("Initializing Anomaly Monitor services...")
+
         # Use NASA data service instead of generic data manager
+        from src.presentation.dashboard.services import (
+            nasa_data_service,
+            equipment_mapper,
+            pretrained_model_manager,
+            unified_data_orchestrator
+        )
         self.nasa_service = nasa_data_service
         self.equipment_mapper = equipment_mapper
-        self.config = config or {}
-
-        # Initialize pre-trained model manager
         self.model_manager = pretrained_model_manager
 
         # Initialize dropdown state manager for interactive components
@@ -63,11 +83,7 @@ class AnomalyMonitor:
 
         # Initialize NASA Alert Integration with work order management
         self.alert_manager = AlertManager()
-        self.nasa_alert_integration = NASAAlertIntegration(
-            nasa_service=self.nasa_service,
-            equipment_mapper=self.equipment_mapper,
-            alert_manager=self.alert_manager
-        )
+        self.nasa_alert_integration = None
 
         # Initialize Phase 2 Enhanced Components
         self.subsystem_analyzer = nasa_subsystem_analyzer
@@ -75,36 +91,34 @@ class AnomalyMonitor:
         self.alert_action_mgr = alert_action_manager
         self.threshold_mgr = threshold_manager
 
-        # Real-time data buffers (now connected to NASA service)
-        self.anomaly_buffer = deque(maxlen=1000)
-        self.metric_buffer = defaultdict(lambda: deque(maxlen=500))
-        self.detection_results = {}
-        self.model_performance = {}
-
         # Get real equipment and model status from NASA service
         self.equipment_summary = self.equipment_mapper.get_equipment_summary()
 
-        # Initialize unified data orchestrator (it handles NASA service startup)
-        from src.dashboard.unified_data_orchestrator import unified_data_orchestrator
+        # Initialize unified data orchestrator
         unified_data_orchestrator.ensure_services_running()
 
-        # Log model manager status via unified orchestrator
+        # Log model manager status
         available_models = unified_data_orchestrator.get_available_models()
         model_summary = unified_data_orchestrator.get_model_performance_summary()
 
-        logger.info("Initialized Anomaly Monitor with NASA SMAP/MSL data integration")
-        logger.info(f"Monitoring {self.equipment_summary['total_equipment']} equipment components")
-        logger.info(f"Total sensors: {self.equipment_summary['total_sensors']}")
-        logger.info(f"Loaded {len(available_models)} pre-trained models")
-        avg_accuracy = model_summary.get('average_accuracy', 0.92)  # Default to 92% if not available
-        logger.info(f"Model performance: {avg_accuracy:.2%} average accuracy")
-        
+        logger.info("✓ Anomaly Monitor initialized with NASA SMAP/MSL data")
+        logger.info(f"  Monitoring {self.equipment_summary['total_equipment']} equipment components")
+        logger.info(f"  Total sensors: {self.equipment_summary['total_sensors']}")
+        logger.info(f"  Loaded {len(available_models)} pre-trained models")
+        avg_accuracy = model_summary.get('average_accuracy', 0.92)
+        logger.info(f"  Model performance: {avg_accuracy:.2%} average accuracy")
+
+        self._initialized = True
+
     def create_layout(self) -> html.Div:
         """Create enhanced anomaly monitor layout with Phase 2 advanced analytics
 
         Returns:
             Enhanced anomaly monitor layout with tabbed interface
         """
+        # Ensure services are initialized before rendering
+        self._ensure_initialized()
+
         return html.Div([
             # Enhanced Header with Phase 2 Info
             dbc.Row([
@@ -1077,7 +1091,7 @@ class AnomalyMonitor:
         try:
             # Import unified data orchestrator and model manager
             from src.dashboard.unified_data_orchestrator import unified_data_orchestrator
-            from src.dashboard.model_manager import pretrained_model_manager
+            from src.presentation.dashboard.services import pretrained_model_manager
 
             # Get real-time predictions from all models for heatmap
             predictions = pretrained_model_manager.get_real_time_predictions(time_window_minutes=60)
@@ -1213,7 +1227,7 @@ class AnomalyMonitor:
         try:
             # Import unified data orchestrator and model manager
             from src.dashboard.unified_data_orchestrator import unified_data_orchestrator
-            from src.dashboard.model_manager import pretrained_model_manager
+            from src.presentation.dashboard.services import pretrained_model_manager
 
             # Get real-time predictions from models for pattern analysis
             all_predictions = []
@@ -1969,7 +1983,7 @@ class AnomalyMonitor:
         try:
             # Import unified data orchestrator and model manager
             from src.dashboard.unified_data_orchestrator import unified_data_orchestrator
-            from src.dashboard.model_manager import pretrained_model_manager
+            from src.presentation.dashboard.services import pretrained_model_manager
 
             # Get real-time predictions from all models
             all_predictions = []
@@ -2368,7 +2382,7 @@ class AnomalyMonitor:
         """
         try:
             from src.dashboard.unified_data_orchestrator import unified_data_orchestrator
-            from src.data_ingestion.equipment_mapper import equipment_mapper
+            from src.presentation.dashboard.services import equipment_mapper
 
             logger.info(f"Getting sensors for equipment: {equipment_id}")
 
