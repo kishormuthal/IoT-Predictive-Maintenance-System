@@ -57,16 +57,17 @@ def main():
         return 1
 
     try:
-        # Import and run the enhanced dashboard
-        from src.presentation.dashboard.enhanced_app import EnhancedIoTDashboard
+        # Import and run the UNIFIED dashboard (ALL features enabled)
+        from src.presentation.dashboard.unified_dashboard import UnifiedIoTDashboard
 
-        # Initialize the enhanced dashboard
-        dashboard = EnhancedIoTDashboard(debug=True)
+        # Initialize the unified dashboard
+        dashboard = UnifiedIoTDashboard(debug=True)
 
         # Start the dashboard
-        logger.info("Starting Enhanced IoT Dashboard...")
+        logger.info("Starting UNIFIED IoT Dashboard...")
         logger.info("Dashboard will be available at: http://127.0.0.1:8050")
         logger.info("Features:")
+        logger.info("   - ALL features from src/ directory enabled")
         logger.info("   - Training Hub: ML pipeline management")
         logger.info("   - Model Registry: Model versioning & comparison")
         logger.info("   - Performance Analytics: Real-time monitoring")
@@ -75,6 +76,7 @@ def main():
         logger.info("   - Configuration Manager: Multi-environment config")
         logger.info("   - Responsive Design: Mobile-first approach")
         logger.info("   - NASA Data Integration: SMAP & MSL datasets")
+        logger.info("   - Clean Architecture: Complete 4-layer implementation")
 
         # Run the dashboard
         dashboard.run(
@@ -97,14 +99,23 @@ def main():
         return 1
 
 
-# Initialize the dashboard for Gunicorn deployment
+# Initialize the UNIFIED dashboard for Gunicorn deployment
 try:
-    from src.presentation.dashboard.enhanced_app import EnhancedIoTDashboard
-    dashboard = EnhancedIoTDashboard(debug=False)  # Production mode for Gunicorn
+    from src.presentation.dashboard.unified_dashboard import UnifiedIoTDashboard
+    dashboard = UnifiedIoTDashboard(debug=False)  # Production mode for Gunicorn
     server = dashboard.app.server  # Expose Flask server for Gunicorn
+    logger.info("Unified dashboard initialized for Gunicorn deployment")
 except Exception as e:
-    logger.error(f"Failed to initialize dashboard for Gunicorn: {e}")
-    server = None
+    logger.error(f"Failed to initialize unified dashboard for Gunicorn: {e}")
+    # Fallback to enhanced dashboard
+    try:
+        from src.presentation.dashboard.enhanced_app import EnhancedIoTDashboard
+        dashboard = EnhancedIoTDashboard(debug=False)
+        server = dashboard.app.server
+        logger.info("Fallback to enhanced dashboard for Gunicorn deployment")
+    except Exception as e2:
+        logger.error(f"Failed to initialize fallback dashboard: {e2}")
+        server = None
 
 
 if __name__ == "__main__":

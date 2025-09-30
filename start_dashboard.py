@@ -23,40 +23,43 @@ def main():
     print("-" * 60)
 
     try:
-        # Import and start the working dashboard
-        from src.presentation.dashboard.enhanced_app_optimized import create_app
+        # Import and start the UNIFIED dashboard (ALL features enabled)
+        from src.presentation.dashboard.unified_dashboard import UnifiedIoTDashboard
 
-        print("[INFO] Creating dashboard application...")
-        app = create_app()
+        print("[INFO] Creating UNIFIED dashboard application...")
+        print("[INFO] ALL features from src/ enabled - ZERO compromise")
+        dashboard = UnifiedIoTDashboard(debug=False)
 
         print("[URL] Dashboard starting at: http://127.0.0.1:8050")
         print("[FEATURES] Overview | Monitoring | Anomalies | Forecasting | Maintenance | Work Orders | Performance")
+        print("[ARCHITECTURE] Clean Architecture (Core, Application, Infrastructure, Presentation)")
         print("[CONTROL] Press Ctrl+C to stop the server")
         print("-" * 60)
 
         # Start the server
-        app.run_server(
+        dashboard.run(
             host='127.0.0.1',
             port=8050,
-            debug=False,
-            dev_tools_hot_reload=False
+            debug=False
         )
 
-    except ImportError:
-        print("[ERROR] Enhanced dashboard not found, falling back to basic app...")
+    except ImportError as e:
+        print(f"[ERROR] Unified dashboard import failed: {e}")
+        print("[FALLBACK] Trying alternative dashboard...")
         try:
-            from src.presentation.dashboard.app import create_app
+            from src.presentation.dashboard.enhanced_app_optimized import create_app
             app = create_app()
 
-            print("[INFO] Starting basic unified dashboard...")
+            print("[INFO] Starting fallback dashboard...")
             app.run_server(host='127.0.0.1', port=8050, debug=False)
 
-        except Exception as e:
-            print(f"[ERROR] Failed to start dashboard: {e}")
+        except Exception as e2:
+            print(f"[ERROR] Failed to start fallback dashboard: {e2}")
             return 1
 
     except Exception as e:
         print(f"[ERROR] Dashboard startup failed: {e}")
+        print(f"[DEBUG] Error details: {type(e).__name__}: {str(e)}")
         return 1
 
     return 0
