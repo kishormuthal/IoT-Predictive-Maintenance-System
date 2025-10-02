@@ -4,8 +4,8 @@ Train Models for All 12 NASA Sensors
 Trains anomaly detection and forecasting models on NASA SMAP/MSL data
 """
 
-import sys
 import logging
+import sys
 from pathlib import Path
 
 # Add project root to path
@@ -13,8 +13,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -29,11 +28,12 @@ def train_all_models():
 
     # Import required modules
     try:
-        from src.infrastructure.data.nasa_data_loader import NASADataLoader
+        import numpy as np
+
+        from config.equipment_config import get_equipment_list
         from src.core.services.anomaly_service import AnomalyDetectionService
         from src.core.services.forecasting_service import ForecastingService
-        from config.equipment_config import get_equipment_list
-        import numpy as np
+        from src.infrastructure.data.nasa_data_loader import NASADataLoader
     except Exception as e:
         logger.error(f"Failed to import required modules: {e}")
         return False
@@ -75,15 +75,17 @@ def train_all_models():
 
         try:
             # Get sensor data
-            data_dict = data_loader.get_sensor_data(sensor_id, hours_back=744)  # 1 month
+            data_dict = data_loader.get_sensor_data(
+                sensor_id, hours_back=744
+            )  # 1 month
 
-            if data_dict is None or len(data_dict.get('values', [])) == 0:
+            if data_dict is None or len(data_dict.get("values", [])) == 0:
                 logger.warning(f"  ⚠ No data available for {sensor_id}, skipping")
                 failed_count += 1
                 continue
 
-            values = np.array(data_dict['values'])
-            timestamps = data_dict['timestamps']
+            values = np.array(data_dict["values"])
+            timestamps = data_dict["timestamps"]
 
             print(f"  • Data points: {len(values)}")
             print(f"  • Data range: [{values.min():.3f}, {values.max():.3f}]")
