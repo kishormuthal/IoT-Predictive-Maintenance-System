@@ -3,24 +3,25 @@ Advanced Multi-Level Caching System for IoT Performance Optimization
 Implements Redis-based distributed caching with intelligent cache strategies
 """
 
-import redis
-import json
-import pickle
+import asyncio
+import gzip
 import hashlib
+import json
 import logging
-from typing import Any, Dict, List, Optional, Union, Callable
-from datetime import datetime, timedelta
-from dataclasses import dataclass, asdict
-from functools import wraps
+import os
+import pickle
 import threading
 import time
+from collections import defaultdict
+from dataclasses import asdict, dataclass
+from datetime import datetime, timedelta
+from functools import wraps
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Union
+
 import numpy as np
 import pandas as pd
-from collections import defaultdict
-import asyncio
-import os
-import gzip
-from pathlib import Path
+import redis
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CacheMetrics:
     """Cache performance metrics"""
+
     hits: int = 0
     misses: int = 0
     total_requests: int = 0
@@ -40,6 +42,7 @@ class CacheMetrics:
 @dataclass
 class CacheConfig:
     """Cache configuration settings"""
+
     redis_enabled: bool = True
     redis_host: str = "localhost"
     redis_port: int = 6379
@@ -93,12 +96,12 @@ class AdvancedCacheManager:
 
         # Cache key patterns for efficient invalidation
         self.key_patterns = {
-            'sensor_data': 'sensor:{sensor_id}:{time_window}',
-            'equipment_data': 'equipment:{equipment_id}:{time_range}',
-            'aggregated_metrics': 'metrics:{subsystem}:{period}',
-            'dashboard_component': 'dashboard:{component}:{params_hash}',
-            'anomaly_results': 'anomaly:{equipment_id}:{time_range}',
-            'forecast_data': 'forecast:{model}:{equipment_id}:{horizon}'
+            "sensor_data": "sensor:{sensor_id}:{time_window}",
+            "equipment_data": "equipment:{equipment_id}:{time_range}",
+            "aggregated_metrics": "metrics:{subsystem}:{period}",
+            "dashboard_component": "dashboard:{component}:{params_hash}",
+            "anomaly_results": "anomaly:{equipment_id}:{time_range}",
+            "forecast_data": "forecast:{model}:{equipment_id}:{horizon}",
         }
 
         # Background maintenance
@@ -122,15 +125,19 @@ class AdvancedCacheManager:
                 socket_connect_timeout=5,
                 socket_timeout=5,
                 retry_on_timeout=True,
-                health_check_interval=30
+                health_check_interval=30,
             )
 
             # Test connection
             self.redis_client.ping()
-            logger.info(f"Redis connection established: {self.config.redis_host}:{self.config.redis_port}")
+            logger.info(
+                f"Redis connection established: {self.config.redis_host}:{self.config.redis_port}"
+            )
 
         except Exception as e:
-            logger.warning(f"Redis connection failed: {e}. Falling back to file cache + in-memory cache.")
+            logger.warning(
+                f"Redis connection failed: {e}. Falling back to file cache + in-memory cache."
+            )
             self.redis_client = None
             self.config.l2_enabled = False
             # Initialize file-based fallback cache
@@ -151,7 +158,9 @@ class AdvancedCacheManager:
             logger.info(f"File cache initialized at: {self.file_cache_dir}")
 
         except Exception as e:
-            logger.warning(f"File cache initialization failed: {e}. Using memory-only cache.")
+            logger.warning(
+                f"File cache initialization failed: {e}. Using memory-only cache."
+            )
             self.file_cache_dir = None
 
     def _setup_fallback_chain(self):
@@ -182,14 +191,14 @@ class AdvancedCacheManager:
 
             cache_path = self._get_file_cache_path(key)
             cache_data = {
-                'value': value,
-                'timestamp': time.time(),
-                'ttl': ttl,
-                'key': key  # For debugging
+                "value": value,
+                "timestamp": time.time(),
+                "ttl": ttl,
+                "key": key,  # For debugging
             }
 
             # Use gzip compression for larger objects
-            with gzip.open(cache_path, 'wb') as f:
+            with gzip.open(cache_path, "wb") as f:
                 pickle.dump(cache_data, f)
 
             return True
@@ -208,17 +217,17 @@ class AdvancedCacheManager:
             if not cache_path.exists():
                 return None
 
-            with gzip.open(cache_path, 'rb') as f:
+            with gzip.open(cache_path, "rb") as f:
                 cache_data = pickle.load(f)
 
             # Check if expired
             current_time = time.time()
-            if current_time - cache_data['timestamp'] > cache_data['ttl']:
+            if current_time - cache_data["timestamp"] > cache_data["ttl"]:
                 # Clean up expired file
                 cache_path.unlink(missing_ok=True)
                 return None
 
-            return cache_data['value']
+            return cache_data["value"]
 
         except Exception as e:
             logger.error(f"Error reading file cache for key {key}: {e}")
@@ -237,7 +246,7 @@ class AdvancedCacheManager:
         """Serialize value for storage with compression"""
         try:
             if isinstance(value, (dict, list)):
-                serialized = json.dumps(value, default=str).encode('utf-8')
+                serialized = json.dumps(value, default=str).encode("utf-8")
             elif isinstance(value, (np.ndarray, pd.DataFrame)):
                 serialized = pickle.dumps(value)
             else:
@@ -246,9 +255,10 @@ class AdvancedCacheManager:
             # Apply compression if enabled and beneficial
             if self.config.compression_enabled and len(serialized) > 1024:
                 import gzip
+
                 compressed = gzip.compress(serialized)
                 if len(compressed) < len(serialized) * 0.8:  # Only if 20%+ compression
-                    return b'compressed:' + compressed
+                    return b"compressed:" + compressed
 
             return serialized
 
@@ -259,13 +269,14 @@ class AdvancedCacheManager:
     def _deserialize_value(self, serialized: bytes) -> Any:
         """Deserialize value with decompression support"""
         try:
-            if serialized.startswith(b'compressed:'):
+            if serialized.startswith(b"compressed:"):
                 import gzip
+
                 serialized = gzip.decompress(serialized[11:])
 
             # Try JSON first for simple types
             try:
-                return json.loads(serialized.decode('utf-8'))
+                return json.loads(serialized.decode("utf-8"))
             except (UnicodeDecodeError, json.JSONDecodeError):
                 return pickle.loads(serialized)
 
@@ -413,8 +424,7 @@ class AdvancedCacheManager:
         # Update average retrieval time (exponential moving average)
         alpha = 0.1
         self.metrics.avg_retrieval_time = (
-            alpha * retrieval_time +
-            (1 - alpha) * self.metrics.avg_retrieval_time
+            alpha * retrieval_time + (1 - alpha) * self.metrics.avg_retrieval_time
         )
 
     def invalidate_pattern(self, pattern: str, **kwargs) -> int:
@@ -424,7 +434,11 @@ class AdvancedCacheManager:
 
         # Invalidate L1 cache
         with self.lock:
-            keys_to_remove = [k for k in self.l1_cache.keys() if k.startswith(key_prefix.split('*')[0])]
+            keys_to_remove = [
+                k
+                for k in self.l1_cache.keys()
+                if k.startswith(key_prefix.split("*")[0])
+            ]
             for key in keys_to_remove:
                 del self.l1_cache[key]
                 if key in self.l1_access_times:
@@ -469,8 +483,8 @@ class AdvancedCacheManager:
 
         if self.redis_client:
             try:
-                info = self.redis_client.info('memory')
-                self.metrics.redis_usage = info.get('used_memory', 0)
+                info = self.redis_client.info("memory")
+                self.metrics.redis_usage = info.get("used_memory", 0)
             except:
                 self.metrics.redis_usage = 0
 
@@ -478,6 +492,7 @@ class AdvancedCacheManager:
 
     def _start_maintenance_thread(self):
         """Start background maintenance thread"""
+
         def maintenance_loop():
             while True:
                 try:
@@ -507,6 +522,7 @@ class AdvancedCacheManager:
 
 def cache_result(ttl: int = 300, key_pattern: str = None):
     """Decorator for caching function results"""
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -516,7 +532,9 @@ def cache_result(ttl: int = 300, key_pattern: str = None):
             else:
                 # Generate key from function name and arguments
                 args_str = str(args) + str(sorted(kwargs.items()))
-                cache_key = f"func:{func.__name__}:{hashlib.md5(args_str.encode()).hexdigest()}"
+                cache_key = (
+                    f"func:{func.__name__}:{hashlib.md5(args_str.encode()).hexdigest()}"
+                )
 
             # Try to get from cache
             cached_result = advanced_cache.get(cache_key)
@@ -529,6 +547,7 @@ def cache_result(ttl: int = 300, key_pattern: str = None):
             return result
 
         return wrapper
+
     return decorator
 
 
@@ -541,13 +560,15 @@ class SensorCacheHelper:
     """Helper class for sensor-specific caching operations"""
 
     @staticmethod
-    def cache_sensor_data(sensor_id: str, time_window: str, data: Dict[str, Any], ttl: int = None) -> bool:
+    def cache_sensor_data(
+        sensor_id: str, time_window: str, data: Dict[str, Any], ttl: int = None
+    ) -> bool:
         """Cache sensor data with standardized key"""
         ttl = ttl or advanced_cache.config.sensor_data_ttl
         key = advanced_cache._generate_cache_key(
-            advanced_cache.key_patterns['sensor_data'],
+            advanced_cache.key_patterns["sensor_data"],
             sensor_id=sensor_id,
-            time_window=time_window
+            time_window=time_window,
         )
         return advanced_cache.set(key, data, ttl)
 
@@ -555,9 +576,9 @@ class SensorCacheHelper:
     def get_sensor_data(sensor_id: str, time_window: str) -> Optional[Dict[str, Any]]:
         """Get cached sensor data"""
         key = advanced_cache._generate_cache_key(
-            advanced_cache.key_patterns['sensor_data'],
+            advanced_cache.key_patterns["sensor_data"],
             sensor_id=sensor_id,
-            time_window=time_window
+            time_window=time_window,
         )
         return advanced_cache.get(key)
 
@@ -565,7 +586,9 @@ class SensorCacheHelper:
     def invalidate_sensor_data(sensor_id: str = None):
         """Invalidate sensor data cache"""
         if sensor_id:
-            pattern = advanced_cache.key_patterns['sensor_data'].replace('{time_window}', '*')
+            pattern = advanced_cache.key_patterns["sensor_data"].replace(
+                "{time_window}", "*"
+            )
             advanced_cache.invalidate_pattern(pattern, sensor_id=sensor_id)
         else:
             # Invalidate all sensor data
@@ -577,23 +600,27 @@ class EquipmentCacheHelper:
     """Helper class for equipment-specific caching operations"""
 
     @staticmethod
-    def cache_equipment_data(equipment_id: str, time_range: str, data: Dict[str, Any], ttl: int = None) -> bool:
+    def cache_equipment_data(
+        equipment_id: str, time_range: str, data: Dict[str, Any], ttl: int = None
+    ) -> bool:
         """Cache equipment data with standardized key"""
         ttl = ttl or advanced_cache.config.aggregated_data_ttl
         key = advanced_cache._generate_cache_key(
-            advanced_cache.key_patterns['equipment_data'],
+            advanced_cache.key_patterns["equipment_data"],
             equipment_id=equipment_id,
-            time_range=time_range
+            time_range=time_range,
         )
         return advanced_cache.set(key, data, ttl)
 
     @staticmethod
-    def get_equipment_data(equipment_id: str, time_range: str) -> Optional[Dict[str, Any]]:
+    def get_equipment_data(
+        equipment_id: str, time_range: str
+    ) -> Optional[Dict[str, Any]]:
         """Get cached equipment data"""
         key = advanced_cache._generate_cache_key(
-            advanced_cache.key_patterns['equipment_data'],
+            advanced_cache.key_patterns["equipment_data"],
             equipment_id=equipment_id,
-            time_range=time_range
+            time_range=time_range,
         )
         return advanced_cache.get(key)
 
@@ -603,24 +630,30 @@ class DashboardCacheHelper:
     """Helper class for dashboard component caching"""
 
     @staticmethod
-    def cache_component(component: str, data: Any, params: Dict = None, ttl: int = None) -> bool:
+    def cache_component(
+        component: str, data: Any, params: Dict = None, ttl: int = None
+    ) -> bool:
         """Cache dashboard component with parameters hash"""
         ttl = ttl or advanced_cache.config.dashboard_component_ttl
-        params_hash = hashlib.md5(str(sorted((params or {}).items())).encode()).hexdigest()[:8]
+        params_hash = hashlib.md5(
+            str(sorted((params or {}).items())).encode()
+        ).hexdigest()[:8]
         key = advanced_cache._generate_cache_key(
-            advanced_cache.key_patterns['dashboard_component'],
+            advanced_cache.key_patterns["dashboard_component"],
             component=component,
-            params_hash=params_hash
+            params_hash=params_hash,
         )
         return advanced_cache.set(key, data, ttl)
 
     @staticmethod
     def get_component(component: str, params: Dict = None) -> Any:
         """Get cached dashboard component"""
-        params_hash = hashlib.md5(str(sorted((params or {}).items())).encode()).hexdigest()[:8]
+        params_hash = hashlib.md5(
+            str(sorted((params or {}).items())).encode()
+        ).hexdigest()[:8]
         key = advanced_cache._generate_cache_key(
-            advanced_cache.key_patterns['dashboard_component'],
+            advanced_cache.key_patterns["dashboard_component"],
             component=component,
-            params_hash=params_hash
+            params_hash=params_hash,
         )
         return advanced_cache.get(key)

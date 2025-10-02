@@ -3,17 +3,16 @@ Comprehensive Test Runner for NASA IoT Predictive Maintenance System
 Runs all unit, integration, e2e, and performance tests with real NASA data
 """
 
+import argparse
+import logging
 import subprocess
 import sys
 import time
-import argparse
 from pathlib import Path
-import logging
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -40,11 +39,13 @@ class TestRunner:
 
         # Build pytest command
         cmd = [
-            sys.executable, '-m', 'pytest',
+            sys.executable,
+            "-m",
+            "pytest",
             str(test_path),
-            '-v' if self.verbose else '--tb=short',
-            '--color=yes',
-            '-x' if self.fast_mode else '',  # Stop on first failure in fast mode
+            "-v" if self.verbose else "--tb=short",
+            "--color=yes",
+            "-x" if self.fast_mode else "",  # Stop on first failure in fast mode
         ]
 
         # Filter out empty strings
@@ -52,20 +53,17 @@ class TestRunner:
 
         try:
             result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                cwd=PROJECT_ROOT
+                cmd, capture_output=True, text=True, cwd=PROJECT_ROOT
             )
 
             duration = time.time() - start_time
 
             self.results[suite_name] = {
-                'success': result.returncode == 0,
-                'duration': duration,
-                'output': result.stdout,
-                'errors': result.stderr,
-                'return_code': result.returncode
+                "success": result.returncode == 0,
+                "duration": duration,
+                "output": result.stdout,
+                "errors": result.stderr,
+                "return_code": result.returncode,
             }
 
             status = "✓ PASSED" if result.returncode == 0 else "✗ FAILED"
@@ -81,68 +79,91 @@ class TestRunner:
             logger.error(f"✗ FAILED {suite_name} ({duration:.2f}s) - Exception: {e}")
 
             self.results[suite_name] = {
-                'success': False,
-                'duration': duration,
-                'output': '',
-                'errors': str(e),
-                'return_code': -1
+                "success": False,
+                "duration": duration,
+                "output": "",
+                "errors": str(e),
+                "return_code": -1,
             }
 
     def run_unit_tests(self):
         """Run all unit tests"""
         unit_tests = [
-            ('NASA Dashboard Orchestrator', 'tests/unit/test_nasa_dashboard_orchestrator.py'),
-            ('Event Coordinator', 'tests/unit/test_event_coordinator.py'),
-            ('Enhanced Cache Manager', 'tests/unit/test_enhanced_cache_manager.py'),
+            (
+                "NASA Dashboard Orchestrator",
+                "tests/unit/test_nasa_dashboard_orchestrator.py",
+            ),
+            ("Event Coordinator", "tests/unit/test_event_coordinator.py"),
+            ("Enhanced Cache Manager", "tests/unit/test_enhanced_cache_manager.py"),
         ]
 
         for test_name, test_path in unit_tests:
             if (PROJECT_ROOT / test_path).exists():
-                self.run_test_suite(f"Unit: {test_name}", test_path, f"Unit tests for {test_name}")
+                self.run_test_suite(
+                    f"Unit: {test_name}", test_path, f"Unit tests for {test_name}"
+                )
             else:
                 logger.warning(f"Test file not found: {test_path}")
 
     def run_integration_tests(self):
         """Run all integration tests with real NASA data"""
         integration_tests = [
-            ('MSL Data Integration', 'tests/integration/test_msl_data_integration.py'),
-            ('SMAP Data Integration', 'tests/integration/test_smap_data_integration.py'),
-            ('Telemanom Models', 'tests/integration/test_telemanom_trained_models.py'),
+            ("MSL Data Integration", "tests/integration/test_msl_data_integration.py"),
+            (
+                "SMAP Data Integration",
+                "tests/integration/test_smap_data_integration.py",
+            ),
+            ("Telemanom Models", "tests/integration/test_telemanom_trained_models.py"),
         ]
 
         for test_name, test_path in integration_tests:
             if (PROJECT_ROOT / test_path).exists():
-                self.run_test_suite(f"Integration: {test_name}", test_path, f"Integration tests with real {test_name}")
+                self.run_test_suite(
+                    f"Integration: {test_name}",
+                    test_path,
+                    f"Integration tests with real {test_name}",
+                )
             else:
                 logger.warning(f"Test file not found: {test_path}")
 
     def run_e2e_tests(self):
         """Run end-to-end tests"""
         e2e_tests = [
-            ('NASA Data Pipeline E2E', 'tests/e2e/test_nasa_data_pipeline_e2e.py'),
+            ("NASA Data Pipeline E2E", "tests/e2e/test_nasa_data_pipeline_e2e.py"),
         ]
 
         for test_name, test_path in e2e_tests:
             if (PROJECT_ROOT / test_path).exists():
-                self.run_test_suite(f"E2E: {test_name}", test_path, f"End-to-end {test_name}")
+                self.run_test_suite(
+                    f"E2E: {test_name}", test_path, f"End-to-end {test_name}"
+                )
             else:
                 logger.warning(f"Test file not found: {test_path}")
 
     def run_performance_tests(self):
         """Run performance tests"""
         performance_tests = [
-            ('NASA Data Performance', 'tests/performance/test_nasa_data_performance.py'),
+            (
+                "NASA Data Performance",
+                "tests/performance/test_nasa_data_performance.py",
+            ),
         ]
 
         for test_name, test_path in performance_tests:
             if (PROJECT_ROOT / test_path).exists():
-                self.run_test_suite(f"Performance: {test_name}", test_path, f"Performance tests with {test_name}")
+                self.run_test_suite(
+                    f"Performance: {test_name}",
+                    test_path,
+                    f"Performance tests with {test_name}",
+                )
             else:
                 logger.warning(f"Test file not found: {test_path}")
 
     def run_system_validation(self):
         """Run complete system validation"""
-        validation_script = PROJECT_ROOT / 'scripts' / 'validate_complete_nasa_system.py'
+        validation_script = (
+            PROJECT_ROOT / "scripts" / "validate_complete_nasa_system.py"
+        )
 
         if validation_script.exists():
             logger.info(f"\n{'='*60}")
@@ -156,17 +177,17 @@ class TestRunner:
                     [sys.executable, str(validation_script)],
                     capture_output=True,
                     text=True,
-                    cwd=PROJECT_ROOT
+                    cwd=PROJECT_ROOT,
                 )
 
                 duration = time.time() - start_time
 
-                self.results['System Validation'] = {
-                    'success': result.returncode == 0,
-                    'duration': duration,
-                    'output': result.stdout,
-                    'errors': result.stderr,
-                    'return_code': result.returncode
+                self.results["System Validation"] = {
+                    "success": result.returncode == 0,
+                    "duration": duration,
+                    "output": result.stdout,
+                    "errors": result.stderr,
+                    "return_code": result.returncode,
                 }
 
                 status = "✓ PASSED" if result.returncode == 0 else "✗ FAILED"
@@ -182,12 +203,12 @@ class TestRunner:
                 duration = time.time() - start_time
                 logger.error(f"✗ System Validation failed with exception: {e}")
 
-                self.results['System Validation'] = {
-                    'success': False,
-                    'duration': duration,
-                    'output': '',
-                    'errors': str(e),
-                    'return_code': -1
+                self.results["System Validation"] = {
+                    "success": False,
+                    "duration": duration,
+                    "output": "",
+                    "errors": str(e),
+                    "return_code": -1,
                 }
         else:
             logger.warning("System validation script not found")
@@ -202,25 +223,29 @@ class TestRunner:
 
         # Count results
         total_tests = len(self.results)
-        passed_tests = sum(1 for r in self.results.values() if r['success'])
+        passed_tests = sum(1 for r in self.results.values() if r["success"])
         failed_tests = total_tests - passed_tests
 
         logger.info(f"Total Test Suites: {total_tests}")
         logger.info(f"Passed: {passed_tests}")
         logger.info(f"Failed: {failed_tests}")
-        logger.info(f"Success Rate: {passed_tests/total_tests*100:.1f}%" if total_tests > 0 else "N/A")
+        logger.info(
+            f"Success Rate: {passed_tests/total_tests*100:.1f}%"
+            if total_tests > 0
+            else "N/A"
+        )
         logger.info(f"Total Execution Time: {total_time:.2f} seconds")
 
         logger.info(f"\nDetailed Results:")
         for test_name, result in self.results.items():
-            status = "✓" if result['success'] else "✗"
+            status = "✓" if result["success"] else "✗"
             logger.info(f"  {status} {test_name}: {result['duration']:.2f}s")
 
         # Show failed tests details
         if failed_tests > 0:
             logger.info(f"\nFailed Test Details:")
             for test_name, result in self.results.items():
-                if not result['success']:
+                if not result["success"]:
                     logger.error(f"\n{test_name}:")
                     logger.error(f"  Return Code: {result['return_code']}")
                     logger.error(f"  Error: {result['errors']}")
@@ -252,15 +277,25 @@ class TestRunner:
 
 def main():
     """Main function"""
-    parser = argparse.ArgumentParser(description='NASA IoT System Test Runner')
-    parser.add_argument('-v', '--verbose', action='store_true', help='Verbose output')
-    parser.add_argument('-f', '--fast', action='store_true', help='Fast mode (skip performance tests)')
-    parser.add_argument('--unit-only', action='store_true', help='Run only unit tests')
-    parser.add_argument('--integration-only', action='store_true', help='Run only integration tests')
-    parser.add_argument('--e2e-only', action='store_true', help='Run only e2e tests')
-    parser.add_argument('--performance-only', action='store_true', help='Run only performance tests')
-    parser.add_argument('--validation-only', action='store_true', help='Run only system validation')
-    parser.add_argument('--no-validation', action='store_true', help='Skip system validation')
+    parser = argparse.ArgumentParser(description="NASA IoT System Test Runner")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    parser.add_argument(
+        "-f", "--fast", action="store_true", help="Fast mode (skip performance tests)"
+    )
+    parser.add_argument("--unit-only", action="store_true", help="Run only unit tests")
+    parser.add_argument(
+        "--integration-only", action="store_true", help="Run only integration tests"
+    )
+    parser.add_argument("--e2e-only", action="store_true", help="Run only e2e tests")
+    parser.add_argument(
+        "--performance-only", action="store_true", help="Run only performance tests"
+    )
+    parser.add_argument(
+        "--validation-only", action="store_true", help="Run only system validation"
+    )
+    parser.add_argument(
+        "--no-validation", action="store_true", help="Skip system validation"
+    )
 
     args = parser.parse_args()
 

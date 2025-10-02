@@ -3,10 +3,11 @@ Advanced Imputation Methods
 Sophisticated techniques for handling missing sensor data
 """
 
-import numpy as np
-from typing import Dict, List, Any, Optional, Tuple
-from scipy import interpolate
 import logging
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
+from scipy import interpolate
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,7 @@ class AdvancedImputer:
 
     @staticmethod
     def linear_interpolation(
-        data: np.ndarray,
-        limit: Optional[int] = None
+        data: np.ndarray, limit: Optional[int] = None
     ) -> np.ndarray:
         """
         Linear interpolation for missing values
@@ -51,7 +51,9 @@ class AdvancedImputer:
         invalid_idx = np.where(mask)[0]
 
         if len(valid_idx) < 2:
-            logger.warning("Insufficient valid data for interpolation, using forward fill")
+            logger.warning(
+                "Insufficient valid data for interpolation, using forward fill"
+            )
             return AdvancedImputer.forward_fill(data)
 
         # Check consecutive NaN limit
@@ -81,9 +83,7 @@ class AdvancedImputer:
 
     @staticmethod
     def spline_interpolation(
-        data: np.ndarray,
-        order: int = 3,
-        smoothing: float = 0.0
+        data: np.ndarray, order: int = 3, smoothing: float = 0.0
     ) -> np.ndarray:
         """
         Spline interpolation for missing values
@@ -112,10 +112,7 @@ class AdvancedImputer:
         try:
             # Fit spline
             spline = interpolate.UnivariateSpline(
-                valid_idx,
-                result[valid_idx],
-                k=order,
-                s=smoothing
+                valid_idx, result[valid_idx], k=order, s=smoothing
             )
 
             # Interpolate missing values
@@ -129,9 +126,7 @@ class AdvancedImputer:
 
     @staticmethod
     def knn_imputation(
-        data: np.ndarray,
-        n_neighbors: int = 5,
-        weights: str = 'distance'
+        data: np.ndarray, n_neighbors: int = 5, weights: str = "distance"
     ) -> np.ndarray:
         """
         KNN-based imputation
@@ -158,7 +153,9 @@ class AdvancedImputer:
                 return imputer.fit_transform(data)
 
         except ImportError:
-            logger.warning("scikit-learn not available for KNN imputation, using linear fallback")
+            logger.warning(
+                "scikit-learn not available for KNN imputation, using linear fallback"
+            )
             return AdvancedImputer.linear_interpolation(data)
         except Exception as e:
             logger.error(f"KNN imputation failed: {e}")
@@ -166,9 +163,7 @@ class AdvancedImputer:
 
     @staticmethod
     def iterative_imputation(
-        data: np.ndarray,
-        max_iter: int = 10,
-        random_state: int = 42
+        data: np.ndarray, max_iter: int = 10, random_state: int = 42
     ) -> np.ndarray:
         """
         Iterative imputation (MICE algorithm)
@@ -185,10 +180,7 @@ class AdvancedImputer:
             from sklearn.experimental import enable_iterative_imputer
             from sklearn.impute import IterativeImputer
 
-            imputer = IterativeImputer(
-                max_iter=max_iter,
-                random_state=random_state
-            )
+            imputer = IterativeImputer(max_iter=max_iter, random_state=random_state)
 
             # Reshape if 1D
             if data.ndim == 1:
@@ -199,7 +191,9 @@ class AdvancedImputer:
                 return imputer.fit_transform(data)
 
         except ImportError:
-            logger.warning("scikit-learn IterativeImputer not available, using KNN fallback")
+            logger.warning(
+                "scikit-learn IterativeImputer not available, using KNN fallback"
+            )
             return AdvancedImputer.knn_imputation(data)
         except Exception as e:
             logger.error(f"Iterative imputation failed: {e}")
@@ -274,8 +268,7 @@ class AdvancedImputer:
 
     @staticmethod
     def seasonal_decomposition_imputation(
-        data: np.ndarray,
-        period: int = 24
+        data: np.ndarray, period: int = 24
     ) -> np.ndarray:
         """
         Imputation using seasonal decomposition
@@ -295,10 +288,7 @@ class AdvancedImputer:
 
             # Decompose
             decomposition = seasonal_decompose(
-                temp_data,
-                model='additive',
-                period=period,
-                extrapolate_trend='freq'
+                temp_data, model="additive", period=period, extrapolate_trend="freq"
             )
 
             # Use seasonal component to guide imputation
@@ -324,10 +314,7 @@ class AdvancedImputer:
             return AdvancedImputer.spline_interpolation(data)
 
     @staticmethod
-    def moving_average_imputation(
-        data: np.ndarray,
-        window: int = 5
-    ) -> np.ndarray:
+    def moving_average_imputation(data: np.ndarray, window: int = 5) -> np.ndarray:
         """
         Moving average imputation
 
@@ -366,9 +353,7 @@ class AdvancedImputer:
 
     @staticmethod
     def adaptive_imputation(
-        data: np.ndarray,
-        method: str = 'auto',
-        **kwargs
+        data: np.ndarray, method: str = "auto", **kwargs
     ) -> np.ndarray:
         """
         Adaptive imputation - selects best method based on data characteristics
@@ -391,36 +376,38 @@ class AdvancedImputer:
         missing_pct = n_missing / len(data)
 
         # Auto-select method
-        if method == 'auto':
+        if method == "auto":
             if missing_pct > 0.5:
-                logger.warning(f"High missing rate ({missing_pct:.1%}), using seasonal decomposition")
-                method = 'seasonal' if len(data) >= 48 else 'spline'
+                logger.warning(
+                    f"High missing rate ({missing_pct:.1%}), using seasonal decomposition"
+                )
+                method = "seasonal" if len(data) >= 48 else "spline"
             elif missing_pct > 0.2:
                 logger.info(f"Moderate missing rate ({missing_pct:.1%}), using KNN")
-                method = 'knn'
+                method = "knn"
             elif missing_pct > 0.05:
                 logger.info(f"Low missing rate ({missing_pct:.1%}), using spline")
-                method = 'spline'
+                method = "spline"
             else:
                 logger.info(f"Very low missing rate ({missing_pct:.1%}), using linear")
-                method = 'linear'
+                method = "linear"
 
         # Apply selected method
-        if method == 'linear':
+        if method == "linear":
             return AdvancedImputer.linear_interpolation(data, **kwargs)
-        elif method == 'spline':
+        elif method == "spline":
             return AdvancedImputer.spline_interpolation(data, **kwargs)
-        elif method == 'knn':
+        elif method == "knn":
             return AdvancedImputer.knn_imputation(data, **kwargs)
-        elif method == 'iterative':
+        elif method == "iterative":
             return AdvancedImputer.iterative_imputation(data, **kwargs)
-        elif method == 'seasonal':
+        elif method == "seasonal":
             return AdvancedImputer.seasonal_decomposition_imputation(data, **kwargs)
-        elif method == 'moving_average':
+        elif method == "moving_average":
             return AdvancedImputer.moving_average_imputation(data, **kwargs)
-        elif method == 'forward':
+        elif method == "forward":
             return AdvancedImputer.forward_fill(data)
-        elif method == 'backward':
+        elif method == "backward":
             return AdvancedImputer.backward_fill(data)
         else:
             logger.warning(f"Unknown method '{method}', using linear")
@@ -428,9 +415,7 @@ class AdvancedImputer:
 
     @staticmethod
     def impute_with_confidence(
-        data: np.ndarray,
-        method: str = 'auto',
-        n_bootstrap: int = 50
+        data: np.ndarray, method: str = "auto", n_bootstrap: int = 50
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Imputation with uncertainty estimates
@@ -454,9 +439,7 @@ class AdvancedImputer:
             if len(valid_indices) > 1:
                 # Resample valid data
                 bootstrap_indices = np.random.choice(
-                    valid_indices,
-                    size=len(valid_indices),
-                    replace=True
+                    valid_indices, size=len(valid_indices), replace=True
                 )
                 bootstrap_data[valid_indices] = data[bootstrap_indices]
 

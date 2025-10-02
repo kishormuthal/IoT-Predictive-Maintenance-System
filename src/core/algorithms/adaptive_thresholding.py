@@ -3,11 +3,12 @@ Advanced Adaptive Thresholding Algorithms
 Statistical methods for dynamic anomaly detection thresholds
 """
 
-import numpy as np
-from typing import Dict, List, Any, Optional, Tuple
-from scipy import stats
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
+from scipy import stats
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ThresholdResult:
     """Result of threshold calculation"""
+
     threshold: float
     method: str
     parameters: Dict[str, float]
@@ -23,10 +25,10 @@ class ThresholdResult:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         return {
-            'threshold': float(self.threshold),
-            'method': self.method,
-            'parameters': self.parameters,
-            'confidence_level': float(self.confidence_level)
+            "threshold": float(self.threshold),
+            "method": self.method,
+            "parameters": self.parameters,
+            "confidence_level": float(self.confidence_level),
         }
 
 
@@ -44,9 +46,7 @@ class AdaptiveThresholdCalculator:
 
     @staticmethod
     def gev_threshold(
-        data: np.ndarray,
-        confidence_level: float = 0.99,
-        block_size: int = 100
+        data: np.ndarray, confidence_level: float = 0.99, block_size: int = 100
     ) -> ThresholdResult:
         """
         Calculate threshold using Generalized Extreme Value (GEV) distribution
@@ -63,15 +63,19 @@ class AdaptiveThresholdCalculator:
         """
         try:
             if len(data) < block_size:
-                logger.warning(f"Data length {len(data)} < block_size {block_size}, using statistical fallback")
-                return AdaptiveThresholdCalculator.zscore_threshold(data, confidence_level)
+                logger.warning(
+                    f"Data length {len(data)} < block_size {block_size}, using statistical fallback"
+                )
+                return AdaptiveThresholdCalculator.zscore_threshold(
+                    data, confidence_level
+                )
 
             # Extract block maxima
             n_blocks = len(data) // block_size
             block_maxima = []
 
             for i in range(n_blocks):
-                block = data[i * block_size:(i + 1) * block_size]
+                block = data[i * block_size : (i + 1) * block_size]
                 block_maxima.append(np.max(block))
 
             block_maxima = np.array(block_maxima)
@@ -83,7 +87,9 @@ class AdaptiveThresholdCalculator:
 
             # Calculate threshold at confidence level
             # Using the inverse CDF (percent point function)
-            threshold = stats.genextreme.ppf(confidence_level, shape, loc=loc, scale=scale)
+            threshold = stats.genextreme.ppf(
+                confidence_level, shape, loc=loc, scale=scale
+            )
 
             logger.info(
                 f"GEV threshold calculated: {threshold:.4f} "
@@ -94,13 +100,13 @@ class AdaptiveThresholdCalculator:
                 threshold=threshold,
                 method="GEV",
                 parameters={
-                    'shape': float(shape),
-                    'location': float(loc),
-                    'scale': float(scale),
-                    'block_size': block_size,
-                    'n_blocks': n_blocks
+                    "shape": float(shape),
+                    "location": float(loc),
+                    "scale": float(scale),
+                    "block_size": block_size,
+                    "n_blocks": n_blocks,
                 },
-                confidence_level=confidence_level
+                confidence_level=confidence_level,
             )
 
         except Exception as e:
@@ -112,7 +118,7 @@ class AdaptiveThresholdCalculator:
     def pot_threshold(
         data: np.ndarray,
         initial_threshold: Optional[float] = None,
-        confidence_level: float = 0.99
+        confidence_level: float = 0.99,
     ) -> ThresholdResult:
         """
         Peaks Over Threshold (POT) method using Generalized Pareto Distribution
@@ -134,8 +140,12 @@ class AdaptiveThresholdCalculator:
             exceedances = data[data > initial_threshold] - initial_threshold
 
             if len(exceedances) < 10:
-                logger.warning("Too few exceedances for POT, using statistical fallback")
-                return AdaptiveThresholdCalculator.zscore_threshold(data, confidence_level)
+                logger.warning(
+                    "Too few exceedances for POT, using statistical fallback"
+                )
+                return AdaptiveThresholdCalculator.zscore_threshold(
+                    data, confidence_level
+                )
 
             # Fit Generalized Pareto Distribution to exceedances
             # GPD has 2 parameters: shape (xi) and scale (sigma)
@@ -159,7 +169,9 @@ class AdaptiveThresholdCalculator:
                 )
             else:
                 # Exponential case (shape ≈ 0)
-                threshold = initial_threshold - scale * np.log((n_total / n_exceedances) * (1 - confidence_level))
+                threshold = initial_threshold - scale * np.log(
+                    (n_total / n_exceedances) * (1 - confidence_level)
+                )
 
             logger.info(
                 f"POT threshold calculated: {threshold:.4f} "
@@ -170,13 +182,13 @@ class AdaptiveThresholdCalculator:
                 threshold=threshold,
                 method="POT",
                 parameters={
-                    'shape': float(shape),
-                    'scale': float(scale),
-                    'initial_threshold': float(initial_threshold),
-                    'n_exceedances': int(n_exceedances),
-                    'exceedance_rate': float(p_exceed)
+                    "shape": float(shape),
+                    "scale": float(scale),
+                    "initial_threshold": float(initial_threshold),
+                    "n_exceedances": int(n_exceedances),
+                    "exceedance_rate": float(p_exceed),
                 },
-                confidence_level=confidence_level
+                confidence_level=confidence_level,
             )
 
         except Exception as e:
@@ -185,8 +197,7 @@ class AdaptiveThresholdCalculator:
 
     @staticmethod
     def zscore_threshold(
-        data: np.ndarray,
-        confidence_level: float = 0.99
+        data: np.ndarray, confidence_level: float = 0.99
     ) -> ThresholdResult:
         """
         Z-score based threshold (Gaussian assumption)
@@ -211,18 +222,16 @@ class AdaptiveThresholdCalculator:
             threshold=threshold,
             method="Z-Score",
             parameters={
-                'mean': float(mean),
-                'std': float(std),
-                'z_score': float(z_score)
+                "mean": float(mean),
+                "std": float(std),
+                "z_score": float(z_score),
             },
-            confidence_level=confidence_level
+            confidence_level=confidence_level,
         )
 
     @staticmethod
     def iqr_threshold(
-        data: np.ndarray,
-        multiplier: float = 1.5,
-        confidence_level: float = 0.99
+        data: np.ndarray, multiplier: float = 1.5, confidence_level: float = 0.99
     ) -> ThresholdResult:
         """
         IQR (Interquartile Range) based threshold
@@ -245,19 +254,19 @@ class AdaptiveThresholdCalculator:
             threshold=threshold,
             method="IQR",
             parameters={
-                'q1': float(q1),
-                'q3': float(q3),
-                'iqr': float(iqr),
-                'multiplier': float(multiplier)
+                "q1": float(q1),
+                "q3": float(q3),
+                "iqr": float(iqr),
+                "multiplier": float(multiplier),
             },
-            confidence_level=confidence_level
+            confidence_level=confidence_level,
         )
 
     @staticmethod
     def mad_threshold(
         data: np.ndarray,
         confidence_level: float = 0.99,
-        consistency_constant: float = 1.4826
+        consistency_constant: float = 1.4826,
     ) -> ThresholdResult:
         """
         MAD (Median Absolute Deviation) based threshold
@@ -286,12 +295,12 @@ class AdaptiveThresholdCalculator:
             threshold=threshold,
             method="MAD",
             parameters={
-                'median': float(median),
-                'mad': float(mad),
-                'mad_scaled': float(mad_scaled),
-                'z_score': float(z_score)
+                "median": float(median),
+                "mad": float(mad),
+                "mad_scaled": float(mad_scaled),
+                "z_score": float(z_score),
             },
-            confidence_level=confidence_level
+            confidence_level=confidence_level,
         )
 
     @staticmethod
@@ -299,7 +308,7 @@ class AdaptiveThresholdCalculator:
         data: np.ndarray,
         contamination: float = 0.01,
         n_estimators: int = 100,
-        random_state: int = 42
+        random_state: int = 42,
     ) -> ThresholdResult:
         """
         Isolation Forest based threshold
@@ -323,7 +332,7 @@ class AdaptiveThresholdCalculator:
             iso_forest = IsolationForest(
                 contamination=contamination,
                 n_estimators=n_estimators,
-                random_state=random_state
+                random_state=random_state,
             )
             iso_forest.fit(X)
 
@@ -337,16 +346,18 @@ class AdaptiveThresholdCalculator:
                 threshold=threshold,
                 method="IsolationForest",
                 parameters={
-                    'contamination': float(contamination),
-                    'n_estimators': int(n_estimators),
-                    'mean_score': float(np.mean(scores)),
-                    'std_score': float(np.std(scores))
+                    "contamination": float(contamination),
+                    "n_estimators": int(n_estimators),
+                    "mean_score": float(np.mean(scores)),
+                    "std_score": float(np.std(scores)),
                 },
-                confidence_level=1 - contamination
+                confidence_level=1 - contamination,
             )
 
         except ImportError:
-            logger.warning("scikit-learn not available for Isolation Forest, using fallback")
+            logger.warning(
+                "scikit-learn not available for Isolation Forest, using fallback"
+            )
             return AdaptiveThresholdCalculator.zscore_threshold(data, 1 - contamination)
         except Exception as e:
             logger.error(f"Error calculating Isolation Forest threshold: {e}")
@@ -354,9 +365,7 @@ class AdaptiveThresholdCalculator:
 
     @staticmethod
     def local_outlier_factor_threshold(
-        data: np.ndarray,
-        contamination: float = 0.01,
-        n_neighbors: int = 20
+        data: np.ndarray, contamination: float = 0.01, n_neighbors: int = 20
     ) -> ThresholdResult:
         """
         Local Outlier Factor based threshold
@@ -377,9 +386,7 @@ class AdaptiveThresholdCalculator:
 
             # Fit LOF
             lof = LocalOutlierFactor(
-                contamination=contamination,
-                n_neighbors=n_neighbors,
-                novelty=False
+                contamination=contamination, n_neighbors=n_neighbors, novelty=False
             )
 
             # Get negative outlier factors (higher = more outlying)
@@ -387,18 +394,20 @@ class AdaptiveThresholdCalculator:
             negative_outlier_factors = lof.negative_outlier_factor_
 
             # Calculate threshold
-            threshold = np.percentile(-negative_outlier_factors, (1 - contamination) * 100)
+            threshold = np.percentile(
+                -negative_outlier_factors, (1 - contamination) * 100
+            )
 
             return ThresholdResult(
                 threshold=threshold,
                 method="LOF",
                 parameters={
-                    'contamination': float(contamination),
-                    'n_neighbors': int(n_neighbors),
-                    'mean_lof': float(np.mean(-negative_outlier_factors)),
-                    'std_lof': float(np.std(-negative_outlier_factors))
+                    "contamination": float(contamination),
+                    "n_neighbors": int(n_neighbors),
+                    "mean_lof": float(np.mean(-negative_outlier_factors)),
+                    "std_lof": float(np.std(-negative_outlier_factors)),
                 },
-                confidence_level=1 - contamination
+                confidence_level=1 - contamination,
             )
 
         except ImportError:
@@ -412,7 +421,7 @@ class AdaptiveThresholdCalculator:
     def adaptive_threshold_selection(
         data: np.ndarray,
         confidence_level: float = 0.99,
-        methods: Optional[List[str]] = None
+        methods: Optional[List[str]] = None,
     ) -> Dict[str, ThresholdResult]:
         """
         Calculate thresholds using multiple methods and return all
@@ -426,39 +435,43 @@ class AdaptiveThresholdCalculator:
             Dictionary mapping method name to ThresholdResult
         """
         if methods is None:
-            methods = ['GEV', 'POT', 'Z-Score', 'IQR', 'MAD', 'IsolationForest', 'LOF']
+            methods = ["GEV", "POT", "Z-Score", "IQR", "MAD", "IsolationForest", "LOF"]
 
         results = {}
 
         for method in methods:
             try:
-                if method == 'GEV':
+                if method == "GEV":
                     results[method] = AdaptiveThresholdCalculator.gev_threshold(
                         data, confidence_level
                     )
-                elif method == 'POT':
+                elif method == "POT":
                     results[method] = AdaptiveThresholdCalculator.pot_threshold(
                         data, confidence_level=confidence_level
                     )
-                elif method == 'Z-Score':
+                elif method == "Z-Score":
                     results[method] = AdaptiveThresholdCalculator.zscore_threshold(
                         data, confidence_level
                     )
-                elif method == 'IQR':
+                elif method == "IQR":
                     results[method] = AdaptiveThresholdCalculator.iqr_threshold(
                         data, confidence_level=confidence_level
                     )
-                elif method == 'MAD':
+                elif method == "MAD":
                     results[method] = AdaptiveThresholdCalculator.mad_threshold(
                         data, confidence_level
                     )
-                elif method == 'IsolationForest':
-                    results[method] = AdaptiveThresholdCalculator.isolation_forest_threshold(
-                        data, contamination=1 - confidence_level
+                elif method == "IsolationForest":
+                    results[method] = (
+                        AdaptiveThresholdCalculator.isolation_forest_threshold(
+                            data, contamination=1 - confidence_level
+                        )
                     )
-                elif method == 'LOF':
-                    results[method] = AdaptiveThresholdCalculator.local_outlier_factor_threshold(
-                        data, contamination=1 - confidence_level
+                elif method == "LOF":
+                    results[method] = (
+                        AdaptiveThresholdCalculator.local_outlier_factor_threshold(
+                            data, contamination=1 - confidence_level
+                        )
                     )
             except Exception as e:
                 logger.warning(f"Error with method {method}: {e}")
@@ -470,7 +483,7 @@ class AdaptiveThresholdCalculator:
         data: np.ndarray,
         confidence_level: float = 0.99,
         methods: Optional[List[str]] = None,
-        aggregation: str = 'median'
+        aggregation: str = "median",
     ) -> ThresholdResult:
         """
         Calculate consensus threshold from multiple methods
@@ -497,33 +510,32 @@ class AdaptiveThresholdCalculator:
         thresholds = [r.threshold for r in all_results.values()]
 
         # Aggregate
-        if aggregation == 'mean':
+        if aggregation == "mean":
             consensus = np.mean(thresholds)
-        elif aggregation == 'median':
+        elif aggregation == "median":
             consensus = np.median(thresholds)
-        elif aggregation == 'min':
+        elif aggregation == "min":
             consensus = np.min(thresholds)
-        elif aggregation == 'max':
+        elif aggregation == "max":
             consensus = np.max(thresholds)
         else:
             consensus = np.median(thresholds)
 
         # Collect all parameters
         all_params = {
-            method: result.to_dict()
-            for method, result in all_results.items()
+            method: result.to_dict() for method, result in all_results.items()
         }
 
         return ThresholdResult(
             threshold=consensus,
             method=f"Consensus-{aggregation}",
             parameters={
-                'aggregation': aggregation,
-                'n_methods': len(all_results),
-                'methods_used': list(all_results.keys()),
-                'individual_thresholds': thresholds,
-                'std_thresholds': float(np.std(thresholds)),
-                'all_results': all_params
+                "aggregation": aggregation,
+                "n_methods": len(all_results),
+                "methods_used": list(all_results.keys()),
+                "individual_thresholds": thresholds,
+                "std_thresholds": float(np.std(thresholds)),
+                "all_results": all_params,
             },
-            confidence_level=confidence_level
+            confidence_level=confidence_level,
         )

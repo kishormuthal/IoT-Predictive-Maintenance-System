@@ -3,28 +3,30 @@ Dashboard Integration Layer
 Connects UI components to actual backend services and algorithms
 """
 
-import numpy as np
-import pandas as pd
+import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
-import logging
 
-# Import actual services from bug fixes (SESSIONS 1-6)
-from src.core.services.anomaly_service import AnomalyDetectionService
-from src.core.services.forecasting_service import ForecastingService
-from src.core.services.data_processing_service import DataProcessingService
-from src.core.services.model_monitoring_service import ModelMonitoringService
-from src.core.services.evaluation_metrics import EvaluationMetricsCalculator
+import numpy as np
+import pandas as pd
+
+from config.equipment_config import get_equipment_list
 
 # Import advanced algorithms (SESSION 7)
 from src.core.algorithms.adaptive_thresholding import AdaptiveThresholdCalculator
-from src.core.algorithms.probabilistic_scoring import ProbabilisticAnomalyScorer
 from src.core.algorithms.advanced_imputation import AdvancedImputer
 from src.core.algorithms.ensemble_methods import EnsembleAggregator
+from src.core.algorithms.probabilistic_scoring import ProbabilisticAnomalyScorer
+
+# Import actual services from bug fixes (SESSIONS 1-6)
+from src.core.services.anomaly_service import AnomalyDetectionService
+from src.core.services.data_processing_service import DataProcessingService
+from src.core.services.evaluation_metrics import EvaluationMetricsCalculator
+from src.core.services.forecasting_service import ForecastingService
+from src.core.services.model_monitoring_service import ModelMonitoringService
 
 # Import NASA data loader
 from src.infrastructure.data.nasa_data_loader import NASADataLoader
-from config.equipment_config import get_equipment_list
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +84,6 @@ class DashboardIntegrationService:
 
         logger.info("✓ Dashboard Integration Service ready")
 
-
     # ========================================================================
     # SENSOR DATA METHODS (for all tabs using NASA data)
     # ========================================================================
@@ -105,22 +106,20 @@ class DashboardIntegrationService:
             # Load actual NASA data (FIXED: use correct method name)
             data_dict = self.data_loader.get_sensor_data(sensor_id)
 
-            if data_dict is None or 'values' not in data_dict:
+            if data_dict is None or "values" not in data_dict:
                 return self._generate_fallback_data(sensor_id, hours)
 
             # Extract values and timestamps from dict
-            values = data_dict['values']
-            timestamps_raw = data_dict['timestamps']
+            values = data_dict["values"]
+            timestamps_raw = data_dict["timestamps"]
 
             if len(values) == 0:
                 return self._generate_fallback_data(sensor_id, hours)
 
             # Convert to DataFrame with proper structure
-            df = pd.DataFrame({
-                'timestamp': timestamps_raw,
-                'value': values,
-                'sensor_id': sensor_id
-            })
+            df = pd.DataFrame(
+                {"timestamp": timestamps_raw, "value": values, "sensor_id": sensor_id}
+            )
 
             # Filter to requested time window if needed
             if hours and len(df) > hours * 60:
@@ -132,30 +131,28 @@ class DashboardIntegrationService:
             logger.error(f"Error loading sensor data for {sensor_id}: {e}")
             return self._generate_fallback_data(sensor_id, hours)
 
-
     def _generate_fallback_data(self, sensor_id: str, hours: int) -> pd.DataFrame:
         """Generate realistic fallback data when NASA data unavailable"""
-        timestamps = pd.date_range(end=datetime.now(), periods=hours*60, freq='1min')
+        timestamps = pd.date_range(end=datetime.now(), periods=hours * 60, freq="1min")
 
         # Generate realistic sensor-like data
         np.random.seed(hash(sensor_id) % 2**32)
         trend = np.linspace(50, 55, len(timestamps))
-        seasonal = 10 * np.sin(np.linspace(0, 4*np.pi, len(timestamps)))
+        seasonal = 10 * np.sin(np.linspace(0, 4 * np.pi, len(timestamps)))
         noise = np.random.normal(0, 2, len(timestamps))
         values = trend + seasonal + noise
 
-        return pd.DataFrame({
-            'timestamp': timestamps,
-            'value': values,
-            'sensor_id': sensor_id
-        })
-
+        return pd.DataFrame(
+            {"timestamp": timestamps, "value": values, "sensor_id": sensor_id}
+        )
 
     # ========================================================================
     # ANOMALY DETECTION METHODS (using real AnomalyService + SESSION 7 algorithms)
     # ========================================================================
 
-    def detect_anomalies(self, sensor_id: str, data: np.ndarray, timestamps: List[datetime] = None) -> List[Dict]:
+    def detect_anomalies(
+        self, sensor_id: str, data: np.ndarray, timestamps: List[datetime] = None
+    ) -> List[Dict]:
         """
         Detect anomalies using REAL AnomalyService (FIXED to use service API)
 
@@ -170,24 +167,53 @@ class DashboardIntegrationService:
         try:
             # Generate timestamps if not provided
             if timestamps is None:
-                timestamps = [datetime.now() - timedelta(minutes=len(data)-i) for i in range(len(data))]
+                timestamps = [
+                    datetime.now() - timedelta(minutes=len(data) - i)
+                    for i in range(len(data))
+                ]
 
             # FIXED: Use AnomalyService which already integrates SESSION 7 algorithms
             if self.anomaly_service:
-                result = self.anomaly_service.detect_anomalies(sensor_id, data, timestamps)
+                result = self.anomaly_service.detect_anomalies(
+                    sensor_id, data, timestamps
+                )
 
                 # Convert service format to dashboard format
                 anomalies = []
-                for anomaly in result.get('anomalies', []):
-                    anomalies.append({
-                        'timestamp': anomaly.timestamp if hasattr(anomaly, 'timestamp') else timestamps[0],
-                        'sensor_id': anomaly.sensor_id if hasattr(anomaly, 'sensor_id') else sensor_id,
-                        'value': anomaly.value if hasattr(anomaly, 'value') else 0.0,
-                        'anomaly_score': anomaly.score if hasattr(anomaly, 'score') else 0.0,
-                        'severity': anomaly.severity.value if hasattr(anomaly, 'severity') else 'medium',
-                        'type': anomaly.anomaly_type.value if hasattr(anomaly, 'anomaly_type') else 'point',
-                        'method': result.get('statistics', {}).get('detection_method', 'telemanom')
-                    })
+                for anomaly in result.get("anomalies", []):
+                    anomalies.append(
+                        {
+                            "timestamp": (
+                                anomaly.timestamp
+                                if hasattr(anomaly, "timestamp")
+                                else timestamps[0]
+                            ),
+                            "sensor_id": (
+                                anomaly.sensor_id
+                                if hasattr(anomaly, "sensor_id")
+                                else sensor_id
+                            ),
+                            "value": (
+                                anomaly.value if hasattr(anomaly, "value") else 0.0
+                            ),
+                            "anomaly_score": (
+                                anomaly.score if hasattr(anomaly, "score") else 0.0
+                            ),
+                            "severity": (
+                                anomaly.severity.value
+                                if hasattr(anomaly, "severity")
+                                else "medium"
+                            ),
+                            "type": (
+                                anomaly.anomaly_type.value
+                                if hasattr(anomaly, "anomaly_type")
+                                else "point"
+                            ),
+                            "method": result.get("statistics", {}).get(
+                                "detection_method", "telemanom"
+                            ),
+                        }
+                    )
                 return anomalies
             else:
                 # Fallback: Use SESSION 7 algorithms directly
@@ -197,30 +223,29 @@ class DashboardIntegrationService:
             logger.error(f"Error detecting anomalies: {e}")
             return self._detect_anomalies_fallback(sensor_id, data, timestamps)
 
-
-    def _detect_anomalies_fallback(self, sensor_id: str, data: np.ndarray, timestamps: List[datetime]) -> List[Dict]:
+    def _detect_anomalies_fallback(
+        self, sensor_id: str, data: np.ndarray, timestamps: List[datetime]
+    ) -> List[Dict]:
         """Fallback anomaly detection using SESSION 7 algorithms"""
         anomalies = []
 
         try:
             # Use adaptive thresholding (SESSION 7)
             threshold_result = AdaptiveThresholdCalculator.consensus_threshold(
-                data,
-                confidence_level=0.99
+                data, confidence_level=0.99
             )
 
             # Check each point for anomalies
             for i, value in enumerate(data):
                 # Use probabilistic scoring (SESSION 7)
                 prob_score = ProbabilisticAnomalyScorer.bayesian_anomaly_probability(
-                    value,
-                    data,
-                    prior_anomaly_rate=0.01
+                    value, data, prior_anomaly_rate=0.01
                 )
 
                 # Determine if anomalous
-                is_anomaly = (value > threshold_result.threshold and
-                             prob_score.score > 0.5)
+                is_anomaly = (
+                    value > threshold_result.threshold and prob_score.score > 0.5
+                )
 
                 if is_anomaly:
                     # Determine severity based on score
@@ -233,23 +258,26 @@ class DashboardIntegrationService:
                     else:
                         severity = "low"
 
-                    anomalies.append({
-                        'timestamp': timestamps[i] if i < len(timestamps) else datetime.now(),
-                        'sensor_id': sensor_id,
-                        'value': float(value),
-                        'anomaly_score': prob_score.score,
-                        'probability': prob_score.probability,
-                        'threshold': threshold_result.threshold,
-                        'severity': severity,
-                        'method': threshold_result.method,
-                        'type': self._classify_anomaly_type(i, len(data))
-                    })
+                    anomalies.append(
+                        {
+                            "timestamp": (
+                                timestamps[i] if i < len(timestamps) else datetime.now()
+                            ),
+                            "sensor_id": sensor_id,
+                            "value": float(value),
+                            "anomaly_score": prob_score.score,
+                            "probability": prob_score.probability,
+                            "threshold": threshold_result.threshold,
+                            "severity": severity,
+                            "method": threshold_result.method,
+                            "type": self._classify_anomaly_type(i, len(data)),
+                        }
+                    )
 
         except Exception as e:
             logger.error(f"Error in fallback anomaly detection: {e}")
 
         return anomalies
-
 
     def _classify_anomaly_type(self, index: int, total: int) -> str:
         """Classify anomaly as point, contextual, or collective"""
@@ -260,7 +288,6 @@ class DashboardIntegrationService:
             return "collective"
         else:
             return "point"
-
 
     def get_root_cause_analysis(self, anomaly_data: Dict) -> Dict:
         """
@@ -274,56 +301,58 @@ class DashboardIntegrationService:
         factors = []
 
         # Factor 1: Sensor drift (check if baseline has shifted)
-        if 'historical_data' in anomaly_data:
-            historical = np.array(anomaly_data['historical_data'])
+        if "historical_data" in anomaly_data:
+            historical = np.array(anomaly_data["historical_data"])
             recent = historical[-100:]  # Last 100 points
             older = historical[:-100]
 
             if len(older) > 0:
                 drift_score = abs(np.mean(recent) - np.mean(older)) / np.std(historical)
                 if drift_score > 0.5:
-                    factors.append({
-                        'name': 'Sensor Drift',
-                        'score': min(drift_score / 2, 0.95),
-                        'description': f'Baseline shifted by {drift_score:.1f} standard deviations',
-                        'evidence': f'Mean change: {np.mean(recent) - np.mean(older):.2f}',
-                        'action': 'Schedule sensor recalibration'
-                    })
+                    factors.append(
+                        {
+                            "name": "Sensor Drift",
+                            "score": min(drift_score / 2, 0.95),
+                            "description": f"Baseline shifted by {drift_score:.1f} standard deviations",
+                            "evidence": f"Mean change: {np.mean(recent) - np.mean(older):.2f}",
+                            "action": "Schedule sensor recalibration",
+                        }
+                    )
 
         # Factor 2: Sudden spike/drop
-        if 'value' in anomaly_data and 'expected_range' in anomaly_data:
-            deviation = abs(anomaly_data['value'] - anomaly_data['expected_range'][0])
-            max_deviation = anomaly_data['expected_range'][1] - anomaly_data['expected_range'][0]
+        if "value" in anomaly_data and "expected_range" in anomaly_data:
+            deviation = abs(anomaly_data["value"] - anomaly_data["expected_range"][0])
+            max_deviation = (
+                anomaly_data["expected_range"][1] - anomaly_data["expected_range"][0]
+            )
             spike_score = min(deviation / max_deviation, 1.0)
 
             if spike_score > 0.3:
-                factors.append({
-                    'name': 'Sudden Value Change',
-                    'score': spike_score,
-                    'description': f'Value deviated {deviation:.2f} from expected',
-                    'evidence': 'Sharp change detected in readings',
-                    'action': 'Investigate environmental changes or equipment malfunction'
-                })
+                factors.append(
+                    {
+                        "name": "Sudden Value Change",
+                        "score": spike_score,
+                        "description": f"Value deviated {deviation:.2f} from expected",
+                        "evidence": "Sharp change detected in readings",
+                        "action": "Investigate environmental changes or equipment malfunction",
+                    }
+                )
 
         # Sort by score
-        factors.sort(key=lambda x: x['score'], reverse=True)
+        factors.sort(key=lambda x: x["score"], reverse=True)
 
         return {
-            'factors': factors,
-            'primary_cause': factors[0] if factors else None,
-            'confidence': factors[0]['score'] if factors else 0.0
+            "factors": factors,
+            "primary_cause": factors[0] if factors else None,
+            "confidence": factors[0]["score"] if factors else 0.0,
         }
-
 
     # ========================================================================
     # FORECASTING METHODS (using real ForecastingService)
     # ========================================================================
 
     def generate_forecast(
-        self,
-        sensor_id: str,
-        horizon: int = 24,
-        model_type: str = "transformer"
+        self, sensor_id: str, horizon: int = 24, model_type: str = "transformer"
     ) -> Dict:
         """
         Generate forecast using REAL forecasting service
@@ -344,19 +373,19 @@ class DashboardIntegrationService:
                 # Use real forecasting service (FIXED: use correct method name and API)
                 forecast_result = self.forecasting_service.generate_forecast(
                     sensor_id=sensor_id,
-                    data=historical['value'].values,
-                    timestamps=historical['timestamp'].tolist(),
-                    horizon_hours=horizon
+                    data=historical["value"].values,
+                    timestamps=historical["timestamp"].tolist(),
+                    horizon_hours=horizon,
                 )
 
                 # Convert service result to dashboard format
                 return {
-                    'forecast': forecast_result['forecast_values'],
-                    'timestamps': forecast_result['forecast_timestamps'],
-                    'confidence_80': forecast_result.get('confidence_lower', []),
-                    'confidence_95': forecast_result.get('confidence_upper', []),
-                    'risk_assessment': forecast_result.get('risk_assessment', {}),
-                    'model_status': forecast_result.get('model_status', 'unknown')
+                    "forecast": forecast_result["forecast_values"],
+                    "timestamps": forecast_result["forecast_timestamps"],
+                    "confidence_80": forecast_result.get("confidence_lower", []),
+                    "confidence_95": forecast_result.get("confidence_upper", []),
+                    "risk_assessment": forecast_result.get("risk_assessment", {}),
+                    "model_status": forecast_result.get("model_status", "unknown"),
                 }
             else:
                 # Fallback: simple forecast
@@ -365,14 +394,12 @@ class DashboardIntegrationService:
         except Exception as e:
             logger.error(f"Error generating forecast: {e}")
             return self._generate_simple_forecast(
-                self.get_sensor_data(sensor_id, hours=24),
-                horizon
+                self.get_sensor_data(sensor_id, hours=24), horizon
             )
-
 
     def _generate_simple_forecast(self, historical: pd.DataFrame, horizon: int) -> Dict:
         """Simple trend-based forecast as fallback"""
-        values = historical['value'].values
+        values = historical["value"].values
 
         # Simple trend + seasonal
         trend = np.polyfit(range(len(values)), values, 1)
@@ -388,16 +415,15 @@ class DashboardIntegrationService:
         std = np.std(values)
 
         return {
-            'forecast': forecast_values,
-            'confidence_80': [(v - std, v + std) for v in forecast_values],
-            'confidence_95': [(v - 1.96*std, v + 1.96*std) for v in forecast_values],
-            'timestamps': pd.date_range(
-                start=historical['timestamp'].iloc[-1],
-                periods=horizon+1,
-                freq='H'
-            )[1:].tolist()
+            "forecast": forecast_values,
+            "confidence_80": [(v - std, v + std) for v in forecast_values],
+            "confidence_95": [
+                (v - 1.96 * std, v + 1.96 * std) for v in forecast_values
+            ],
+            "timestamps": pd.date_range(
+                start=historical["timestamp"].iloc[-1], periods=horizon + 1, freq="H"
+            )[1:].tolist(),
         }
-
 
     # ========================================================================
     # MLFLOW INTEGRATION METHODS
@@ -414,17 +440,16 @@ class DashboardIntegrationService:
 
             return [
                 {
-                    'id': exp.experiment_id,
-                    'name': exp.name,
-                    'artifact_location': exp.artifact_location,
-                    'lifecycle_stage': exp.lifecycle_stage
+                    "id": exp.experiment_id,
+                    "name": exp.name,
+                    "artifact_location": exp.artifact_location,
+                    "lifecycle_stage": exp.lifecycle_stage,
                 }
                 for exp in experiments
             ]
         except Exception as e:
             logger.warning(f"MLflow not available: {e}")
             return []
-
 
     def get_mlflow_runs(self, experiment_id: str) -> List[Dict]:
         """Get runs for an experiment"""
@@ -437,19 +462,18 @@ class DashboardIntegrationService:
 
             return [
                 {
-                    'run_id': run.info.run_id,
-                    'run_name': run.info.run_name,
-                    'status': run.info.status,
-                    'start_time': run.info.start_time,
-                    'metrics': run.data.metrics,
-                    'params': run.data.params
+                    "run_id": run.info.run_id,
+                    "run_name": run.info.run_name,
+                    "status": run.info.status,
+                    "start_time": run.info.start_time,
+                    "metrics": run.data.metrics,
+                    "params": run.data.params,
                 }
                 for run in runs
             ]
         except Exception as e:
             logger.warning(f"Could not load MLflow runs: {e}")
             return []
-
 
     # ========================================================================
     # MODEL MONITORING METHODS (using real ModelMonitoringService)
@@ -460,8 +484,7 @@ class DashboardIntegrationService:
         try:
             if self.monitoring_service:
                 return self.monitoring_service.get_performance_history(
-                    model_name=model_name,
-                    days=days
+                    model_name=model_name, days=days
                 )
             else:
                 return self._generate_mock_performance(model_name, days)
@@ -469,10 +492,9 @@ class DashboardIntegrationService:
             logger.error(f"Error getting model performance: {e}")
             return self._generate_mock_performance(model_name, days)
 
-
     def _generate_mock_performance(self, model_name: str, days: int) -> Dict:
         """Generate mock performance data"""
-        dates = pd.date_range(end=datetime.now(), periods=days, freq='D')
+        dates = pd.date_range(end=datetime.now(), periods=days, freq="D")
 
         # Slight degradation over time (realistic)
         base_accuracy = 0.92
@@ -481,11 +503,11 @@ class DashboardIntegrationService:
         accuracy = base_accuracy + degradation + noise
 
         return {
-            'dates': dates.tolist(),
-            'accuracy': accuracy.tolist(),
-            'precision': (accuracy - 0.02).tolist(),
-            'recall': (accuracy - 0.01).tolist(),
-            'f1_score': (accuracy - 0.015).tolist()
+            "dates": dates.tolist(),
+            "accuracy": accuracy.tolist(),
+            "precision": (accuracy - 0.02).tolist(),
+            "recall": (accuracy - 0.01).tolist(),
+            "f1_score": (accuracy - 0.015).tolist(),
         }
 
 

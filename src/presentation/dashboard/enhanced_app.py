@@ -4,6 +4,7 @@ This file provides backward compatibility by wrapping OptimizedIoTDashboard as E
 """
 
 import logging
+
 from .enhanced_app_optimized import OptimizedIoTDashboard, create_optimized_dashboard
 
 logger = logging.getLogger(__name__)
@@ -12,6 +13,7 @@ logger = logging.getLogger(__name__)
 EnhancedIoTDashboard = OptimizedIoTDashboard
 
 logger.info("Enhanced dashboard compatibility wrapper loaded successfully")
+
 
 def create_enhanced_dashboard(debug: bool = False) -> EnhancedIoTDashboard:
     """
@@ -27,4 +29,4 @@ def create_enhanced_dashboard(debug: bool = False) -> EnhancedIoTDashboard:
 
 
 # Default export
-__all__ = ['EnhancedIoTDashboard', 'create_enhanced_dashboard']
+__all__ = ["EnhancedIoTDashboard", "create_enhanced_dashboard"]

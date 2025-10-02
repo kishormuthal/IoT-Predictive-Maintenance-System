@@ -12,14 +12,13 @@ from pathlib import Path
 # Add project root to path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.dashboard.nasa_dashboard_orchestrator import phase3_manager
 from src.dashboard.integration.event_coordinator import EventType
+from src.dashboard.nasa_dashboard_orchestrator import phase3_manager
 from src.dashboard.state.shared_state import shared_state_manager
 
 # Setup logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -33,11 +32,7 @@ async def test_event_coordinator():
         event_id = phase3_manager.event_coordinator.publish_event(
             EventType.SENSOR_DATA_UPDATE,
             source="validation_script",
-            data={
-                'sensor_id': 'T-1',
-                'value': 75.5,
-                'timestamp': time.time()
-            }
+            data={"sensor_id": "T-1", "value": 75.5, "timestamp": time.time()},
         )
 
         assert event_id, "Event publishing failed"
@@ -69,9 +64,9 @@ async def test_workflow_manager():
             phase3_manager.event_coordinator.Event(
                 EventType.ANOMALY_DETECTED,
                 source="validation_script",
-                data={'sensor_id': 'T-1', 'anomaly_score': 0.85}
+                data={"sensor_id": "T-1", "anomaly_score": 0.85},
             ),
-            priority=2
+            priority=2,
         )
 
         assert workflow_id, "Workflow creation failed"
@@ -94,19 +89,20 @@ async def test_cache_manager():
 
     try:
         # Test sensor data caching
-        data = await phase3_manager.cache_manager.get_sensor_data('T-1', '1h', 'sensor_monitoring')
+        data = await phase3_manager.cache_manager.get_sensor_data(
+            "T-1", "1h", "sensor_monitoring"
+        )
         assert data is not None, "Sensor data retrieval failed"
 
         # Test cross-feature data
         cross_data = await phase3_manager.cache_manager.get_cross_feature_data(
-            ['T-1', 'P-1'],
-            ['sensor_monitoring', 'anomaly_detection']
+            ["T-1", "P-1"], ["sensor_monitoring", "anomaly_detection"]
         )
         assert len(cross_data) > 0, "Cross-feature data retrieval failed"
 
         # Test cache metrics
         metrics = phase3_manager.cache_manager.get_cache_metrics()
-        assert hasattr(metrics, 'hit_rate_12h'), "Cache metrics missing"
+        assert hasattr(metrics, "hit_rate_12h"), "Cache metrics missing"
 
         logger.info("✓ Enhanced Cache Manager tests passed")
         return True
@@ -123,22 +119,20 @@ async def test_lazy_loader():
     try:
         # Test component registration
         def mock_load_function():
-            return {'data': 'test_data', 'loaded_at': time.time()}
+            return {"data": "test_data", "loaded_at": time.time()}
 
         success = phase3_manager.lazy_loader.register_component(
-            'test_component',
-            'sensor_chart',
-            mock_load_function
+            "test_component", "sensor_chart", mock_load_function
         )
         assert success, "Component registration failed"
 
         # Test component loading
-        data = await phase3_manager.lazy_loader.load_component('test_component')
+        data = await phase3_manager.lazy_loader.load_component("test_component")
         assert data is not None, "Component loading failed"
 
         # Test loading metrics
         metrics = phase3_manager.lazy_loader.get_loading_metrics()
-        assert hasattr(metrics, 'total_components'), "Loading metrics missing"
+        assert hasattr(metrics, "total_components"), "Loading metrics missing"
 
         logger.info("✓ Lazy Loader tests passed")
         return True
@@ -155,7 +149,7 @@ async def test_performance_monitor():
     try:
         # Test performance summary
         summary = phase3_manager.performance_monitor.get_performance_summary()
-        assert 'performance_score' in summary, "Performance summary missing score"
+        assert "performance_score" in summary, "Performance summary missing score"
 
         # Test alerts
         alerts = phase3_manager.performance_monitor.get_alerts()
@@ -179,23 +173,23 @@ def test_theme_manager():
 
     try:
         # Test theme setting
-        success = phase3_manager.theme_manager.set_theme('dark')
+        success = phase3_manager.theme_manager.set_theme("dark")
         assert success, "Theme setting failed"
 
         # Test theme info
         theme_info = phase3_manager.theme_manager.get_current_theme_info()
-        assert theme_info['name'] == 'dark', "Theme not applied correctly"
+        assert theme_info["name"] == "dark", "Theme not applied correctly"
 
         # Test sensor colors
-        color = phase3_manager.theme_manager.get_sensor_color('T-1')
-        assert color.startswith('#'), "Sensor color not valid hex"
+        color = phase3_manager.theme_manager.get_sensor_color("T-1")
+        assert color.startswith("#"), "Sensor color not valid hex"
 
         # Test CSS variables
         css_vars = phase3_manager.theme_manager.get_theme_css_variables()
-        assert '--color-primary' in css_vars, "CSS variables missing"
+        assert "--color-primary" in css_vars, "CSS variables missing"
 
         # Reset to light theme
-        phase3_manager.theme_manager.set_theme('light')
+        phase3_manager.theme_manager.set_theme("light")
 
         logger.info("✓ Theme Manager tests passed")
         return True
@@ -216,16 +210,16 @@ def test_responsive_utils():
 
         # Test breakpoint detection
         breakpoint = phase3_manager.responsive_utils.get_current_breakpoint(1200)
-        assert breakpoint in ['xs', 'sm', 'md', 'lg', 'xl', 'xxl'], "Invalid breakpoint"
+        assert breakpoint in ["xs", "sm", "md", "lg", "xl", "xxl"], "Invalid breakpoint"
 
         # Test NASA grid configuration
         grid_config = phase3_manager.responsive_utils.get_sensor_grid_config()
-        assert 'rows' in grid_config and 'columns' in grid_config, "Grid config missing"
-        assert grid_config['total_sensors'] == 12, "NASA sensor count incorrect"
+        assert "rows" in grid_config and "columns" in grid_config, "Grid config missing"
+        assert grid_config["total_sensors"] == 12, "NASA sensor count incorrect"
 
         # Test font sizes
         font_sizes = phase3_manager.responsive_utils.get_font_sizes()
-        assert 'base' in font_sizes, "Base font size missing"
+        assert "base" in font_sizes, "Base font size missing"
 
         logger.info("✓ Responsive Utils tests passed")
         return True
@@ -241,17 +235,21 @@ def test_shared_state_integration():
 
     try:
         # Test state setting and getting
-        shared_state_manager.set_state('test.phase3_validation', True, 'validation_script')
-        value = shared_state_manager.get_state('test.phase3_validation')
+        shared_state_manager.set_state(
+            "test.phase3_validation", True, "validation_script"
+        )
+        value = shared_state_manager.get_state("test.phase3_validation")
         assert value is True, "State setting/getting failed"
 
         # Test integration status
         integration_status = shared_state_manager.get_integration_status()
-        assert 'event_coordinator_active' in integration_status, "Integration status missing"
+        assert (
+            "event_coordinator_active" in integration_status
+        ), "Integration status missing"
 
         # Test NASA sensor state
-        nasa_state = shared_state_manager.get_nasa_sensor_state('T-1')
-        assert 'active_mission' in nasa_state, "NASA sensor state missing"
+        nasa_state = shared_state_manager.get_nasa_sensor_state("T-1")
+        assert "active_mission" in nasa_state, "NASA sensor state missing"
 
         logger.info("✓ Shared State Integration tests passed")
         return True
@@ -267,7 +265,9 @@ async def test_end_to_end_integration():
 
     try:
         # Simulate user sensor selection
-        shared_state_manager.set_state('selections.sensor_id', 'T-1', 'validation_script')
+        shared_state_manager.set_state(
+            "selections.sensor_id", "T-1", "validation_script"
+        )
 
         # Wait for event propagation
         await asyncio.sleep(0.5)
@@ -276,11 +276,7 @@ async def test_end_to_end_integration():
         phase3_manager.event_coordinator.publish_event(
             EventType.ANOMALY_DETECTED,
             source="validation_script",
-            data={
-                'sensor_id': 'T-1',
-                'anomaly_score': 0.85,
-                'timestamp': time.time()
-            }
+            data={"sensor_id": "T-1", "anomaly_score": 0.85, "timestamp": time.time()},
         )
 
         # Wait for workflow processing
@@ -293,11 +289,13 @@ async def test_end_to_end_integration():
 
         # Check cache optimization
         cache_status = phase3_manager.cache_manager.get_sensor_cache_status()
-        assert 'T-1' in cache_status, "Sensor not found in cache status"
+        assert "T-1" in cache_status, "Sensor not found in cache status"
 
         # Check performance impact
         perf_summary = phase3_manager.performance_monitor.get_performance_summary()
-        logger.info(f"Performance score: {perf_summary.get('performance_score', 'N/A')}")
+        logger.info(
+            f"Performance score: {perf_summary.get('performance_score', 'N/A')}"
+        )
 
         logger.info("✓ End-to-End Integration tests passed")
         return True
@@ -309,9 +307,9 @@ async def test_end_to_end_integration():
 
 async def run_validation():
     """Run complete Phase 3 validation"""
-    logger.info("="*50)
+    logger.info("=" * 50)
     logger.info("Phase 3 Integration Validation")
-    logger.info("="*50)
+    logger.info("=" * 50)
 
     try:
         # Initialize Phase 3
@@ -324,53 +322,67 @@ async def run_validation():
         # Run all tests
         test_results = {}
 
-        test_results['event_coordinator'] = await test_event_coordinator()
-        test_results['workflow_manager'] = await test_workflow_manager()
-        test_results['cache_manager'] = await test_cache_manager()
-        test_results['lazy_loader'] = await test_lazy_loader()
-        test_results['performance_monitor'] = await test_performance_monitor()
-        test_results['theme_manager'] = test_theme_manager()
-        test_results['responsive_utils'] = test_responsive_utils()
-        test_results['shared_state_integration'] = test_shared_state_integration()
-        test_results['end_to_end_integration'] = await test_end_to_end_integration()
+        test_results["event_coordinator"] = await test_event_coordinator()
+        test_results["workflow_manager"] = await test_workflow_manager()
+        test_results["cache_manager"] = await test_cache_manager()
+        test_results["lazy_loader"] = await test_lazy_loader()
+        test_results["performance_monitor"] = await test_performance_monitor()
+        test_results["theme_manager"] = test_theme_manager()
+        test_results["responsive_utils"] = test_responsive_utils()
+        test_results["shared_state_integration"] = test_shared_state_integration()
+        test_results["end_to_end_integration"] = await test_end_to_end_integration()
 
         # Summary
         passed = sum(test_results.values())
         total = len(test_results)
 
-        logger.info("="*50)
+        logger.info("=" * 50)
         logger.info("VALIDATION RESULTS")
-        logger.info("="*50)
+        logger.info("=" * 50)
 
         for test_name, result in test_results.items():
             status = "✓ PASS" if result else "✗ FAIL"
             logger.info(f"{test_name:25}: {status}")
 
-        logger.info("-"*50)
+        logger.info("-" * 50)
         logger.info(f"Total: {passed}/{total} tests passed")
 
         if passed == total:
             logger.info("🎉 ALL TESTS PASSED - Phase 3 integration successful!")
         else:
-            logger.warning(f"⚠️  {total - passed} tests failed - Phase 3 integration has issues")
+            logger.warning(
+                f"⚠️  {total - passed} tests failed - Phase 3 integration has issues"
+            )
 
         # Show integration status
         logger.info("\nIntegration Status:")
         status = phase3_manager.get_integration_status()
-        for component, active in status['components'].items():
+        for component, active in status["components"].items():
             status_icon = "✓" if active else "✗"
             logger.info(f"  {status_icon} {component}")
 
         # Show dashboard data
         logger.info(f"\nDashboard Summary:")
         dashboard_data = phase3_manager.get_phase3_dashboard_data()
-        if 'error' not in dashboard_data:
-            logger.info(f"  Performance Score: {dashboard_data.get('performance', {}).get('performance_score', 'N/A')}")
-            logger.info(f"  Cache Hit Rate: {dashboard_data.get('cache', {}).get('hit_rate_12h', 'N/A'):.1%}")
-            logger.info(f"  Loaded Components: {dashboard_data.get('loading', {}).get('loaded_components', 'N/A')}")
-            logger.info(f"  Current Theme: {dashboard_data.get('theme', {}).get('name', 'N/A')}")
-            logger.info(f"  Device Type: {dashboard_data.get('integration_status', {}).get('device_type', 'N/A')}")
-            logger.info(f"  NASA Sensors: {dashboard_data.get('nasa_sensors', {}).get('total', 'N/A')}")
+        if "error" not in dashboard_data:
+            logger.info(
+                f"  Performance Score: {dashboard_data.get('performance', {}).get('performance_score', 'N/A')}"
+            )
+            logger.info(
+                f"  Cache Hit Rate: {dashboard_data.get('cache', {}).get('hit_rate_12h', 'N/A'):.1%}"
+            )
+            logger.info(
+                f"  Loaded Components: {dashboard_data.get('loading', {}).get('loaded_components', 'N/A')}"
+            )
+            logger.info(
+                f"  Current Theme: {dashboard_data.get('theme', {}).get('name', 'N/A')}"
+            )
+            logger.info(
+                f"  Device Type: {dashboard_data.get('integration_status', {}).get('device_type', 'N/A')}"
+            )
+            logger.info(
+                f"  NASA Sensors: {dashboard_data.get('nasa_sensors', {}).get('total', 'N/A')}"
+            )
 
         return passed == total
 

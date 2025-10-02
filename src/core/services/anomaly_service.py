@@ -4,17 +4,28 @@ Clean service layer for Telemanom-based anomaly detection
 Enhanced with model registry integration
 """
 
-import numpy as np
 import logging
-from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Any, Dict, List, Optional
 
-from ..interfaces.detector_interface import AnomalyDetectorInterface
-from ..models.anomaly import AnomalyDetection, AnomalyDetectionResult, AnomalySummary, AnomalySeverity, AnomalyType
-from ..models.sensor_data import SensorDataBatch
-from ...infrastructure.ml.telemanom_wrapper import NASATelemanom, Telemanom_Config, ModelNotTrainedError
+import numpy as np
+
 from ...infrastructure.ml.model_registry import ModelRegistry
+from ...infrastructure.ml.telemanom_wrapper import (
+    ModelNotTrainedError,
+    NASATelemanom,
+    Telemanom_Config,
+)
+from ..interfaces.detector_interface import AnomalyDetectorInterface
+from ..models.anomaly import (
+    AnomalyDetection,
+    AnomalyDetectionResult,
+    AnomalySeverity,
+    AnomalySummary,
+    AnomalyType,
+)
+from ..models.sensor_data import SensorDataBatch
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +39,7 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
         self,
         registry_path: str = "data/models/registry",
         detection_history_size: int = 1000,
-        fallback_threshold: float = 3.0
+        fallback_threshold: float = 3.0,
     ):
         """
         Initialize anomaly detection service
@@ -71,13 +82,19 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
             model = NASATelemanom(sensor_id, config)
 
             # Load model from registry (single source of truth)
-            active_version = self.model_registry.get_active_model_version(sensor_id, 'telemanom')
+            active_version = self.model_registry.get_active_model_version(
+                sensor_id, "telemanom"
+            )
 
             if active_version:
                 metadata = self.model_registry.get_model_metadata(active_version)
                 if metadata:
                     # Get model path from registry metadata
-                    registry_model_path = Path(metadata.model_path) if hasattr(metadata, 'model_path') else None
+                    registry_model_path = (
+                        Path(metadata.model_path)
+                        if hasattr(metadata, "model_path")
+                        else None
+                    )
 
                     if registry_model_path and registry_model_path.exists():
                         load_success = model.load_model(registry_model_path.parent)
@@ -100,10 +117,14 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
                             f"sensor {sensor_id}"
                         )
                 else:
-                    logger.warning(f"Model metadata not found for version {active_version}, sensor {sensor_id}")
+                    logger.warning(
+                        f"Model metadata not found for version {active_version}, sensor {sensor_id}"
+                    )
             else:
                 # No model in registry - model will be marked as untrained
-                logger.info(f"No registered model found for sensor {sensor_id} - model untrained")
+                logger.info(
+                    f"No registered model found for sensor {sensor_id} - model untrained"
+                )
 
             self._models[sensor_id] = model
 
@@ -132,7 +153,9 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
         else:
             return AnomalySeverity.LOW
 
-    def detect_anomalies(self, sensor_id: str, data: np.ndarray, timestamps: List[datetime]) -> Dict[str, Any]:
+    def detect_anomalies(
+        self, sensor_id: str, data: np.ndarray, timestamps: List[datetime]
+    ) -> Dict[str, Any]:
         """
         Detect anomalies in sensor data using Telemanom
 
@@ -151,7 +174,9 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
             model = self._get_model(sensor_id)
 
             if not model.is_trained:
-                logger.warning(f"Model not trained for sensor {sensor_id}, using fallback detection")
+                logger.warning(
+                    f"Model not trained for sensor {sensor_id}, using fallback detection"
+                )
                 return self._fallback_detection(sensor_id, data, timestamps)
 
             # Run Telemanom detection
@@ -159,9 +184,9 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
 
             # Convert to structured anomaly objects
             anomalies = []
-            anomaly_indices = detection_result['anomalies']
-            scores = detection_result['scores']  # Full scores array for all data points
-            threshold = detection_result['threshold']
+            anomaly_indices = detection_result["anomalies"]
+            scores = detection_result["scores"]  # Full scores array for all data points
+            threshold = detection_result["threshold"]
 
             for idx in anomaly_indices:
                 if idx < len(timestamps):
@@ -183,8 +208,10 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
                         score=float(score),
                         severity=severity,
                         anomaly_type=AnomalyType.POINT,
-                        confidence=min(1.0, severity_magnitude),  # Capped severity ratio
-                        description=f"Telemanom detected anomaly (score: {score:.3f}, severity: {severity.value})"
+                        confidence=min(
+                            1.0, severity_magnitude
+                        ),  # Capped severity ratio
+                        description=f"Telemanom detected anomaly (score: {score:.3f}, severity: {severity.value})",
                     )
                     anomalies.append(anomaly)
 
@@ -194,7 +221,9 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
             self._detection_history[sensor_id].extend(anomalies)
 
             # Keep only recent detections (configurable size)
-            self._detection_history[sensor_id] = self._detection_history[sensor_id][-self.detection_history_size:]
+            self._detection_history[sensor_id] = self._detection_history[sensor_id][
+                -self.detection_history_size :
+            ]
 
             processing_time = (datetime.now() - start_time).total_seconds()
 
@@ -207,30 +236,32 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
                 model_version="Telemanom-1.0",
                 detection_timestamp=datetime.now(),
                 statistics={
-                    'total_points': len(data),
-                    'anomaly_count': len(anomalies),
-                    'anomaly_rate': len(anomalies) / len(data) if len(data) > 0 else 0,
-                    'threshold': threshold,
-                    'max_score': max(scores) if scores else 0,
-                    'mean_score': np.mean(scores) if scores else 0
-                }
+                    "total_points": len(data),
+                    "anomaly_count": len(anomalies),
+                    "anomaly_rate": len(anomalies) / len(data) if len(data) > 0 else 0,
+                    "threshold": threshold,
+                    "max_score": max(scores) if scores else 0,
+                    "mean_score": np.mean(scores) if scores else 0,
+                },
             )
 
             logger.info(f"Detected {len(anomalies)} anomalies for sensor {sensor_id}")
 
             return {
-                'sensor_id': sensor_id,
-                'anomalies': [self._anomaly_to_dict(a) for a in anomalies],
-                'statistics': result.statistics,
-                'processing_time': processing_time,
-                'model_status': 'trained'
+                "sensor_id": sensor_id,
+                "anomalies": [self._anomaly_to_dict(a) for a in anomalies],
+                "statistics": result.statistics,
+                "processing_time": processing_time,
+                "model_status": "trained",
             }
 
         except Exception as e:
             logger.error(f"Error detecting anomalies for sensor {sensor_id}: {e}")
             return self._fallback_detection(sensor_id, data, timestamps)
 
-    def _fallback_detection(self, sensor_id: str, data: np.ndarray, timestamps: List[datetime]) -> Dict[str, Any]:
+    def _fallback_detection(
+        self, sensor_id: str, data: np.ndarray, timestamps: List[datetime]
+    ) -> Dict[str, Any]:
         """Fallback anomaly detection when model is not available
 
         Uses statistical z-score based detection with configurable threshold.
@@ -248,11 +279,11 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
             # Simple statistical anomaly detection
             if len(data) < 10:
                 return {
-                    'sensor_id': sensor_id,
-                    'anomalies': [],
-                    'statistics': {'total_points': len(data), 'anomaly_count': 0},
-                    'processing_time': 0.0,
-                    'model_status': 'fallback_insufficient_data'
+                    "sensor_id": sensor_id,
+                    "anomalies": [],
+                    "statistics": {"total_points": len(data), "anomaly_count": 0},
+                    "processing_time": 0.0,
+                    "model_status": "fallback_insufficient_data",
                 }
 
             # Use z-score based detection with configurable threshold
@@ -269,19 +300,19 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
                 )
                 # All values are identical - no anomalies can be detected via z-score
                 return {
-                    'sensor_id': sensor_id,
-                    'anomalies': [],
-                    'statistics': {
-                        'total_points': len(data),
-                        'anomaly_count': 0,
-                        'anomaly_rate': 0.0,
-                        'threshold': self.fallback_threshold,
-                        'mean_value': float(mean_val),
-                        'std_value': 0.0,
-                        'note': 'Constant data - no variance'
+                    "sensor_id": sensor_id,
+                    "anomalies": [],
+                    "statistics": {
+                        "total_points": len(data),
+                        "anomaly_count": 0,
+                        "anomaly_rate": 0.0,
+                        "threshold": self.fallback_threshold,
+                        "mean_value": float(mean_val),
+                        "std_value": 0.0,
+                        "note": "Constant data - no variance",
                     },
-                    'processing_time': 0.001,
-                    'model_status': 'fallback_constant_data'
+                    "processing_time": 0.001,
+                    "model_status": "fallback_constant_data",
                 }
 
             # Calculate z-scores
@@ -305,46 +336,46 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
                         severity=severity,
                         anomaly_type=AnomalyType.POINT,
                         confidence=0.6,  # Lower confidence for fallback detection
-                        description=f"Statistical anomaly (z-score: {z_score:.2f})"
+                        description=f"Statistical anomaly (z-score: {z_score:.2f})",
                     )
                     anomalies.append(anomaly)
 
             return {
-                'sensor_id': sensor_id,
-                'anomalies': [self._anomaly_to_dict(a) for a in anomalies],
-                'statistics': {
-                    'total_points': len(data),
-                    'anomaly_count': len(anomalies),
-                    'anomaly_rate': len(anomalies) / len(data),
-                    'threshold': self.fallback_threshold,
-                    'mean_value': float(mean_val),
-                    'std_value': float(std_val)
+                "sensor_id": sensor_id,
+                "anomalies": [self._anomaly_to_dict(a) for a in anomalies],
+                "statistics": {
+                    "total_points": len(data),
+                    "anomaly_count": len(anomalies),
+                    "anomaly_rate": len(anomalies) / len(data),
+                    "threshold": self.fallback_threshold,
+                    "mean_value": float(mean_val),
+                    "std_value": float(std_val),
                 },
-                'processing_time': 0.001,
-                'model_status': 'fallback'
+                "processing_time": 0.001,
+                "model_status": "fallback",
             }
 
         except Exception as e:
             logger.error(f"Fallback detection failed for sensor {sensor_id}: {e}")
             return {
-                'sensor_id': sensor_id,
-                'anomalies': [],
-                'statistics': {'total_points': len(data), 'anomaly_count': 0},
-                'processing_time': 0.0,
-                'model_status': 'error'
+                "sensor_id": sensor_id,
+                "anomalies": [],
+                "statistics": {"total_points": len(data), "anomaly_count": 0},
+                "processing_time": 0.0,
+                "model_status": "error",
             }
 
     def _anomaly_to_dict(self, anomaly: AnomalyDetection) -> Dict[str, Any]:
         """Convert anomaly object to dictionary"""
         return {
-            'sensor_id': anomaly.sensor_id,
-            'timestamp': anomaly.timestamp,
-            'value': anomaly.value,
-            'score': anomaly.score,
-            'severity': anomaly.severity.value,
-            'type': anomaly.anomaly_type.value,
-            'confidence': anomaly.confidence,
-            'description': anomaly.description
+            "sensor_id": anomaly.sensor_id,
+            "timestamp": anomaly.timestamp,
+            "value": anomaly.value,
+            "score": anomaly.score,
+            "severity": anomaly.severity.value,
+            "type": anomaly.anomaly_type.value,
+            "confidence": anomaly.confidence,
+            "description": anomaly.description,
         }
 
     def is_model_trained(self, sensor_id: str) -> bool:
@@ -355,7 +386,9 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
         except Exception:
             return False
 
-    def get_detection_summary(self, sensor_id: str = None, hours_back: int = 24) -> Dict[str, Any]:
+    def get_detection_summary(
+        self, sensor_id: str = None, hours_back: int = 24
+    ) -> Dict[str, Any]:
         """Get summary of recent detections"""
         try:
             cutoff_time = datetime.now() - timedelta(hours=hours_back)
@@ -363,7 +396,9 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
             if sensor_id:
                 # Summary for specific sensor
                 sensor_anomalies = self._detection_history.get(sensor_id, [])
-                recent_anomalies = [a for a in sensor_anomalies if a.timestamp >= cutoff_time]
+                recent_anomalies = [
+                    a for a in sensor_anomalies if a.timestamp >= cutoff_time
+                ]
 
                 severity_counts = {}
                 for anomaly in recent_anomalies:
@@ -371,11 +406,13 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
                     severity_counts[severity] = severity_counts.get(severity, 0) + 1
 
                 return {
-                    'sensor_id': sensor_id,
-                    'total_anomalies': len(recent_anomalies),
-                    'severity_breakdown': severity_counts,
-                    'recent_anomalies': [self._anomaly_to_dict(a) for a in recent_anomalies[-10:]],
-                    'time_range_hours': hours_back
+                    "sensor_id": sensor_id,
+                    "total_anomalies": len(recent_anomalies),
+                    "severity_breakdown": severity_counts,
+                    "recent_anomalies": [
+                        self._anomaly_to_dict(a) for a in recent_anomalies[-10:]
+                    ],
+                    "time_range_hours": hours_back,
                 }
             else:
                 # Summary across all sensors
@@ -383,47 +420,57 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
                 sensor_stats = {}
 
                 for sid, anomalies in self._detection_history.items():
-                    recent_anomalies = [a for a in anomalies if a.timestamp >= cutoff_time]
+                    recent_anomalies = [
+                        a for a in anomalies if a.timestamp >= cutoff_time
+                    ]
                     all_anomalies.extend(recent_anomalies)
 
                     # Fix: Safely access latest_detection
                     latest_detection_time = None
                     if recent_anomalies:
                         # Sort by timestamp to get the truly latest
-                        sorted_anomalies = sorted(recent_anomalies, key=lambda x: x.timestamp, reverse=True)
-                        latest_detection_time = sorted_anomalies[0].timestamp.isoformat()
+                        sorted_anomalies = sorted(
+                            recent_anomalies, key=lambda x: x.timestamp, reverse=True
+                        )
+                        latest_detection_time = sorted_anomalies[
+                            0
+                        ].timestamp.isoformat()
 
                     sensor_stats[sid] = {
-                        'anomaly_count': len(recent_anomalies),
-                        'latest_detection': latest_detection_time,
-                        'model_trained': self.is_model_trained(sid)
+                        "anomaly_count": len(recent_anomalies),
+                        "latest_detection": latest_detection_time,
+                        "model_trained": self.is_model_trained(sid),
                     }
 
                 severity_breakdown = {}
                 for anomaly in all_anomalies:
                     severity = anomaly.severity.value
-                    severity_breakdown[severity] = severity_breakdown.get(severity, 0) + 1
+                    severity_breakdown[severity] = (
+                        severity_breakdown.get(severity, 0) + 1
+                    )
 
                 # Sort by timestamp for recent anomalies
                 all_anomalies.sort(key=lambda x: x.timestamp, reverse=True)
 
                 return {
-                    'total_anomalies': len(all_anomalies),
-                    'severity_breakdown': severity_breakdown,
-                    'recent_anomalies': [self._anomaly_to_dict(a) for a in all_anomalies[:20]],
-                    'sensor_stats': sensor_stats,
-                    'time_range_hours': hours_back,
-                    'generated_at': datetime.now()
+                    "total_anomalies": len(all_anomalies),
+                    "severity_breakdown": severity_breakdown,
+                    "recent_anomalies": [
+                        self._anomaly_to_dict(a) for a in all_anomalies[:20]
+                    ],
+                    "sensor_stats": sensor_stats,
+                    "time_range_hours": hours_back,
+                    "generated_at": datetime.now(),
                 }
 
         except Exception as e:
             logger.error(f"Error generating detection summary: {e}")
             return {
-                'total_anomalies': 0,
-                'severity_breakdown': {},
-                'recent_anomalies': [],
-                'sensor_stats': {},
-                'error': str(e)
+                "total_anomalies": 0,
+                "severity_breakdown": {},
+                "recent_anomalies": [],
+                "sensor_stats": {},
+                "error": str(e),
             }
 
     def get_model_status(self) -> Dict[str, Any]:
@@ -431,22 +478,26 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
         status = {}
         for sensor_id, model in self._models.items():
             # Get registry information
-            active_version = self.model_registry.get_active_model_version(sensor_id, 'telemanom')
+            active_version = self.model_registry.get_active_model_version(
+                sensor_id, "telemanom"
+            )
             metadata = None
             if active_version:
                 metadata = self.model_registry.get_model_metadata(active_version)
 
             status[sensor_id] = {
-                'is_trained': model.is_trained,
-                'error_threshold': getattr(model, 'error_threshold', None),
-                'model_parameters': model.model.count_params() if model.model else 0,
-                'last_used': datetime.now(),
-                'registry_info': {
-                    'active_version': active_version,
-                    'performance_score': metadata.performance_score if metadata else 0,
-                    'last_trained': metadata.created_at if metadata else None,
-                    'model_size_mb': metadata.model_size_bytes / (1024 * 1024) if metadata else 0
-                }
+                "is_trained": model.is_trained,
+                "error_threshold": getattr(model, "error_threshold", None),
+                "model_parameters": model.model.count_params() if model.model else 0,
+                "last_used": datetime.now(),
+                "registry_info": {
+                    "active_version": active_version,
+                    "performance_score": metadata.performance_score if metadata else 0,
+                    "last_trained": metadata.created_at if metadata else None,
+                    "model_size_mb": (
+                        metadata.model_size_bytes / (1024 * 1024) if metadata else 0
+                    ),
+                },
             }
         return status
 
@@ -454,53 +505,62 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
         """Get recommendations for model training"""
         try:
             from config.equipment_config import get_equipment_list
+
             equipment_list = get_equipment_list()
 
             recommendations = {
-                'sensors_needing_training': [],
-                'sensors_needing_retraining': [],
-                'well_performing_sensors': [],
-                'total_sensors': len(equipment_list)
+                "sensors_needing_training": [],
+                "sensors_needing_retraining": [],
+                "well_performing_sensors": [],
+                "total_sensors": len(equipment_list),
             }
 
             for equipment in equipment_list:
                 sensor_id = equipment.equipment_id
 
                 # Check if model exists and its performance
-                active_version = self.model_registry.get_active_model_version(sensor_id, 'telemanom')
+                active_version = self.model_registry.get_active_model_version(
+                    sensor_id, "telemanom"
+                )
 
                 if not active_version:
-                    recommendations['sensors_needing_training'].append({
-                        'sensor_id': sensor_id,
-                        'equipment_type': equipment.equipment_type.value,
-                        'criticality': equipment.criticality.value,
-                        'reason': 'No trained model found'
-                    })
+                    recommendations["sensors_needing_training"].append(
+                        {
+                            "sensor_id": sensor_id,
+                            "equipment_type": equipment.equipment_type.value,
+                            "criticality": equipment.criticality.value,
+                            "reason": "No trained model found",
+                        }
+                    )
                 else:
                     metadata = self.model_registry.get_model_metadata(active_version)
                     if metadata:
                         if metadata.performance_score < 0.5:
-                            recommendations['sensors_needing_retraining'].append({
-                                'sensor_id': sensor_id,
-                                'equipment_type': equipment.equipment_type.value,
-                                'criticality': equipment.criticality.value,
-                                'performance_score': metadata.performance_score,
-                                'reason': 'Low performance score'
-                            })
+                            recommendations["sensors_needing_retraining"].append(
+                                {
+                                    "sensor_id": sensor_id,
+                                    "equipment_type": equipment.equipment_type.value,
+                                    "criticality": equipment.criticality.value,
+                                    "performance_score": metadata.performance_score,
+                                    "reason": "Low performance score",
+                                }
+                            )
                         else:
-                            recommendations['well_performing_sensors'].append({
-                                'sensor_id': sensor_id,
-                                'equipment_type': equipment.equipment_type.value,
-                                'performance_score': metadata.performance_score
-                            })
+                            recommendations["well_performing_sensors"].append(
+                                {
+                                    "sensor_id": sensor_id,
+                                    "equipment_type": equipment.equipment_type.value,
+                                    "performance_score": metadata.performance_score,
+                                }
+                            )
 
             return recommendations
 
         except Exception as e:
             logger.error(f"Error generating training recommendations: {e}")
             return {
-                'error': str(e),
-                'sensors_needing_training': [],
-                'sensors_needing_retraining': [],
-                'well_performing_sensors': []
+                "error": str(e),
+                "sensors_needing_training": [],
+                "sensors_needing_retraining": [],
+                "well_performing_sensors": [],
             }

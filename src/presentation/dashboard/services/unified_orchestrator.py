@@ -3,10 +3,10 @@ Unified Data Orchestrator
 Coordinates data flow between services and components
 """
 
-import logging
-from typing import Dict, List, Any
-from pathlib import Path
 import glob
+import logging
+from pathlib import Path
+from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,10 @@ class UnifiedDataOrchestrator:
             True if services are running
         """
         try:
-            from .dashboard_services import get_nasa_data_service, get_pretrained_model_manager
+            from .dashboard_services import (
+                get_nasa_data_service,
+                get_pretrained_model_manager,
+            )
 
             # Check NASA data service
             nasa_service = get_nasa_data_service()
@@ -57,6 +60,7 @@ class UnifiedDataOrchestrator:
         """
         try:
             from .dashboard_services import get_pretrained_model_manager
+
             model_manager = get_pretrained_model_manager()
             if model_manager:
                 return model_manager.get_available_models()
@@ -66,7 +70,9 @@ class UnifiedDataOrchestrator:
         # Fallback: scan filesystem
         models = []
         try:
-            anomaly_models = glob.glob(str(self.model_dir / "nasa_equipment_models" / "*.pkl"))
+            anomaly_models = glob.glob(
+                str(self.model_dir / "nasa_equipment_models" / "*.pkl")
+            )
             models.extend([Path(f).stem for f in anomaly_models])
         except:
             pass
@@ -81,6 +87,7 @@ class UnifiedDataOrchestrator:
         """
         try:
             from .dashboard_services import get_pretrained_model_manager
+
             model_manager = get_pretrained_model_manager()
             if model_manager:
                 return model_manager.get_model_performance_summary()
@@ -89,11 +96,11 @@ class UnifiedDataOrchestrator:
 
         # Fallback summary
         return {
-            'average_accuracy': 0.92,
-            'total_models': len(self.get_available_models()),
-            'avg_inference_time': 0.05,
-            'telemanom_models': 12,
-            'transformer_models': 12
+            "average_accuracy": 0.92,
+            "total_models": len(self.get_available_models()),
+            "avg_inference_time": 0.05,
+            "telemanom_models": 12,
+            "transformer_models": 12,
         }
 
     def is_nasa_service_running(self) -> bool:
@@ -104,6 +111,7 @@ class UnifiedDataOrchestrator:
         """
         try:
             from .dashboard_services import get_nasa_data_service
+
             return get_nasa_data_service() is not None
         except:
             return False

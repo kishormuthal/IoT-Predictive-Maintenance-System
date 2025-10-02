@@ -4,29 +4,34 @@ Kaggle NASA Dataset Download Script
 Downloads the NASA SMAP/MSL anomaly detection dataset from Kaggle
 """
 
+import json
 import os
+import subprocess
 import sys
 import zipfile
-import pandas as pd
-import numpy as np
 from pathlib import Path
-import subprocess
-import json
+
+import numpy as np
+import pandas as pd
+
 
 def setup_kaggle_api():
     """Setup and verify Kaggle API"""
     try:
         import kaggle
+
         print("✓ Kaggle API found")
         return True
     except ImportError:
         print("Installing Kaggle API...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", "kaggle"])
         import kaggle
+
         return True
     except Exception as e:
         print(f"Error setting up Kaggle API: {e}")
         return False
+
 
 def download_dataset():
     """Download the NASA dataset from Kaggle"""
@@ -42,11 +47,8 @@ def download_dataset():
 
         # Download using kaggle API
         import kaggle
-        kaggle.api.dataset_download_files(
-            dataset_name,
-            path="data/raw",
-            unzip=True
-        )
+
+        kaggle.api.dataset_download_files(dataset_name, path="data/raw", unzip=True)
 
         print("✓ Dataset downloaded successfully")
         return True
@@ -58,6 +60,7 @@ def download_dataset():
         print("2. Click 'Download' button")
         print("3. Extract the ZIP file to 'data/raw/' directory")
         return False
+
 
 def organize_data():
     """Organize downloaded data into expected structure"""
@@ -77,12 +80,12 @@ def organize_data():
     for file in files:
         if file.is_file():
             filename = file.name.lower()
-            if 'smap' in filename:
+            if "smap" in filename:
                 dest = smap_dir / file.name
                 if not dest.exists():
                     file.rename(dest)
                     print(f"Moved {file.name} to smap/")
-            elif 'msl' in filename:
+            elif "msl" in filename:
                 dest = msl_dir / file.name
                 if not dest.exists():
                     file.rename(dest)
@@ -93,13 +96,10 @@ def organize_data():
     # Generate data statistics
     generate_data_stats()
 
+
 def generate_data_stats():
     """Generate statistics about the downloaded data"""
-    stats = {
-        'smap': {},
-        'msl': {},
-        'summary': {}
-    }
+    stats = {"smap": {}, "msl": {}, "summary": {}}
 
     smap_dir = Path("data/raw/smap")
     msl_dir = Path("data/raw/msl")
@@ -108,24 +108,25 @@ def generate_data_stats():
     smap_files = list(smap_dir.glob("*"))
     msl_files = list(msl_dir.glob("*"))
 
-    stats['summary'] = {
-        'total_files': len(smap_files) + len(msl_files),
-        'smap_files': len(smap_files),
-        'msl_files': len(msl_files),
-        'smap_file_names': [f.name for f in smap_files],
-        'msl_file_names': [f.name for f in msl_files]
+    stats["summary"] = {
+        "total_files": len(smap_files) + len(msl_files),
+        "smap_files": len(smap_files),
+        "msl_files": len(msl_files),
+        "smap_file_names": [f.name for f in smap_files],
+        "msl_file_names": [f.name for f in msl_files],
     }
 
     # Save statistics
-    with open('data/data_statistics.json', 'w') as f:
+    with open("data/data_statistics.json", "w") as f:
         json.dump(stats, f, indent=2)
 
     print("✓ Data statistics saved to data/data_statistics.json")
 
+
 def main():
-    print("="*50)
+    print("=" * 50)
     print("NASA SMAP/MSL Dataset Downloader")
-    print("="*50)
+    print("=" * 50)
 
     # Setup Kaggle API
     if not setup_kaggle_api():
@@ -141,6 +142,7 @@ def main():
     else:
         print("\nDataset download failed. Please download manually.")
         return False
+
 
 if __name__ == "__main__":
     main()

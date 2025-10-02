@@ -5,14 +5,14 @@ Integrates TimeControlManager with SharedStateManager
 """
 
 import logging
-from typing import Dict, Any, Optional, Callable, List
-from datetime import datetime, timedelta
 import threading
 import time
 from dataclasses import dataclass
+from datetime import datetime, timedelta
+from typing import Any, Callable, Dict, List, Optional
 
+from ..components.time_controls import TimeRange, time_control_manager
 from .shared_state import shared_state_manager
-from ..components.time_controls import time_control_manager, TimeRange
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RealTimeUpdate:
     """Real-time update event"""
+
     component_id: str
     data_type: str
     update_count: int
@@ -46,19 +47,15 @@ class TimeStateManager:
 
         # Subscribe to shared state time changes
         self.shared_state.subscribe(
-            'filters.time_range',
-            self._on_time_range_change,
-            'time_state_manager'
+            "filters.time_range", self._on_time_range_change, "time_state_manager"
         )
         self.shared_state.subscribe(
-            'filters.is_realtime',
-            self._on_realtime_toggle,
-            'time_state_manager'
+            "filters.is_realtime", self._on_realtime_toggle, "time_state_manager"
         )
         self.shared_state.subscribe(
-            'filters.refresh_interval',
+            "filters.refresh_interval",
             self._on_refresh_interval_change,
-            'time_state_manager'
+            "time_state_manager",
         )
 
         # Initialize time state in shared state
@@ -71,23 +68,27 @@ class TimeStateManager:
         current_window = self.time_control.get_current_window()
 
         time_state = {
-            'time_range': current_window.range_type.value,
-            'start_time': current_window.start_time.isoformat(),
-            'end_time': current_window.end_time.isoformat(),
-            'is_realtime': current_window.is_realtime,
-            'refresh_interval': current_window.refresh_interval or 60000,
-            'auto_refresh': True,
-            'last_update': datetime.now().isoformat(),
-            'nasa_mission_time': 'earth',
-            'time_sync_enabled': True
+            "time_range": current_window.range_type.value,
+            "start_time": current_window.start_time.isoformat(),
+            "end_time": current_window.end_time.isoformat(),
+            "is_realtime": current_window.is_realtime,
+            "refresh_interval": current_window.refresh_interval or 60000,
+            "auto_refresh": True,
+            "last_update": datetime.now().isoformat(),
+            "nasa_mission_time": "earth",
+            "time_sync_enabled": True,
         }
 
         for key, value in time_state.items():
-            self.shared_state.set_state(f'filters.{key}', value, 'time_state_manager')
+            self.shared_state.set_state(f"filters.{key}", value, "time_state_manager")
 
-    def set_time_range(self, range_type: str, component_id: str = "unknown",
-                      custom_start: Optional[datetime] = None,
-                      custom_end: Optional[datetime] = None) -> bool:
+    def set_time_range(
+        self,
+        range_type: str,
+        component_id: str = "unknown",
+        custom_start: Optional[datetime] = None,
+        custom_end: Optional[datetime] = None,
+    ) -> bool:
         """
         Set global time range and notify all components
 
@@ -102,16 +103,18 @@ class TimeStateManager:
         """
         try:
             # Update time control manager
-            window = self.time_control.set_time_range(range_type, custom_start, custom_end)
+            window = self.time_control.set_time_range(
+                range_type, custom_start, custom_end
+            )
 
             # Update shared state
             updates = {
-                'filters.time_range': range_type,
-                'filters.start_time': window.start_time.isoformat(),
-                'filters.end_time': window.end_time.isoformat(),
-                'filters.is_realtime': window.is_realtime,
-                'filters.refresh_interval': window.refresh_interval or 60000,
-                'filters.last_update': datetime.now().isoformat()
+                "filters.time_range": range_type,
+                "filters.start_time": window.start_time.isoformat(),
+                "filters.end_time": window.end_time.isoformat(),
+                "filters.is_realtime": window.is_realtime,
+                "filters.refresh_interval": window.refresh_interval or 60000,
+                "filters.last_update": datetime.now().isoformat(),
             }
 
             success = self.shared_state.update_multiple(updates, component_id)
@@ -131,20 +134,26 @@ class TimeStateManager:
         """Get current time window from shared state"""
         try:
             return {
-                'range_type': self.shared_state.get_state('filters.time_range'),
-                'start_time': datetime.fromisoformat(self.shared_state.get_state('filters.start_time')),
-                'end_time': datetime.fromisoformat(self.shared_state.get_state('filters.end_time')),
-                'is_realtime': self.shared_state.get_state('filters.is_realtime'),
-                'refresh_interval': self.shared_state.get_state('filters.refresh_interval'),
-                'auto_refresh': self.shared_state.get_state('filters.auto_refresh')
+                "range_type": self.shared_state.get_state("filters.time_range"),
+                "start_time": datetime.fromisoformat(
+                    self.shared_state.get_state("filters.start_time")
+                ),
+                "end_time": datetime.fromisoformat(
+                    self.shared_state.get_state("filters.end_time")
+                ),
+                "is_realtime": self.shared_state.get_state("filters.is_realtime"),
+                "refresh_interval": self.shared_state.get_state(
+                    "filters.refresh_interval"
+                ),
+                "auto_refresh": self.shared_state.get_state("filters.auto_refresh"),
             }
         except Exception as e:
             logger.error(f"Error getting time window: {e}")
             return {}
 
-    def register_realtime_component(self, component_id: str,
-                                   update_callback: Callable,
-                                   data_type: str = "telemetry") -> bool:
+    def register_realtime_component(
+        self, component_id: str, update_callback: Callable, data_type: str = "telemetry"
+    ) -> bool:
         """
         Register component for real-time updates
 
@@ -158,25 +167,27 @@ class TimeStateManager:
         """
         try:
             self._active_components[component_id] = {
-                'callback': update_callback,
-                'data_type': data_type,
-                'registered_at': datetime.now(),
-                'update_count': 0,
-                'error_count': 0
+                "callback": update_callback,
+                "data_type": data_type,
+                "registered_at": datetime.now(),
+                "update_count": 0,
+                "error_count": 0,
             }
 
             self._update_stats[component_id] = RealTimeUpdate(
                 component_id=component_id,
                 data_type=data_type,
                 update_count=0,
-                last_update=datetime.now()
+                last_update=datetime.now(),
             )
 
             # Start real-time updates if enabled
-            if self.shared_state.get_state('filters.is_realtime'):
+            if self.shared_state.get_state("filters.is_realtime"):
                 self._start_component_updates(component_id)
 
-            logger.info(f"Component {component_id} registered for real-time {data_type} updates")
+            logger.info(
+                f"Component {component_id} registered for real-time {data_type} updates"
+            )
             return True
 
         except Exception as e:
@@ -222,7 +233,9 @@ class TimeStateManager:
             self._stop_component_updates(component_id)
             logger.info(f"Paused real-time updates for {component_id}")
         else:
-            self.shared_state.set_state('filters.auto_refresh', False, 'time_state_manager')
+            self.shared_state.set_state(
+                "filters.auto_refresh", False, "time_state_manager"
+            )
             for comp_id in list(self._update_threads.keys()):
                 self._stop_component_updates(comp_id)
             logger.info("Paused all real-time updates")
@@ -239,8 +252,10 @@ class TimeStateManager:
                 self._start_component_updates(component_id)
                 logger.info(f"Resumed real-time updates for {component_id}")
         else:
-            self.shared_state.set_state('filters.auto_refresh', True, 'time_state_manager')
-            if self.shared_state.get_state('filters.is_realtime'):
+            self.shared_state.set_state(
+                "filters.auto_refresh", True, "time_state_manager"
+            )
+            if self.shared_state.get_state("filters.is_realtime"):
                 for comp_id in self._active_components:
                     self._start_component_updates(comp_id)
             logger.info("Resumed all real-time updates")
@@ -249,7 +264,9 @@ class TimeStateManager:
         """Get real-time update statistics"""
         return self._update_stats.copy()
 
-    def set_nasa_mission_time(self, mission: str, component_id: str = "unknown") -> bool:
+    def set_nasa_mission_time(
+        self, mission: str, component_id: str = "unknown"
+    ) -> bool:
         """
         Set NASA mission time mode
 
@@ -261,12 +278,14 @@ class TimeStateManager:
             True if successful
         """
         try:
-            valid_modes = ['earth', 'mars', 'mission']
+            valid_modes = ["earth", "mars", "mission"]
             if mission not in valid_modes:
                 logger.error(f"Invalid mission time mode: {mission}")
                 return False
 
-            success = self.shared_state.set_state('filters.nasa_mission_time', mission, component_id)
+            success = self.shared_state.set_state(
+                "filters.nasa_mission_time", mission, component_id
+            )
 
             if success:
                 # Adjust time calculations for mission time
@@ -286,12 +305,15 @@ class TimeStateManager:
                 window = self.time_control.set_time_range(new_value)
 
                 # Update related state
-                self.shared_state.update_multiple({
-                    'filters.start_time': window.start_time.isoformat(),
-                    'filters.end_time': window.end_time.isoformat(),
-                    'filters.is_realtime': window.is_realtime,
-                    'filters.refresh_interval': window.refresh_interval or 60000
-                }, 'time_state_sync')
+                self.shared_state.update_multiple(
+                    {
+                        "filters.start_time": window.start_time.isoformat(),
+                        "filters.end_time": window.end_time.isoformat(),
+                        "filters.is_realtime": window.is_realtime,
+                        "filters.refresh_interval": window.refresh_interval or 60000,
+                    },
+                    "time_state_sync",
+                )
 
                 self._update_realtime_processing()
 
@@ -316,7 +338,9 @@ class TimeStateManager:
         except Exception as e:
             logger.error(f"Error handling real-time toggle: {e}")
 
-    def _on_refresh_interval_change(self, key_path: str, old_value: Any, new_value: Any):
+    def _on_refresh_interval_change(
+        self, key_path: str, old_value: Any, new_value: Any
+    ):
         """Handle refresh interval changes"""
         try:
             if new_value != old_value:
@@ -341,8 +365,10 @@ class TimeStateManager:
             if component_id not in self._active_components:
                 return  # Component not registered
 
-            refresh_interval = self.shared_state.get_state('filters.refresh_interval') or 60000
-            auto_refresh = self.shared_state.get_state('filters.auto_refresh')
+            refresh_interval = (
+                self.shared_state.get_state("filters.refresh_interval") or 60000
+            )
+            auto_refresh = self.shared_state.get_state("filters.auto_refresh")
 
             if not auto_refresh:
                 return
@@ -351,13 +377,13 @@ class TimeStateManager:
                 while component_id in self._update_threads:
                     try:
                         component_info = self._active_components[component_id]
-                        callback = component_info['callback']
+                        callback = component_info["callback"]
 
                         # Call component update callback
                         callback()
 
                         # Update statistics
-                        component_info['update_count'] += 1
+                        component_info["update_count"] += 1
                         self._update_stats[component_id].update_count += 1
                         self._update_stats[component_id].last_update = datetime.now()
 
@@ -366,7 +392,7 @@ class TimeStateManager:
 
                     except Exception as e:
                         logger.error(f"Error in update loop for {component_id}: {e}")
-                        component_info['error_count'] += 1
+                        component_info["error_count"] += 1
                         self._update_stats[component_id].error_count += 1
                         time.sleep(5)  # Error backoff
 
@@ -394,8 +420,8 @@ class TimeStateManager:
     def _update_realtime_processing(self):
         """Update real-time processing based on current state"""
         try:
-            is_realtime = self.shared_state.get_state('filters.is_realtime')
-            auto_refresh = self.shared_state.get_state('filters.auto_refresh')
+            is_realtime = self.shared_state.get_state("filters.is_realtime")
+            auto_refresh = self.shared_state.get_state("filters.auto_refresh")
 
             if is_realtime and auto_refresh:
                 # Start updates for all registered components
@@ -413,11 +439,11 @@ class TimeStateManager:
     def _adjust_for_mission_time(self, mission: str):
         """Adjust time calculations for mission-specific time"""
         try:
-            if mission == 'mars':
+            if mission == "mars":
                 # Mars sol is ~24h 37m
                 # Adjust time ranges proportionally
                 pass  # Implement Mars time adjustments if needed
-            elif mission == 'mission':
+            elif mission == "mission":
                 # Use mission elapsed time
                 pass  # Implement mission time adjustments if needed
 

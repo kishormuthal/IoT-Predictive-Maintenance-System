@@ -3,14 +3,18 @@ Unit tests for core sensor data models
 Session 1: Foundation & Environment Setup
 """
 
-import pytest
-import numpy as np
-from datetime import datetime, timedelta
 from dataclasses import asdict
+from datetime import datetime, timedelta
+
+import numpy as np
+import pytest
 
 from src.core.models.sensor_data import (
-    SensorReading, SensorInfo, SensorDataBatch,
-    SensorStatus, CriticalityLevel
+    CriticalityLevel,
+    SensorDataBatch,
+    SensorInfo,
+    SensorReading,
+    SensorStatus,
 )
 
 # Test markers
@@ -54,9 +58,7 @@ class TestSensorReading:
         """Test basic sensor reading creation"""
         timestamp = datetime.now()
         reading = SensorReading(
-            sensor_id="SMAP-ATT-001",
-            timestamp=timestamp,
-            value=42.5
+            sensor_id="SMAP-ATT-001", timestamp=timestamp, value=42.5
         )
 
         assert reading.sensor_id == "SMAP-ATT-001"
@@ -71,7 +73,7 @@ class TestSensorReading:
             sensor_id="SMAP-ATT-001",
             timestamp=datetime.now(),
             value=85.0,
-            status=SensorStatus.WARNING
+            status=SensorStatus.WARNING,
         )
 
         assert reading.status == SensorStatus.WARNING
@@ -83,7 +85,7 @@ class TestSensorReading:
             sensor_id="SMAP-ATT-001",
             timestamp=datetime.now(),
             value=42.5,
-            metadata=metadata
+            metadata=metadata,
         )
 
         assert reading.metadata == metadata
@@ -94,7 +96,7 @@ class TestSensorReading:
             sensor_id="SMAP-ATT-001",
             timestamp=datetime.now(),
             value=42.5,
-            metadata=None
+            metadata=None,
         )
 
         assert reading.metadata == {}
@@ -103,15 +105,13 @@ class TestSensorReading:
         """Test that sensor reading can be converted to dict"""
         timestamp = datetime.now()
         reading = SensorReading(
-            sensor_id="SMAP-ATT-001",
-            timestamp=timestamp,
-            value=42.5
+            sensor_id="SMAP-ATT-001", timestamp=timestamp, value=42.5
         )
 
         reading_dict = asdict(reading)
-        assert reading_dict['sensor_id'] == "SMAP-ATT-001"
-        assert reading_dict['timestamp'] == timestamp
-        assert reading_dict['value'] == 42.5
+        assert reading_dict["sensor_id"] == "SMAP-ATT-001"
+        assert reading_dict["timestamp"] == timestamp
+        assert reading_dict["value"] == 42.5
 
 
 class TestSensorInfo:
@@ -132,7 +132,7 @@ class TestSensorInfo:
             warning_threshold=80.0,
             critical_threshold=95.0,
             data_source="smap",
-            channel_index=0
+            channel_index=0,
         )
 
         assert sensor_info.sensor_id == "SMAP-ATT-001"
@@ -158,7 +158,7 @@ class TestSensorInfo:
                 warning_threshold=80.0,
                 critical_threshold=95.0,
                 data_source="test",
-                channel_index=0
+                channel_index=0,
             )
             assert sensor_info.criticality == criticality
 
@@ -178,7 +178,7 @@ class TestSensorInfo:
                 warning_threshold=80.0,
                 critical_threshold=95.0,
                 data_source=data_source,
-                channel_index=0
+                channel_index=0,
             )
             assert sensor_info.data_source == data_source
 
@@ -188,10 +188,7 @@ class TestSensorDataBatch:
 
     def test_sensor_data_batch_creation(self, sample_sensor_data):
         """Test basic sensor data batch creation"""
-        timestamps = [
-            datetime.now() - timedelta(minutes=i)
-            for i in range(10, 0, -1)
-        ]
+        timestamps = [datetime.now() - timedelta(minutes=i) for i in range(10, 0, -1)]
         values = np.random.normal(50, 10, 10)
 
         sensor_info = SensorInfo(
@@ -207,14 +204,14 @@ class TestSensorDataBatch:
             warning_threshold=80.0,
             critical_threshold=95.0,
             data_source="smap",
-            channel_index=0
+            channel_index=0,
         )
 
         statistics = {
             "mean": float(np.mean(values)),
             "std": float(np.std(values)),
             "min": float(np.min(values)),
-            "max": float(np.max(values))
+            "max": float(np.max(values)),
         }
 
         batch = SensorDataBatch(
@@ -222,7 +219,7 @@ class TestSensorDataBatch:
             timestamps=timestamps,
             values=values,
             sensor_info=sensor_info,
-            statistics=statistics
+            statistics=statistics,
         )
 
         assert batch.sensor_id == "SMAP-ATT-001"
@@ -250,7 +247,7 @@ class TestSensorDataBatch:
             warning_threshold=80.0,
             critical_threshold=95.0,
             data_source="test",
-            channel_index=0
+            channel_index=0,
         )
 
         batch = SensorDataBatch(
@@ -259,7 +256,7 @@ class TestSensorDataBatch:
             values=values,
             sensor_info=sensor_info,
             statistics={},
-            quality_score=0.85
+            quality_score=0.85,
         )
 
         assert batch.quality_score == 0.85
@@ -283,14 +280,14 @@ class TestSensorDataBatch:
             warning_threshold=80.0,
             critical_threshold=95.0,
             data_source="test",
-            channel_index=0
+            channel_index=0,
         )
 
         statistics = {
             "mean": float(np.mean(values)),
             "std": float(np.std(values)),
             "min": float(np.min(values)),
-            "max": float(np.max(values))
+            "max": float(np.max(values)),
         }
 
         batch = SensorDataBatch(
@@ -298,7 +295,7 @@ class TestSensorDataBatch:
             timestamps=[datetime.now()] * 5,
             values=values,
             sensor_info=sensor_info,
-            statistics=statistics
+            statistics=statistics,
         )
 
         assert batch.statistics["mean"] == expected_mean
@@ -321,9 +318,7 @@ class TestSensorDataIntegration:
             value = 50.0 + i * 2.0
 
             reading = SensorReading(
-                sensor_id="SMAP-ATT-001",
-                timestamp=timestamp,
-                value=value
+                sensor_id="SMAP-ATT-001", timestamp=timestamp, value=value
             )
 
             readings.append(reading)
@@ -344,7 +339,7 @@ class TestSensorDataIntegration:
             warning_threshold=80.0,
             critical_threshold=95.0,
             data_source="smap",
-            channel_index=0
+            channel_index=0,
         )
 
         batch = SensorDataBatch(
@@ -352,7 +347,7 @@ class TestSensorDataIntegration:
             timestamps=timestamps,
             values=np.array(values),
             sensor_info=sensor_info,
-            statistics={"count": len(readings)}
+            statistics={"count": len(readings)},
         )
 
         assert len(batch.timestamps) == len(readings)
@@ -363,7 +358,11 @@ class TestSensorDataIntegration:
         """Test creating sensor info for NASA sensors"""
         for sensor_id in sample_sensors[:6]:  # Test first 6 SMAP sensors
             data_source = "smap" if sensor_id.startswith("SMAP") else "msl"
-            channel_index = int(sensor_id.split("-")[-1]) if sensor_id.split("-")[-1].isdigit() else 0
+            channel_index = (
+                int(sensor_id.split("-")[-1])
+                if sensor_id.split("-")[-1].isdigit()
+                else 0
+            )
 
             sensor_info = SensorInfo(
                 sensor_id=sensor_id,
@@ -378,7 +377,7 @@ class TestSensorDataIntegration:
                 warning_threshold=80.0,
                 critical_threshold=95.0,
                 data_source=data_source,
-                channel_index=channel_index
+                channel_index=channel_index,
             )
 
             assert sensor_info.sensor_id == sensor_id

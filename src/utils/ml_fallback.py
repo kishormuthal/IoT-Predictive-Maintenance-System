@@ -3,18 +3,21 @@ ML Fallback Module
 Provides fallback implementations when TensorFlow is not available
 """
 
-import numpy as np
 import warnings
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
 
 # Check if TensorFlow is available
 try:
     import tensorflow as tf
+
     TENSORFLOW_AVAILABLE = True
     print("[INFO] TensorFlow is available")
 except ImportError:
     TENSORFLOW_AVAILABLE = False
     print("[WARNING] TensorFlow not available, using fallback implementations")
+
 
 class MockModel:
     """Mock model class for when TensorFlow is not available"""
@@ -30,8 +33,8 @@ class MockModel:
 
         # Simulate training history
         self.history = {
-            'loss': np.random.exponential(0.1, epochs) + 0.01,
-            'val_loss': np.random.exponential(0.12, epochs) + 0.02
+            "loss": np.random.exponential(0.1, epochs) + 0.01,
+            "val_loss": np.random.exponential(0.12, epochs) + 0.02,
         }
         self.is_trained = True
         return self
@@ -54,6 +57,7 @@ class MockModel:
         print(f"[MOCK] Loading model from {filepath}")
         self.is_trained = True
 
+
 class MockAutoencoder(MockModel):
     """Mock LSTM Autoencoder"""
 
@@ -67,6 +71,7 @@ class MockAutoencoder(MockModel):
         reconstructed = self.predict(X)
         error = np.mean(np.square(X - reconstructed), axis=(1, 2))
         return error
+
 
 class MockLSTMPredictor(MockModel):
     """Mock LSTM Predictor"""
@@ -83,10 +88,13 @@ class MockLSTMPredictor(MockModel):
         predictions = last_values + np.random.normal(0, 0.05, last_values.shape)
         return predictions
 
+
 class MockVAE(MockModel):
     """Mock LSTM-VAE"""
 
-    def __init__(self, sequence_length: int, n_features: int, latent_dim: int = 20, **kwargs):
+    def __init__(
+        self, sequence_length: int, n_features: int, latent_dim: int = 20, **kwargs
+    ):
         super().__init__((sequence_length, n_features))
         self.sequence_length = sequence_length
         self.n_features = n_features
@@ -100,7 +108,9 @@ class MockVAE(MockModel):
     def decode(self, z):
         """Decode from latent space"""
         batch_size = z.shape[0]
-        return np.random.normal(0, 0.1, (batch_size, self.sequence_length, self.n_features))
+        return np.random.normal(
+            0, 0.1, (batch_size, self.sequence_length, self.n_features)
+        )
 
     def get_elbo_loss(self, X):
         """Calculate ELBO loss"""
@@ -108,6 +118,7 @@ class MockVAE(MockModel):
         reconstruction_loss = np.mean(np.square(X - reconstructed))
         kl_loss = np.random.exponential(0.1)
         return reconstruction_loss + 0.1 * kl_loss
+
 
 def create_model(model_type: str, **kwargs):
     """Factory function to create models"""
@@ -117,25 +128,27 @@ def create_model(model_type: str, **kwargs):
         return None  # Will be implemented with actual TF models
     else:
         # Return mock models
-        if model_type == 'lstm_autoencoder':
+        if model_type == "lstm_autoencoder":
             return MockAutoencoder(**kwargs)
-        elif model_type == 'lstm_predictor':
+        elif model_type == "lstm_predictor":
             return MockLSTMPredictor(**kwargs)
-        elif model_type == 'lstm_vae':
+        elif model_type == "lstm_vae":
             return MockVAE(**kwargs)
         else:
             return MockModel(**kwargs)
+
 
 def is_tensorflow_available() -> bool:
     """Check if TensorFlow is available"""
     return TENSORFLOW_AVAILABLE
 
+
 def get_mock_metrics():
     """Generate mock training metrics"""
     return {
-        'accuracy': np.random.uniform(0.85, 0.95),
-        'precision': np.random.uniform(0.80, 0.92),
-        'recall': np.random.uniform(0.82, 0.90),
-        'f1_score': np.random.uniform(0.83, 0.91),
-        'roc_auc': np.random.uniform(0.88, 0.94)
+        "accuracy": np.random.uniform(0.85, 0.95),
+        "precision": np.random.uniform(0.80, 0.92),
+        "recall": np.random.uniform(0.82, 0.90),
+        "f1_score": np.random.uniform(0.83, 0.91),
+        "roc_auc": np.random.uniform(0.88, 0.94),
     }

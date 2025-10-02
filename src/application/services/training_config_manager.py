@@ -3,12 +3,13 @@ Training Configuration Manager
 Centralized configuration management for training operations
 """
 
-import os
-import yaml
 import logging
-from typing import Dict, List, Any, Optional
-from pathlib import Path
+import os
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +48,7 @@ class TrainingConfigManager:
         try:
             # Load base configuration
             if self.config_path.exists():
-                with open(self.config_path, 'r') as f:
+                with open(self.config_path, "r") as f:
                     self._base_config = yaml.safe_load(f)
                 logger.info(f"Loaded base configuration from {self.config_path}")
             else:
@@ -59,12 +60,12 @@ class TrainingConfigManager:
             if env_config_dir.exists():
                 for env_file in env_config_dir.glob("*.yaml"):
                     env_name = env_file.stem
-                    with open(env_file, 'r') as f:
+                    with open(env_file, "r") as f:
                         self._environment_configs[env_name] = yaml.safe_load(f)
                     logger.info(f"Loaded environment config: {env_name}")
 
             # Load equipment overrides
-            self._equipment_overrides = self._base_config.get('equipment_overrides', {})
+            self._equipment_overrides = self._base_config.get("equipment_overrides", {})
 
         except Exception as e:
             logger.error(f"Error loading configurations: {e}")
@@ -73,51 +74,51 @@ class TrainingConfigManager:
     def _get_default_config(self) -> Dict[str, Any]:
         """Get default configuration when file is not available"""
         return {
-            'global': {
-                'project_name': 'iot_predictive_maintenance',
-                'version': '1.0.0',
-                'random_seed': 42,
-                'data_root': './data/raw',
-                'model_output_path': './models',
-                'log_level': 'INFO'
+            "global": {
+                "project_name": "iot_predictive_maintenance",
+                "version": "1.0.0",
+                "random_seed": 42,
+                "data_root": "./data/raw",
+                "model_output_path": "./models",
+                "log_level": "INFO",
             },
-            'telemanom': {
-                'enabled': True,
-                'sequence_length': 250,
-                'lstm_units': [80, 80],
-                'dropout_rate': 0.3,
-                'prediction_length': 10,
-                'epochs': 35,
-                'batch_size': 70,
-                'learning_rate': 0.001,
-                'validation_split': 0.2,
-                'min_training_samples': 1000,
-                'max_training_samples': 5000
+            "telemanom": {
+                "enabled": True,
+                "sequence_length": 250,
+                "lstm_units": [80, 80],
+                "dropout_rate": 0.3,
+                "prediction_length": 10,
+                "epochs": 35,
+                "batch_size": 70,
+                "learning_rate": 0.001,
+                "validation_split": 0.2,
+                "min_training_samples": 1000,
+                "max_training_samples": 5000,
             },
-            'transformer': {
-                'enabled': True,
-                'sequence_length': 168,
-                'forecast_horizon': 24,
-                'd_model': 128,
-                'num_heads': 8,
-                'num_layers': 4,
-                'dff': 512,
-                'dropout_rate': 0.1,
-                'epochs': 100,
-                'batch_size': 32,
-                'learning_rate': 0.001,
-                'validation_split': 0.2,
-                'patience': 15,
-                'min_training_samples': 2000,
-                'max_training_samples': 10000
+            "transformer": {
+                "enabled": True,
+                "sequence_length": 168,
+                "forecast_horizon": 24,
+                "d_model": 128,
+                "num_heads": 8,
+                "num_layers": 4,
+                "dff": 512,
+                "dropout_rate": 0.1,
+                "epochs": 100,
+                "batch_size": 32,
+                "learning_rate": 0.001,
+                "validation_split": 0.2,
+                "patience": 15,
+                "min_training_samples": 2000,
+                "max_training_samples": 10000,
             },
-            'training': {
-                'parallel_training': False,
-                'max_workers': 4,
-                'save_best_models': True,
-                'save_checkpoints': True
+            "training": {
+                "parallel_training": False,
+                "max_workers": 4,
+                "save_best_models": True,
+                "save_checkpoints": True,
             },
-            'equipment_overrides': {}
+            "equipment_overrides": {},
         }
 
     def get_config(self, environment: str = None) -> Dict[str, Any]:
@@ -149,7 +150,9 @@ class TrainingConfigManager:
             logger.error(f"Error getting configuration: {e}")
             return self._get_default_config()
 
-    def get_sensor_config(self, sensor_id: str, model_type: str, environment: str = None) -> Dict[str, Any]:
+    def get_sensor_config(
+        self, sensor_id: str, model_type: str, environment: str = None
+    ) -> Dict[str, Any]:
         """
         Get configuration for specific sensor and model type
 
@@ -171,12 +174,14 @@ class TrainingConfigManager:
             model_overrides = equipment_overrides.get(model_type, {})
 
             if model_overrides:
-                logger.info(f"Applying overrides for {sensor_id} {model_type}: {model_overrides}")
+                logger.info(
+                    f"Applying overrides for {sensor_id} {model_type}: {model_overrides}"
+                )
                 model_config = self._merge_configs(model_config, model_overrides)
 
             # Add sensor identification
-            model_config['sensor_id'] = sensor_id
-            model_config['model_type'] = model_type
+            model_config["sensor_id"] = sensor_id
+            model_config["model_type"] = model_type
 
             return model_config
 
@@ -184,12 +189,18 @@ class TrainingConfigManager:
             logger.error(f"Error getting sensor configuration for {sensor_id}: {e}")
             return self._get_default_config().get(model_type, {})
 
-    def _merge_configs(self, base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
+    def _merge_configs(
+        self, base: Dict[str, Any], override: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """Recursively merge configuration dictionaries"""
         result = base.copy()
 
         for key, value in override.items():
-            if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            if (
+                key in result
+                and isinstance(result[key], dict)
+                and isinstance(value, dict)
+            ):
                 result[key] = self._merge_configs(result[key], value)
             else:
                 result[key] = value
@@ -201,13 +212,13 @@ class TrainingConfigManager:
         try:
             # Map of environment variables to config paths
             env_mappings = {
-                'IOT_DATA_ROOT': ['global', 'data_root'],
-                'IOT_MODEL_PATH': ['global', 'model_output_path'],
-                'IOT_LOG_LEVEL': ['global', 'log_level'],
-                'IOT_PARALLEL_TRAINING': ['training', 'parallel_training'],
-                'IOT_MAX_WORKERS': ['training', 'max_workers'],
-                'IOT_TELEMANOM_EPOCHS': ['telemanom', 'epochs'],
-                'IOT_TRANSFORMER_EPOCHS': ['transformer', 'epochs']
+                "IOT_DATA_ROOT": ["global", "data_root"],
+                "IOT_MODEL_PATH": ["global", "model_output_path"],
+                "IOT_LOG_LEVEL": ["global", "log_level"],
+                "IOT_PARALLEL_TRAINING": ["training", "parallel_training"],
+                "IOT_MAX_WORKERS": ["training", "max_workers"],
+                "IOT_TELEMANOM_EPOCHS": ["telemanom", "epochs"],
+                "IOT_TRANSFORMER_EPOCHS": ["transformer", "epochs"],
             }
 
             for env_var, config_path in env_mappings.items():
@@ -215,9 +226,9 @@ class TrainingConfigManager:
                     value = os.environ[env_var]
 
                     # Convert to appropriate type
-                    if config_path[-1] in ['parallel_training']:
-                        value = value.lower() in ('true', '1', 'yes')
-                    elif config_path[-1] in ['max_workers', 'epochs']:
+                    if config_path[-1] in ["parallel_training"]:
+                        value = value.lower() in ("true", "1", "yes")
+                    elif config_path[-1] in ["max_workers", "epochs"]:
                         value = int(value)
 
                     # Set in config
@@ -236,7 +247,9 @@ class TrainingConfigManager:
             logger.error(f"Error applying environment variables: {e}")
             return config
 
-    def validate_config(self, config: Dict[str, Any], model_type: str = None) -> Dict[str, Any]:
+    def validate_config(
+        self, config: Dict[str, Any], model_type: str = None
+    ) -> Dict[str, Any]:
         """
         Validate configuration parameters
 
@@ -247,72 +260,94 @@ class TrainingConfigManager:
         Returns:
             Validation results
         """
-        validation_results = {
-            'valid': True,
-            'errors': [],
-            'warnings': []
-        }
+        validation_results = {"valid": True, "errors": [], "warnings": []}
 
         try:
             # Global validation
-            if 'global' in config:
-                global_config = config['global']
+            if "global" in config:
+                global_config = config["global"]
 
                 # Check required paths
-                data_root = Path(global_config.get('data_root', './data/raw'))
+                data_root = Path(global_config.get("data_root", "./data/raw"))
                 if not data_root.exists():
-                    validation_results['warnings'].append(f"Data root directory does not exist: {data_root}")
+                    validation_results["warnings"].append(
+                        f"Data root directory does not exist: {data_root}"
+                    )
 
-                model_path = Path(global_config.get('model_output_path', './models'))
+                model_path = Path(global_config.get("model_output_path", "./models"))
                 if not model_path.parent.exists():
-                    validation_results['errors'].append(f"Model output parent directory does not exist: {model_path.parent}")
+                    validation_results["errors"].append(
+                        f"Model output parent directory does not exist: {model_path.parent}"
+                    )
 
             # Model-specific validation
-            models_to_validate = [model_type] if model_type else ['telemanom', 'transformer']
+            models_to_validate = (
+                [model_type] if model_type else ["telemanom", "transformer"]
+            )
 
             for model in models_to_validate:
                 if model in config:
                     model_config = config[model]
 
                     # Telemanom validation
-                    if model == 'telemanom':
-                        if model_config.get('sequence_length', 0) < 10:
-                            validation_results['errors'].append("Telemanom sequence_length must be at least 10")
+                    if model == "telemanom":
+                        if model_config.get("sequence_length", 0) < 10:
+                            validation_results["errors"].append(
+                                "Telemanom sequence_length must be at least 10"
+                            )
 
-                        if model_config.get('epochs', 0) < 1:
-                            validation_results['errors'].append("Telemanom epochs must be at least 1")
+                        if model_config.get("epochs", 0) < 1:
+                            validation_results["errors"].append(
+                                "Telemanom epochs must be at least 1"
+                            )
 
-                        if model_config.get('batch_size', 0) < 1:
-                            validation_results['errors'].append("Telemanom batch_size must be at least 1")
+                        if model_config.get("batch_size", 0) < 1:
+                            validation_results["errors"].append(
+                                "Telemanom batch_size must be at least 1"
+                            )
 
                     # Transformer validation
-                    elif model == 'transformer':
-                        if model_config.get('sequence_length', 0) < 24:
-                            validation_results['warnings'].append("Transformer sequence_length should be at least 24 for daily patterns")
+                    elif model == "transformer":
+                        if model_config.get("sequence_length", 0) < 24:
+                            validation_results["warnings"].append(
+                                "Transformer sequence_length should be at least 24 for daily patterns"
+                            )
 
-                        if model_config.get('d_model', 0) % model_config.get('num_heads', 1) != 0:
-                            validation_results['errors'].append("Transformer d_model must be divisible by num_heads")
+                        if (
+                            model_config.get("d_model", 0)
+                            % model_config.get("num_heads", 1)
+                            != 0
+                        ):
+                            validation_results["errors"].append(
+                                "Transformer d_model must be divisible by num_heads"
+                            )
 
-                        if model_config.get('forecast_horizon', 0) < 1:
-                            validation_results['errors'].append("Transformer forecast_horizon must be at least 1")
+                        if model_config.get("forecast_horizon", 0) < 1:
+                            validation_results["errors"].append(
+                                "Transformer forecast_horizon must be at least 1"
+                            )
 
             # Training configuration validation
-            if 'training' in config:
-                training_config = config['training']
+            if "training" in config:
+                training_config = config["training"]
 
-                max_workers = training_config.get('max_workers', 1)
+                max_workers = training_config.get("max_workers", 1)
                 if max_workers < 1 or max_workers > 16:
-                    validation_results['warnings'].append("max_workers should be between 1 and 16")
+                    validation_results["warnings"].append(
+                        "max_workers should be between 1 and 16"
+                    )
 
-            validation_results['valid'] = len(validation_results['errors']) == 0
+            validation_results["valid"] = len(validation_results["errors"]) == 0
 
         except Exception as e:
-            validation_results['valid'] = False
-            validation_results['errors'].append(f"Validation error: {str(e)}")
+            validation_results["valid"] = False
+            validation_results["errors"].append(f"Validation error: {str(e)}")
 
         return validation_results
 
-    def update_equipment_override(self, sensor_id: str, model_type: str, overrides: Dict[str, Any]):
+    def update_equipment_override(
+        self, sensor_id: str, model_type: str, overrides: Dict[str, Any]
+    ):
         """
         Update equipment-specific configuration overrides
 
@@ -332,10 +367,10 @@ class TrainingConfigManager:
             self._equipment_overrides[sensor_id][model_type].update(overrides)
 
             # Update base config
-            if 'equipment_overrides' not in self._base_config:
-                self._base_config['equipment_overrides'] = {}
+            if "equipment_overrides" not in self._base_config:
+                self._base_config["equipment_overrides"] = {}
 
-            self._base_config['equipment_overrides'] = self._equipment_overrides
+            self._base_config["equipment_overrides"] = self._equipment_overrides
 
             logger.info(f"Updated equipment override for {sensor_id} {model_type}")
 
@@ -356,12 +391,14 @@ class TrainingConfigManager:
 
             # Create backup of existing config
             if save_path.exists():
-                backup_path = save_path.with_suffix(f'.backup.{datetime.now().strftime("%Y%m%d_%H%M%S")}.yaml')
+                backup_path = save_path.with_suffix(
+                    f'.backup.{datetime.now().strftime("%Y%m%d_%H%M%S")}.yaml'
+                )
                 save_path.rename(backup_path)
                 logger.info(f"Created backup: {backup_path}")
 
             # Save new config
-            with open(save_path, 'w') as f:
+            with open(save_path, "w") as f:
                 yaml.dump(config_to_save, f, default_flow_style=False, indent=2)
 
             logger.info(f"Configuration saved to {save_path}")
@@ -369,7 +406,9 @@ class TrainingConfigManager:
         except Exception as e:
             logger.error(f"Error saving configuration: {e}")
 
-    def create_environment_config(self, environment: str, config_overrides: Dict[str, Any]):
+    def create_environment_config(
+        self, environment: str, config_overrides: Dict[str, Any]
+    ):
         """
         Create environment-specific configuration
 
@@ -383,7 +422,7 @@ class TrainingConfigManager:
 
             env_config_path = env_config_dir / f"{environment}.yaml"
 
-            with open(env_config_path, 'w') as f:
+            with open(env_config_path, "w") as f:
                 yaml.dump(config_overrides, f, default_flow_style=False, indent=2)
 
             # Update in-memory cache
@@ -398,17 +437,22 @@ class TrainingConfigManager:
         """Get summary of all available configurations"""
         try:
             return {
-                'base_config_path': str(self.config_path),
-                'base_config_exists': self.config_path.exists(),
-                'environment_configs': list(self._environment_configs.keys()),
-                'equipment_overrides_count': len(self._equipment_overrides),
-                'equipment_with_overrides': list(self._equipment_overrides.keys()),
-                'model_types_configured': [
-                    key for key in self._base_config.keys()
-                    if key in ['telemanom', 'transformer']
-                ] if self._base_config else []
+                "base_config_path": str(self.config_path),
+                "base_config_exists": self.config_path.exists(),
+                "environment_configs": list(self._environment_configs.keys()),
+                "equipment_overrides_count": len(self._equipment_overrides),
+                "equipment_with_overrides": list(self._equipment_overrides.keys()),
+                "model_types_configured": (
+                    [
+                        key
+                        for key in self._base_config.keys()
+                        if key in ["telemanom", "transformer"]
+                    ]
+                    if self._base_config
+                    else []
+                ),
             }
 
         except Exception as e:
             logger.error(f"Error getting configuration summary: {e}")
-            return {'error': str(e)}
+            return {"error": str(e)}

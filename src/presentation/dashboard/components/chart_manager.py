@@ -4,21 +4,23 @@ Unified chart management for consistent chart type switching across the dashboar
 """
 
 import logging
-from typing import List, Dict, Optional, Any, Tuple
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from enum import Enum
-import pandas as pd
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
+import pandas as pd
+import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import plotly.express as px
-from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
 
 class ChartType(Enum):
     """Supported chart types"""
+
     LINE = "line"
     CANDLESTICK = "candlestick"
     AREA = "area"
@@ -31,6 +33,7 @@ class ChartType(Enum):
 @dataclass
 class ChartConfig:
     """Configuration for chart display"""
+
     chart_type: ChartType
     title: str
     height: int = 400
@@ -53,6 +56,7 @@ class ChartConfig:
 @dataclass
 class ChartData:
     """Standardized data structure for charts"""
+
     timestamps: List[datetime]
     values: List[float]
     labels: List[str]
@@ -78,22 +82,22 @@ class ChartManager:
         """Initialize chart manager"""
         self.supported_types = list(ChartType)
         self.default_config = ChartConfig(
-            chart_type=ChartType.LINE,
-            title="Sensor Data",
-            height=400
+            chart_type=ChartType.LINE, title="Sensor Data", height=400
         )
 
         # NASA-specific color schemes
         self.nasa_colors = {
-            'smap': '#1f77b4',  # Blue for SMAP
-            'msl': '#ff7f0e',   # Orange for MSL
-            'critical': '#d62728',  # Red for critical equipment
-            'high': '#ff7f0e',      # Orange for high priority
-            'medium': '#2ca02c',    # Green for medium priority
-            'low': '#17becf'        # Cyan for low priority
+            "smap": "#1f77b4",  # Blue for SMAP
+            "msl": "#ff7f0e",  # Orange for MSL
+            "critical": "#d62728",  # Red for critical equipment
+            "high": "#ff7f0e",  # Orange for high priority
+            "medium": "#2ca02c",  # Green for medium priority
+            "low": "#17becf",  # Cyan for low priority
         }
 
-        logger.info("ChartManager initialized with support for NASA IoT data visualization")
+        logger.info(
+            "ChartManager initialized with support for NASA IoT data visualization"
+        )
 
     def create_chart(self, data: ChartData, config: ChartConfig) -> go.Figure:
         """
@@ -129,8 +133,13 @@ class ChartManager:
             logger.error(f"Error creating chart: {e}")
             return self._create_error_chart(str(e))
 
-    def convert_chart_type(self, figure: go.Figure, new_type: ChartType,
-                          data: ChartData, config: ChartConfig) -> go.Figure:
+    def convert_chart_type(
+        self,
+        figure: go.Figure,
+        new_type: ChartType,
+        data: ChartData,
+        config: ChartConfig,
+    ) -> go.Figure:
         """
         Convert existing chart to new type while preserving data
 
@@ -155,8 +164,9 @@ class ChartManager:
             logger.error(f"Error converting chart type: {e}")
             return figure  # Return original figure on error
 
-    def add_anomaly_overlays(self, figure: go.Figure, data: ChartData,
-                           config: ChartConfig) -> go.Figure:
+    def add_anomaly_overlays(
+        self, figure: go.Figure, data: ChartData, config: ChartConfig
+    ) -> go.Figure:
         """
         Add anomaly overlays to existing chart
 
@@ -173,31 +183,38 @@ class ChartManager:
                 return figure
 
             # Find anomaly points (scores above threshold)
-            anomaly_threshold = data.thresholds.get('anomaly', 0.7) if data.thresholds else 0.7
-            anomaly_indices = [i for i, score in enumerate(data.anomaly_scores)
-                             if score > anomaly_threshold]
+            anomaly_threshold = (
+                data.thresholds.get("anomaly", 0.7) if data.thresholds else 0.7
+            )
+            anomaly_indices = [
+                i
+                for i, score in enumerate(data.anomaly_scores)
+                if score > anomaly_threshold
+            ]
 
             if anomaly_indices:
                 anomaly_times = [data.timestamps[i] for i in anomaly_indices]
                 anomaly_values = [data.values[i] for i in anomaly_indices]
 
                 # Add anomaly scatter trace
-                figure.add_trace(go.Scatter(
-                    x=anomaly_times,
-                    y=anomaly_values,
-                    mode='markers',
-                    name='Anomalies',
-                    marker=dict(
-                        color=config.anomaly_color,
-                        size=10,
-                        symbol='x',
-                        line=dict(width=2, color='darkred')
-                    ),
-                    hovertemplate='<b>Anomaly Detected</b><br>' +
-                                'Time: %{x}<br>' +
-                                'Value: %{y}<br>' +
-                                '<extra></extra>'
-                ))
+                figure.add_trace(
+                    go.Scatter(
+                        x=anomaly_times,
+                        y=anomaly_values,
+                        mode="markers",
+                        name="Anomalies",
+                        marker=dict(
+                            color=config.anomaly_color,
+                            size=10,
+                            symbol="x",
+                            line=dict(width=2, color="darkred"),
+                        ),
+                        hovertemplate="<b>Anomaly Detected</b><br>"
+                        + "Time: %{x}<br>"
+                        + "Value: %{y}<br>"
+                        + "<extra></extra>",
+                    )
+                )
 
             return figure
 
@@ -205,8 +222,9 @@ class ChartManager:
             logger.error(f"Error adding anomaly overlays: {e}")
             return figure
 
-    def add_threshold_lines(self, figure: go.Figure, data: ChartData,
-                          config: ChartConfig) -> go.Figure:
+    def add_threshold_lines(
+        self, figure: go.Figure, data: ChartData, config: ChartConfig
+    ) -> go.Figure:
         """
         Add threshold lines to chart
 
@@ -223,13 +241,15 @@ class ChartManager:
                 return figure
 
             for threshold_name, threshold_value in data.thresholds.items():
-                if threshold_name != 'anomaly':  # Skip anomaly threshold (handled separately)
+                if (
+                    threshold_name != "anomaly"
+                ):  # Skip anomaly threshold (handled separately)
                     figure.add_hline(
                         y=threshold_value,
                         line_dash="dash",
                         line_color=config.threshold_color,
                         annotation_text=f"{threshold_name.title()} Threshold",
-                        annotation_position="bottom right"
+                        annotation_position="bottom right",
                     )
 
             return figure
@@ -243,36 +263,43 @@ class ChartManager:
         figure = go.Figure()
 
         # Main data trace
-        figure.add_trace(go.Scatter(
-            x=data.timestamps,
-            y=data.values,
-            mode='lines',
-            name=f"{data.sensor_id} - {data.metric_id}",
-            line=dict(
-                color=self._get_equipment_color(data.equipment_id),
-                width=2
-            ),
-            hovertemplate='<b>%{fullData.name}</b><br>' +
-                        'Time: %{x}<br>' +
-                        'Value: %{y}<br>' +
-                        '<extra></extra>'
-        ))
+        figure.add_trace(
+            go.Scatter(
+                x=data.timestamps,
+                y=data.values,
+                mode="lines",
+                name=f"{data.sensor_id} - {data.metric_id}",
+                line=dict(color=self._get_equipment_color(data.equipment_id), width=2),
+                hovertemplate="<b>%{fullData.name}</b><br>"
+                + "Time: %{x}<br>"
+                + "Value: %{y}<br>"
+                + "<extra></extra>",
+            )
+        )
 
         # Add confidence intervals if available
-        if config.show_confidence_intervals and data.confidence_upper and data.confidence_lower:
-            figure.add_trace(go.Scatter(
-                x=data.timestamps + data.timestamps[::-1],
-                y=data.confidence_upper + data.confidence_lower[::-1],
-                fill='toself',
-                fillcolor='rgba(0,100,80,0.2)',
-                line=dict(color='rgba(255,255,255,0)'),
-                name='Confidence Interval',
-                hoverinfo="skip"
-            ))
+        if (
+            config.show_confidence_intervals
+            and data.confidence_upper
+            and data.confidence_lower
+        ):
+            figure.add_trace(
+                go.Scatter(
+                    x=data.timestamps + data.timestamps[::-1],
+                    y=data.confidence_upper + data.confidence_lower[::-1],
+                    fill="toself",
+                    fillcolor="rgba(0,100,80,0.2)",
+                    line=dict(color="rgba(255,255,255,0)"),
+                    name="Confidence Interval",
+                    hoverinfo="skip",
+                )
+            )
 
         return self._apply_chart_styling(figure, data, config)
 
-    def _create_candlestick_chart(self, data: ChartData, config: ChartConfig) -> go.Figure:
+    def _create_candlestick_chart(
+        self, data: ChartData, config: ChartConfig
+    ) -> go.Figure:
         """Create candlestick chart (useful for time-series data with OHLC values)"""
         figure = go.Figure()
 
@@ -287,16 +314,18 @@ class ChartManager:
             lows = rolling_data.min().fillna(data.values)
             closes = data.values
 
-            figure.add_trace(go.Candlestick(
-                x=data.timestamps,
-                open=opens,
-                high=highs,
-                low=lows,
-                close=closes,
-                name=f"{data.sensor_id} - {data.metric_id}",
-                increasing_line_color=self.nasa_colors['medium'],
-                decreasing_line_color=self.nasa_colors['critical']
-            ))
+            figure.add_trace(
+                go.Candlestick(
+                    x=data.timestamps,
+                    open=opens,
+                    high=highs,
+                    low=lows,
+                    close=closes,
+                    name=f"{data.sensor_id} - {data.metric_id}",
+                    increasing_line_color=self.nasa_colors["medium"],
+                    decreasing_line_color=self.nasa_colors["critical"],
+                )
+            )
 
         return self._apply_chart_styling(figure, data, config)
 
@@ -304,22 +333,21 @@ class ChartManager:
         """Create area chart"""
         figure = go.Figure()
 
-        figure.add_trace(go.Scatter(
-            x=data.timestamps,
-            y=data.values,
-            mode='lines',
-            name=f"{data.sensor_id} - {data.metric_id}",
-            fill='tonexty' if len(figure.data) > 0 else 'tozeroy',
-            fillcolor=f"rgba{(*self._hex_to_rgb(self._get_equipment_color(data.equipment_id)), 0.3)}",
-            line=dict(
-                color=self._get_equipment_color(data.equipment_id),
-                width=2
-            ),
-            hovertemplate='<b>%{fullData.name}</b><br>' +
-                        'Time: %{x}<br>' +
-                        'Value: %{y}<br>' +
-                        '<extra></extra>'
-        ))
+        figure.add_trace(
+            go.Scatter(
+                x=data.timestamps,
+                y=data.values,
+                mode="lines",
+                name=f"{data.sensor_id} - {data.metric_id}",
+                fill="tonexty" if len(figure.data) > 0 else "tozeroy",
+                fillcolor=f"rgba{(*self._hex_to_rgb(self._get_equipment_color(data.equipment_id)), 0.3)}",
+                line=dict(color=self._get_equipment_color(data.equipment_id), width=2),
+                hovertemplate="<b>%{fullData.name}</b><br>"
+                + "Time: %{x}<br>"
+                + "Value: %{y}<br>"
+                + "<extra></extra>",
+            )
+        )
 
         return self._apply_chart_styling(figure, data, config)
 
@@ -335,23 +363,25 @@ class ChartManager:
 
             heatmap_data = []
             for i in range(0, len(data.values), bucket_size):
-                bucket_values = data.values[i:i + bucket_size]
+                bucket_values = data.values[i : i + bucket_size]
                 if bucket_values:
                     heatmap_data.append([np.mean(bucket_values)])
 
             if heatmap_data:
-                figure.add_trace(go.Heatmap(
-                    z=heatmap_data,
-                    x=[f"{data.sensor_id}"],
-                    y=[f"Period {i+1}" for i in range(len(heatmap_data))],
-                    colorscale=config.color_scheme,
-                    name=f"{data.sensor_id} - {data.metric_id}",
-                    hovertemplate='<b>%{fullData.name}</b><br>' +
-                                'Period: %{y}<br>' +
-                                'Sensor: %{x}<br>' +
-                                'Avg Value: %{z}<br>' +
-                                '<extra></extra>'
-                ))
+                figure.add_trace(
+                    go.Heatmap(
+                        z=heatmap_data,
+                        x=[f"{data.sensor_id}"],
+                        y=[f"Period {i+1}" for i in range(len(heatmap_data))],
+                        colorscale=config.color_scheme,
+                        name=f"{data.sensor_id} - {data.metric_id}",
+                        hovertemplate="<b>%{fullData.name}</b><br>"
+                        + "Period: %{y}<br>"
+                        + "Sensor: %{x}<br>"
+                        + "Avg Value: %{z}<br>"
+                        + "<extra></extra>",
+                    )
+                )
 
         return self._apply_chart_styling(figure, data, config)
 
@@ -362,23 +392,25 @@ class ChartManager:
         # Color points by anomaly score if available
         marker_colors = data.anomaly_scores if data.anomaly_scores else None
 
-        figure.add_trace(go.Scatter(
-            x=data.timestamps,
-            y=data.values,
-            mode='markers',
-            name=f"{data.sensor_id} - {data.metric_id}",
-            marker=dict(
-                color=marker_colors or self._get_equipment_color(data.equipment_id),
-                size=8,
-                colorscale='Viridis' if marker_colors else None,
-                showscale=bool(marker_colors),
-                colorbar=dict(title="Anomaly Score") if marker_colors else None
-            ),
-            hovertemplate='<b>%{fullData.name}</b><br>' +
-                        'Time: %{x}<br>' +
-                        'Value: %{y}<br>' +
-                        '<extra></extra>'
-        ))
+        figure.add_trace(
+            go.Scatter(
+                x=data.timestamps,
+                y=data.values,
+                mode="markers",
+                name=f"{data.sensor_id} - {data.metric_id}",
+                marker=dict(
+                    color=marker_colors or self._get_equipment_color(data.equipment_id),
+                    size=8,
+                    colorscale="Viridis" if marker_colors else None,
+                    showscale=bool(marker_colors),
+                    colorbar=dict(title="Anomaly Score") if marker_colors else None,
+                ),
+                hovertemplate="<b>%{fullData.name}</b><br>"
+                + "Time: %{x}<br>"
+                + "Value: %{y}<br>"
+                + "<extra></extra>",
+            )
+        )
 
         return self._apply_chart_styling(figure, data, config)
 
@@ -386,33 +418,39 @@ class ChartManager:
         """Create bar chart"""
         figure = go.Figure()
 
-        figure.add_trace(go.Bar(
-            x=data.timestamps,
-            y=data.values,
-            name=f"{data.sensor_id} - {data.metric_id}",
-            marker_color=self._get_equipment_color(data.equipment_id),
-            hovertemplate='<b>%{fullData.name}</b><br>' +
-                        'Time: %{x}<br>' +
-                        'Value: %{y}<br>' +
-                        '<extra></extra>'
-        ))
+        figure.add_trace(
+            go.Bar(
+                x=data.timestamps,
+                y=data.values,
+                name=f"{data.sensor_id} - {data.metric_id}",
+                marker_color=self._get_equipment_color(data.equipment_id),
+                hovertemplate="<b>%{fullData.name}</b><br>"
+                + "Time: %{x}<br>"
+                + "Value: %{y}<br>"
+                + "<extra></extra>",
+            )
+        )
 
         return self._apply_chart_styling(figure, data, config)
 
-    def _create_histogram_chart(self, data: ChartData, config: ChartConfig) -> go.Figure:
+    def _create_histogram_chart(
+        self, data: ChartData, config: ChartConfig
+    ) -> go.Figure:
         """Create histogram chart"""
         figure = go.Figure()
 
-        figure.add_trace(go.Histogram(
-            x=data.values,
-            name=f"{data.sensor_id} - {data.metric_id}",
-            marker_color=self._get_equipment_color(data.equipment_id),
-            opacity=0.7,
-            hovertemplate='<b>%{fullData.name}</b><br>' +
-                        'Value Range: %{x}<br>' +
-                        'Count: %{y}<br>' +
-                        '<extra></extra>'
-        ))
+        figure.add_trace(
+            go.Histogram(
+                x=data.values,
+                name=f"{data.sensor_id} - {data.metric_id}",
+                marker_color=self._get_equipment_color(data.equipment_id),
+                opacity=0.7,
+                hovertemplate="<b>%{fullData.name}</b><br>"
+                + "Value Range: %{x}<br>"
+                + "Count: %{y}<br>"
+                + "<extra></extra>",
+            )
+        )
 
         # Update x-axis title for histogram
         figure.update_xaxes(title_text=f"{data.metric_id} Values")
@@ -425,20 +463,26 @@ class ChartManager:
         figure = go.Figure()
         figure.add_annotation(
             text=f"Chart Error: {error_message}",
-            xref="paper", yref="paper",
-            x=0.5, y=0.5, xanchor='center', yanchor='middle',
-            showarrow=False, font=dict(size=16, color="red")
+            xref="paper",
+            yref="paper",
+            x=0.5,
+            y=0.5,
+            xanchor="center",
+            yanchor="middle",
+            showarrow=False,
+            font=dict(size=16, color="red"),
         )
         figure.update_layout(
             title="Chart Error",
             showlegend=False,
             xaxis=dict(visible=False),
-            yaxis=dict(visible=False)
+            yaxis=dict(visible=False),
         )
         return figure
 
-    def _apply_chart_styling(self, figure: go.Figure, data: ChartData,
-                           config: ChartConfig) -> go.Figure:
+    def _apply_chart_styling(
+        self, figure: go.Figure, data: ChartData, config: ChartConfig
+    ) -> go.Figure:
         """Apply consistent styling to charts"""
         try:
             # Add anomaly overlays
@@ -453,19 +497,13 @@ class ChartManager:
                 height=config.height,
                 showlegend=config.show_legend,
                 template=config.template,
-                hovermode='x unified',
-                margin=dict(l=50, r=50, t=50, b=50)
+                hovermode="x unified",
+                margin=dict(l=50, r=50, t=50, b=50),
             )
 
             # Grid configuration
-            figure.update_xaxes(
-                showgrid=config.show_grid,
-                title_text="Time"
-            )
-            figure.update_yaxes(
-                showgrid=config.show_grid,
-                title_text=data.metric_id
-            )
+            figure.update_xaxes(showgrid=config.show_grid, title_text="Time")
+            figure.update_yaxes(showgrid=config.show_grid, title_text=data.metric_id)
 
             return figure
 
@@ -475,17 +513,17 @@ class ChartManager:
 
     def _get_equipment_color(self, equipment_id: str) -> str:
         """Get color based on equipment type"""
-        if equipment_id.startswith('SMAP'):
-            return self.nasa_colors['smap']
-        elif equipment_id.startswith('MSL'):
-            return self.nasa_colors['msl']
+        if equipment_id.startswith("SMAP"):
+            return self.nasa_colors["smap"]
+        elif equipment_id.startswith("MSL"):
+            return self.nasa_colors["msl"]
         else:
-            return self.nasa_colors['medium']
+            return self.nasa_colors["medium"]
 
     def _hex_to_rgb(self, hex_color: str) -> Tuple[int, int, int]:
         """Convert hex color to RGB tuple"""
-        hex_color = hex_color.lstrip('#')
-        return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+        hex_color = hex_color.lstrip("#")
+        return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
 
     def get_chart_type_options(self) -> List[Dict[str, str]]:
         """Get available chart type options for dropdown"""
@@ -496,19 +534,27 @@ class ChartManager:
             {"label": "🔥 Heatmap", "value": ChartType.HEATMAP.value},
             {"label": "⚫ Scatter Plot", "value": ChartType.SCATTER.value},
             {"label": "📊 Bar Chart", "value": ChartType.BAR.value},
-            {"label": "📊 Histogram", "value": ChartType.HISTOGRAM.value}
+            {"label": "📊 Histogram", "value": ChartType.HISTOGRAM.value},
         ]
 
     def validate_chart_config(self, config: ChartConfig) -> Dict[str, bool]:
         """Validate chart configuration"""
         validation = {
-            'chart_type_valid': config.chart_type in self.supported_types,
-            'height_valid': 200 <= config.height <= 1000,
-            'title_valid': bool(config.title and config.title.strip()),
-            'template_valid': config.template in ['plotly', 'plotly_white', 'plotly_dark', 'ggplot2', 'seaborn', 'simple_white']
+            "chart_type_valid": config.chart_type in self.supported_types,
+            "height_valid": 200 <= config.height <= 1000,
+            "title_valid": bool(config.title and config.title.strip()),
+            "template_valid": config.template
+            in [
+                "plotly",
+                "plotly_white",
+                "plotly_dark",
+                "ggplot2",
+                "seaborn",
+                "simple_white",
+            ],
         }
 
-        validation['config_valid'] = all(validation.values())
+        validation["config_valid"] = all(validation.values())
         return validation
 
 

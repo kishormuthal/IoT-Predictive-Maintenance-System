@@ -6,26 +6,26 @@ Quick validation and automatic fixes before dashboard launch
 """
 
 import os
+import subprocess
 import sys
 from pathlib import Path
-import subprocess
 
 # Set UTF-8 encoding for Windows
-if sys.platform == 'win32':
-    sys.stdout.reconfigure(encoding='utf-8')
+if sys.platform == "win32":
+    sys.stdout.reconfigure(encoding="utf-8")
 
 # ANSI color codes
-GREEN = '\033[92m'
-RED = '\033[91m'
-YELLOW = '\033[93m'
-BLUE = '\033[94m'
-RESET = '\033[0m'
-BOLD = '\033[1m'
+GREEN = "\033[92m"
+RED = "\033[91m"
+YELLOW = "\033[93m"
+BLUE = "\033[94m"
+RESET = "\033[0m"
+BOLD = "\033[1m"
 
 # ASCII-safe check marks for Windows compatibility
-CHECK = '[OK]'
-CROSS = '[X]'
-WARN = '[!]'
+CHECK = "[OK]"
+CROSS = "[X]"
+WARN = "[!]"
 
 
 def print_header():
@@ -40,16 +40,16 @@ def check_and_fix_directories():
     """Create missing directories"""
     project_root = Path(__file__).parent
     required_dirs = [
-        'data',
-        'data/raw',
-        'data/raw/smap',
-        'data/raw/msl',
-        'data/models',
-        'data/models/registry',
-        'data/models/transformer',
-        'data/processed',
-        'logs',
-        'cache'
+        "data",
+        "data/raw",
+        "data/raw/smap",
+        "data/raw/msl",
+        "data/models",
+        "data/models/registry",
+        "data/models/transformer",
+        "data/processed",
+        "logs",
+        "cache",
     ]
 
     print(f"{BOLD}Checking directories...{RESET}")
@@ -75,9 +75,9 @@ def check_dependencies():
     try:
         import dash
         import dash_bootstrap_components as dbc
-        import plotly
-        import pandas as pd
         import numpy as np
+        import pandas as pd
+        import plotly
 
         print(f"  {GREEN}✓{RESET} dash: {dash.__version__}")
         print(f"  {GREEN}✓{RESET} dash-bootstrap-components: {dbc.__version__}")
@@ -87,12 +87,16 @@ def check_dependencies():
 
         try:
             import tensorflow as tf
+
             print(f"  {GREEN}✓{RESET} tensorflow: {tf.__version__}")
         except ImportError:
-            print(f"  {YELLOW}⚠{RESET} tensorflow: Not available (forecasting may not work)")
+            print(
+                f"  {YELLOW}⚠{RESET} tensorflow: Not available (forecasting may not work)"
+            )
 
         try:
             import sklearn
+
             print(f"  {GREEN}✓{RESET} scikit-learn: {sklearn.__version__}")
         except ImportError:
             print(f"  {YELLOW}⚠{RESET} scikit-learn: Not available")
@@ -111,35 +115,35 @@ def check_data_files():
     print(f"{BOLD}Checking NASA data files...{RESET}")
     project_root = Path(__file__).parent
 
-    smap_train = project_root / 'data' / 'raw' / 'smap' / 'train.npy'
-    smap_test = project_root / 'data' / 'raw' / 'smap' / 'test.npy'
-    msl_train = project_root / 'data' / 'raw' / 'msl' / 'train.npy'
-    msl_test = project_root / 'data' / 'raw' / 'msl' / 'test.npy'
+    smap_train = project_root / "data" / "raw" / "smap" / "train.npy"
+    smap_test = project_root / "data" / "raw" / "smap" / "test.npy"
+    msl_train = project_root / "data" / "raw" / "msl" / "train.npy"
+    msl_test = project_root / "data" / "raw" / "msl" / "test.npy"
 
     all_present = True
     if smap_train.exists():
-        size_mb = smap_train.stat().st_size / (1024*1024)
+        size_mb = smap_train.stat().st_size / (1024 * 1024)
         print(f"  {GREEN}✓{RESET} SMAP train: {size_mb:.1f} MB")
     else:
         print(f"  {RED}✗{RESET} SMAP train: Missing")
         all_present = False
 
     if smap_test.exists():
-        size_mb = smap_test.stat().st_size / (1024*1024)
+        size_mb = smap_test.stat().st_size / (1024 * 1024)
         print(f"  {GREEN}✓{RESET} SMAP test: {size_mb:.1f} MB")
     else:
         print(f"  {RED}✗{RESET} SMAP test: Missing")
         all_present = False
 
     if msl_train.exists():
-        size_mb = msl_train.stat().st_size / (1024*1024)
+        size_mb = msl_train.stat().st_size / (1024 * 1024)
         print(f"  {GREEN}✓{RESET} MSL train: {size_mb:.1f} MB")
     else:
         print(f"  {RED}✗{RESET} MSL train: Missing")
         all_present = False
 
     if msl_test.exists():
-        size_mb = msl_test.stat().st_size / (1024*1024)
+        size_mb = msl_test.stat().st_size / (1024 * 1024)
         print(f"  {GREEN}✓{RESET} MSL test: {size_mb:.1f} MB")
     else:
         print(f"  {RED}✗{RESET} MSL test: Missing")
@@ -160,10 +164,10 @@ def check_dashboard_files():
     project_root = Path(__file__).parent
 
     required_files = {
-        'src/presentation/dashboard/enhanced_app.py': 'Enhanced app wrapper',
-        'src/presentation/dashboard/enhanced_app_optimized.py': 'Optimized dashboard',
-        'src/presentation/dashboard/enhanced_callbacks_simplified.py': 'Callbacks module',
-        'start_dashboard.py': 'Dashboard launcher'
+        "src/presentation/dashboard/enhanced_app.py": "Enhanced app wrapper",
+        "src/presentation/dashboard/enhanced_app_optimized.py": "Optimized dashboard",
+        "src/presentation/dashboard/enhanced_callbacks_simplified.py": "Callbacks module",
+        "start_dashboard.py": "Dashboard launcher",
     }
 
     all_present = True
@@ -187,7 +191,7 @@ def check_models():
     """Check trained models"""
     print(f"{BOLD}Checking trained models...{RESET}")
     project_root = Path(__file__).parent
-    models_dir = project_root / 'data' / 'models'
+    models_dir = project_root / "data" / "models"
 
     if not models_dir.exists():
         print(f"  {YELLOW}⚠{RESET} Models directory missing")
@@ -195,8 +199,8 @@ def check_models():
         print(f"{YELLOW}Run: python train_forecasting_models.py --quick{RESET}\n")
         return False
 
-    model_files = list(models_dir.glob('**/*.h5'))
-    pkl_files = list(models_dir.glob('**/*.pkl'))
+    model_files = list(models_dir.glob("**/*.h5"))
+    pkl_files = list(models_dir.glob("**/*.pkl"))
 
     print(f"  {GREEN}✓{RESET} Found {len(model_files)} .h5 model files")
     print(f"  {GREEN}✓{RESET} Found {len(pkl_files)} .pkl scaler files")
@@ -227,7 +231,9 @@ def print_summary(checks):
         failed = [name for name, passed in checks.items() if not passed]
         print(f"{YELLOW}{BOLD}⚠️  CHECKS COMPLETED WITH WARNINGS{RESET}")
         print(f"{YELLOW}Some components not available: {', '.join(failed)}{RESET}\n")
-        print(f"{BOLD}Dashboard can still start, but some features may not work{RESET}\n")
+        print(
+            f"{BOLD}Dashboard can still start, but some features may not work{RESET}\n"
+        )
         print(f"{BOLD}To start anyway:{RESET}")
         print(f"  {BLUE}python start_dashboard.py{RESET}\n")
 
@@ -244,10 +250,10 @@ def main():
     models_ok = check_models()
 
     checks = {
-        'Dependencies': deps_ok,
-        'Data Files': data_ok,
-        'Dashboard Files': dashboard_ok,
-        'Models': models_ok
+        "Dependencies": deps_ok,
+        "Data Files": data_ok,
+        "Dashboard Files": dashboard_ok,
+        "Models": models_ok,
     }
 
     print_summary(checks)

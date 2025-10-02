@@ -3,22 +3,27 @@ Data Pipeline Orchestrator
 End-to-end data processing pipeline with versioning, validation, and drift detection
 """
 
-import numpy as np
-from typing import Dict, List, Any, Optional, Tuple
+import json
+import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-import logging
-import json
+from typing import Any, Dict, List, Optional, Tuple
 
+import numpy as np
+
+from ...core.services.data_drift_detector import (
+    DataDriftDetector,
+    DriftConfig,
+    DriftReport,
+)
 from ...core.services.data_processing_service import (
     DataProcessingService,
-    NormalizationMethod,
     DataQualityReport,
-    DataQualityStatus
+    DataQualityStatus,
+    NormalizationMethod,
 )
-from ...core.services.feature_engineering import FeatureEngineer, FeatureConfig
-from ...core.services.data_drift_detector import DataDriftDetector, DriftConfig, DriftReport
-from .dvc_manager import DVCManager, DatasetVersion
+from ...core.services.feature_engineering import FeatureConfig, FeatureEngineer
+from .dvc_manager import DatasetVersion, DVCManager
 from .nasa_data_loader import NASADataLoader
 
 logger = logging.getLogger(__name__)
@@ -44,7 +49,7 @@ class DataPipeline:
         feature_engineer: Optional[FeatureEngineer] = None,
         drift_detector: Optional[DataDriftDetector] = None,
         dvc_manager: Optional[DVCManager] = None,
-        pipeline_config: Optional[Dict[str, Any]] = None
+        pipeline_config: Optional[Dict[str, Any]] = None,
     ):
         """
         Initialize data pipeline
@@ -72,7 +77,7 @@ class DataPipeline:
         self.sensor_metadata: Dict[str, Dict[str, Any]] = {}
 
         # Output directory
-        self.output_dir = Path(self.config.get('output_dir', 'data/processed'))
+        self.output_dir = Path(self.config.get("output_dir", "data/processed"))
         self.output_dir.mkdir(parents=True, exist_ok=True)
 
     def run_full_pipeline(
@@ -85,7 +90,7 @@ class DataPipeline:
         feature_config: Optional[FeatureConfig] = None,
         detect_drift: bool = True,
         version_dataset: bool = True,
-        save_processed: bool = True
+        save_processed: bool = True,
     ) -> Dict[str, Any]:
         """
         Run full data processing pipeline for a sensor
@@ -108,11 +113,11 @@ class DataPipeline:
         logger.info(f"Starting pipeline run {pipeline_id}")
 
         results = {
-            'pipeline_id': pipeline_id,
-            'sensor_id': sensor_id,
-            'start_time': datetime.now(),
-            'success': False,
-            'errors': []
+            "pipeline_id": pipeline_id,
+            "sensor_id": sensor_id,
+            "start_time": datetime.now(),
+            "success": False,
+            "errors": [],
         }
 
         try:
@@ -120,28 +125,28 @@ class DataPipeline:
             logger.info(f"[1/6] Loading data for {sensor_id}")
             raw_data_dict = self.data_loader.get_sensor_data(sensor_id, hours_back)
 
-            if not raw_data_dict or not raw_data_dict.get('values'):
+            if not raw_data_dict or not raw_data_dict.get("values"):
                 raise ValueError(f"No data available for sensor {sensor_id}")
 
-            raw_data = np.array(raw_data_dict['values'])
-            timestamps = raw_data_dict.get('timestamps', [])
+            raw_data = np.array(raw_data_dict["values"])
+            timestamps = raw_data_dict.get("timestamps", [])
 
-            results['raw_data_shape'] = raw_data.shape
-            results['timestamps_count'] = len(timestamps)
+            results["raw_data_shape"] = raw_data.shape
+            results["timestamps_count"] = len(timestamps)
 
             # Step 2: Data quality assessment
             logger.info(f"[2/6] Assessing data quality for {sensor_id}")
             quality_report = self.processing_service.assess_data_quality(
-                raw_data,
-                timestamps,
-                sensor_id
+                raw_data, timestamps, sensor_id
             )
 
-            results['quality_report'] = quality_report
+            results["quality_report"] = quality_report
 
             if quality_report.status == DataQualityStatus.CRITICAL:
                 logger.error(f"Critical data quality issues: {quality_report.issues}")
-                results['errors'].append(f"Critical data quality: {quality_report.issues}")
+                results["errors"].append(
+                    f"Critical data quality: {quality_report.issues}"
+                )
                 # Continue anyway, but flag it
 
             # Step 3: Preprocessing and normalization
@@ -157,13 +162,18 @@ class DataPipeline:
             # Normalize if requested
             norm_params = None
             if normalize:
-                method = normalization_method or self.processing_service.default_normalization
+                method = (
+                    normalization_method
+                    or self.processing_service.default_normalization
+                )
 
                 # Check if we have existing parameters
                 existing_params = self.processing_service.get_cached_params(sensor_id)
 
                 if existing_params:
-                    logger.info(f"Using cached normalization parameters for {sensor_id}")
+                    logger.info(
+                        f"Using cached normalization parameters for {sensor_id}"
+                    )
                     norm_params = existing_params
                     normalized_data = self.processing_service.normalize(
                         processed_data, sensor_id, norm_params
@@ -180,8 +190,8 @@ class DataPipeline:
 
                 processed_data = normalized_data
 
-            results['normalized'] = normalize
-            results['norm_params'] = norm_params.to_dict() if norm_params else None
+            results["normalized"] = normalize
+            results["norm_params"] = norm_params.to_dict() if norm_params else None
 
             # Step 4: Feature engineering
             features = None
@@ -191,16 +201,14 @@ class DataPipeline:
                 self.feature_engineer.config = feature_config
 
                 features = self.feature_engineer.engineer_features(
-                    processed_data,
-                    timestamps,
-                    sensor_id
+                    processed_data, timestamps, sensor_id
                 )
 
-                results['engineered_features'] = list(features.keys())
-                results['feature_count'] = len(features)
+                results["engineered_features"] = list(features.keys())
+                results["feature_count"] = len(features)
             else:
                 logger.info(f"[4/6] Skipping feature engineering")
-                results['engineered_features'] = []
+                results["engineered_features"] = []
 
             # Step 5: Drift detection
             drift_report = None
@@ -210,22 +218,20 @@ class DataPipeline:
                 # Check if we have reference distribution
                 if sensor_id in self.drift_detector.reference_distributions:
                     drift_report = self.drift_detector.detect_drift(
-                        processed_data,
-                        sensor_id,
-                        timestamps
+                        processed_data, sensor_id, timestamps
                     )
-                    results['drift_report'] = drift_report.to_dict()
-                    results['drift_detected'] = drift_report.drift_detected
+                    results["drift_report"] = drift_report.to_dict()
+                    results["drift_detected"] = drift_report.drift_detected
                 else:
                     # Fit reference distribution
                     logger.info(f"Fitting reference distribution for {sensor_id}")
                     self.drift_detector.fit_reference(
-                        processed_data,
-                        sensor_id,
-                        timestamps
+                        processed_data, sensor_id, timestamps
                     )
-                    results['drift_report'] = "Reference distribution fitted (no drift check)"
-                    results['drift_detected'] = False
+                    results["drift_report"] = (
+                        "Reference distribution fitted (no drift check)"
+                    )
+                    results["drift_detected"] = False
             else:
                 logger.info(f"[5/6] Skipping drift detection")
 
@@ -245,19 +251,19 @@ class DataPipeline:
 
                 # Save metadata
                 metadata = {
-                    'sensor_id': sensor_id,
-                    'pipeline_id': pipeline_id,
-                    'raw_shape': raw_data.shape,
-                    'processed_shape': processed_data.shape,
-                    'normalized': normalize,
-                    'features_engineered': engineer_features,
-                    'quality_status': quality_report.status.value,
-                    'drift_detected': results.get('drift_detected', False),
-                    'processing_timestamp': datetime.now().isoformat()
+                    "sensor_id": sensor_id,
+                    "pipeline_id": pipeline_id,
+                    "raw_shape": raw_data.shape,
+                    "processed_shape": processed_data.shape,
+                    "normalized": normalize,
+                    "features_engineered": engineer_features,
+                    "quality_status": quality_report.status.value,
+                    "drift_detected": results.get("drift_detected", False),
+                    "processing_timestamp": datetime.now().isoformat(),
                 }
 
                 metadata_file = self.output_dir / f"{sensor_id}_metadata.json"
-                with open(metadata_file, 'w') as f:
+                with open(metadata_file, "w") as f:
                     json.dump(metadata, f, indent=2)
 
                 # Version with DVC
@@ -268,28 +274,28 @@ class DataPipeline:
                         description=f"Processed sensor data from pipeline {pipeline_id}",
                         tags=[
                             quality_report.status.value,
-                            'normalized' if normalize else 'raw',
-                            'drift' if results.get('drift_detected') else 'stable'
+                            "normalized" if normalize else "raw",
+                            "drift" if results.get("drift_detected") else "stable",
                         ],
                         sensor_ids=[sensor_id],
-                        push_to_remote=False
+                        push_to_remote=False,
                     )
 
                     if dataset_version:
-                        results['dataset_version'] = dataset_version.version
-                        results['data_hash'] = dataset_version.data_hash
+                        results["dataset_version"] = dataset_version.version
+                        results["data_hash"] = dataset_version.data_hash
                     else:
-                        results['errors'].append("Dataset versioning failed")
+                        results["errors"].append("Dataset versioning failed")
 
-                results['output_file'] = str(output_file)
+                results["output_file"] = str(output_file)
             else:
                 logger.info(f"[6/6] Skipping save/version")
 
             # Mark success
-            results['success'] = True
-            results['end_time'] = datetime.now()
-            results['duration_seconds'] = (
-                results['end_time'] - results['start_time']
+            results["success"] = True
+            results["end_time"] = datetime.now()
+            results["duration_seconds"] = (
+                results["end_time"] - results["start_time"]
             ).total_seconds()
 
             # Store pipeline run
@@ -304,9 +310,9 @@ class DataPipeline:
 
         except Exception as e:
             logger.error(f"Pipeline {pipeline_id} failed: {e}", exc_info=True)
-            results['success'] = False
-            results['errors'].append(str(e))
-            results['end_time'] = datetime.now()
+            results["success"] = False
+            results["errors"].append(str(e))
+            results["end_time"] = datetime.now()
             return results
 
     def prepare_training_data(
@@ -315,7 +321,7 @@ class DataPipeline:
         split_ratio: Tuple[float, float, float] = (0.7, 0.15, 0.15),
         hours_back: int = 168,
         normalize: bool = True,
-        assess_quality: bool = True
+        assess_quality: bool = True,
     ) -> Dict[str, Any]:
         """
         Prepare data specifically for model training
@@ -334,21 +340,17 @@ class DataPipeline:
 
         # Load data
         raw_data_dict = self.data_loader.get_sensor_data(sensor_id, hours_back)
-        if not raw_data_dict or not raw_data_dict.get('values'):
+        if not raw_data_dict or not raw_data_dict.get("values"):
             raise ValueError(f"No data available for sensor {sensor_id}")
 
-        raw_data = np.array(raw_data_dict['values'])
+        raw_data = np.array(raw_data_dict["values"])
 
         # Handle missing values
         raw_data = self._impute_missing(raw_data)
 
         # Use processing service to prepare training data
         prepared_data = self.processing_service.prepare_training_data(
-            raw_data,
-            sensor_id,
-            split_ratio,
-            normalize,
-            assess_quality
+            raw_data, sensor_id, split_ratio, normalize, assess_quality
         )
 
         logger.info(
@@ -361,9 +363,7 @@ class DataPipeline:
         return prepared_data
 
     def run_batch_pipeline(
-        self,
-        sensor_ids: List[str],
-        **kwargs
+        self, sensor_ids: List[str], **kwargs
     ) -> Dict[str, Dict[str, Any]]:
         """
         Run pipeline for multiple sensors
@@ -384,13 +384,10 @@ class DataPipeline:
                 results[sensor_id] = sensor_results
             except Exception as e:
                 logger.error(f"Failed to process sensor {sensor_id}: {e}")
-                results[sensor_id] = {
-                    'success': False,
-                    'errors': [str(e)]
-                }
+                results[sensor_id] = {"success": False, "errors": [str(e)]}
 
         # Summary
-        successful = sum(1 for r in results.values() if r.get('success'))
+        successful = sum(1 for r in results.values() if r.get("success"))
         logger.info(
             f"Batch pipeline complete: {successful}/{len(sensor_ids)} successful"
         )
@@ -443,8 +440,9 @@ class DataPipeline:
         """
         if sensor_id:
             return [
-                pid for pid, results in self.pipeline_runs.items()
-                if results.get('sensor_id') == sensor_id
+                pid
+                for pid, results in self.pipeline_runs.items()
+                if results.get("sensor_id") == sensor_id
             ]
         else:
             return list(self.pipeline_runs.keys())
@@ -452,15 +450,16 @@ class DataPipeline:
     def get_sensor_latest_pipeline(self, sensor_id: str) -> Optional[Dict[str, Any]]:
         """Get latest successful pipeline run for a sensor"""
         sensor_runs = [
-            results for results in self.pipeline_runs.values()
-            if results.get('sensor_id') == sensor_id and results.get('success')
+            results
+            for results in self.pipeline_runs.values()
+            if results.get("sensor_id") == sensor_id and results.get("success")
         ]
 
         if not sensor_runs:
             return None
 
         # Sort by start_time and get latest
-        sensor_runs.sort(key=lambda x: x.get('start_time', datetime.min), reverse=True)
+        sensor_runs.sort(key=lambda x: x.get("start_time", datetime.min), reverse=True)
         return sensor_runs[0]
 
     def clear_cache(self):

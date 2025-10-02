@@ -4,27 +4,30 @@ Provides memory usage optimization and resource management
 """
 
 import gc
+import logging
 import os
 import sys
-import time
 import threading
+import time
 import tracemalloc
-import psutil
-import numpy as np
-from typing import Dict, List, Optional, Any, Callable, Set
-from datetime import datetime, timedelta
-from dataclasses import dataclass
-from pathlib import Path
 import weakref
-import logging
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Set
+
+import numpy as np
+import psutil
 
 from .logger import get_logger
 
 logger = get_logger(__name__)
 
+
 @dataclass
 class MemoryStats:
     """Memory usage statistics"""
+
     total_memory_mb: float
     available_memory_mb: float
     used_memory_mb: float
@@ -40,13 +43,16 @@ class MemoryStats:
         if self.timestamp is None:
             self.timestamp = datetime.now()
 
+
 class MemoryMonitor:
     """Monitor and optimize memory usage"""
 
-    def __init__(self,
-                 memory_limit_mb: int = 512,
-                 cleanup_threshold: float = 0.8,
-                 monitoring_interval: float = 30.0):
+    def __init__(
+        self,
+        memory_limit_mb: int = 512,
+        cleanup_threshold: float = 0.8,
+        monitoring_interval: float = 30.0,
+    ):
         """
         Initialize memory monitor
 
@@ -84,7 +90,9 @@ class MemoryMonitor:
             return
 
         self.is_running = True
-        self.monitor_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
+        self.monitor_thread = threading.Thread(
+            target=self._monitoring_loop, daemon=True
+        )
         self.monitor_thread.start()
         logger.info("Memory monitoring started")
 
@@ -109,12 +117,16 @@ class MemoryMonitor:
 
                 # Check if cleanup is needed
                 if stats.process_percent > self.cleanup_threshold * 100:
-                    logger.warning(f"Memory usage {stats.process_percent:.1f}% exceeds threshold")
+                    logger.warning(
+                        f"Memory usage {stats.process_percent:.1f}% exceeds threshold"
+                    )
                     self._trigger_cleanup()
 
                 # Log memory stats periodically
                 if len(self.memory_history) % 20 == 0:  # Every 10 minutes
-                    logger.info(f"Memory: {stats.process_memory_mb:.1f}MB ({stats.process_percent:.1f}%)")
+                    logger.info(
+                        f"Memory: {stats.process_memory_mb:.1f}MB ({stats.process_percent:.1f}%)"
+                    )
 
                 time.sleep(self.monitoring_interval)
 
@@ -132,7 +144,7 @@ class MemoryMonitor:
 
         # Python memory tracking
         python_objects = 0
-        if hasattr(sys, 'getsizeof'):
+        if hasattr(sys, "getsizeof"):
             try:
                 python_objects = len(gc.get_objects())
             except:
@@ -145,8 +157,9 @@ class MemoryMonitor:
         cached_models = 0
         try:
             from src.model_registry.model_manager import get_model_manager
+
             manager = get_model_manager()
-            if hasattr(manager, 'cache'):
+            if hasattr(manager, "cache"):
                 cached_models = len(manager.cache.cache)
         except:
             pass
@@ -160,7 +173,7 @@ class MemoryMonitor:
             process_percent=(process_memory.rss / system_memory.total) * 100,
             cached_models=cached_models,
             active_threads=active_threads,
-            python_objects=python_objects
+            python_objects=python_objects,
         )
 
         return stats
@@ -213,9 +226,10 @@ class MemoryMonitor:
         """Clean up model cache if memory usage is high"""
         try:
             from src.model_registry.model_manager import get_model_manager
+
             manager = get_model_manager()
 
-            if hasattr(manager, 'cache'):
+            if hasattr(manager, "cache"):
                 cache_size = len(manager.cache.cache)
                 if cache_size > 0:
                     # Clear half of the cache
@@ -231,7 +245,9 @@ class MemoryMonitor:
                             else:
                                 break
 
-                    logger.info(f"Reduced model cache from {cache_size} to {len(manager.cache.cache)} models")
+                    logger.info(
+                        f"Reduced model cache from {cache_size} to {len(manager.cache.cache)} models"
+                    )
 
         except Exception as e:
             logger.debug(f"Could not cleanup model cache: {e}")
@@ -264,7 +280,7 @@ class MemoryMonitor:
         """Optimize NumPy array memory usage"""
         try:
             # Force NumPy memory cleanup
-            if hasattr(np, 'get_include'):
+            if hasattr(np, "get_include"):
                 # This is a lightweight way to trigger NumPy memory management
                 np.array([]).dtype
 
@@ -300,7 +316,9 @@ class MemoryMonitor:
         trend = "stable"
         if len(recent_history) > 1:
             recent_avg = sum(s.process_memory_mb for s in recent_history[-5:]) / 5
-            older_avg = sum(s.process_memory_mb for s in recent_history[:5]) / min(5, len(recent_history))
+            older_avg = sum(s.process_memory_mb for s in recent_history[:5]) / min(
+                5, len(recent_history)
+            )
 
             if recent_avg > older_avg * 1.1:
                 trend = "increasing"
@@ -328,7 +346,7 @@ class MemoryMonitor:
             "python_objects": stats.python_objects,
             "cleanup_threshold": self.cleanup_threshold,
             "within_limits": stats.process_memory_mb <= self.memory_limit_mb,
-            "cleanup_needed": stats.process_percent > self.cleanup_threshold * 100
+            "cleanup_needed": stats.process_percent > self.cleanup_threshold * 100,
         }
 
     def get_memory_history(self, minutes: int = 60) -> List[MemoryStats]:
@@ -343,7 +361,9 @@ class MemoryMonitor:
         cutoff_time = datetime.now() - timedelta(minutes=minutes)
 
         with self.lock:
-            return [stats for stats in self.memory_history if stats.timestamp >= cutoff_time]
+            return [
+                stats for stats in self.memory_history if stats.timestamp >= cutoff_time
+            ]
 
     def optimize_for_target(self, target_mb: int = None):
         """Optimize memory usage for target size
@@ -357,10 +377,14 @@ class MemoryMonitor:
         current_stats = self.get_memory_stats()
 
         if current_stats.process_memory_mb <= target_mb:
-            logger.info(f"Memory usage {current_stats.process_memory_mb:.1f}MB already within target {target_mb}MB")
+            logger.info(
+                f"Memory usage {current_stats.process_memory_mb:.1f}MB already within target {target_mb}MB"
+            )
             return
 
-        logger.info(f"Optimizing memory usage from {current_stats.process_memory_mb:.1f}MB to {target_mb}MB")
+        logger.info(
+            f"Optimizing memory usage from {current_stats.process_memory_mb:.1f}MB to {target_mb}MB"
+        )
 
         # Progressive cleanup
         self._trigger_cleanup()
@@ -368,7 +392,9 @@ class MemoryMonitor:
         # Check if we need more aggressive cleanup
         new_stats = self.get_memory_stats()
         if new_stats.process_memory_mb > target_mb:
-            logger.warning(f"Aggressive cleanup needed: {new_stats.process_memory_mb:.1f}MB > {target_mb}MB")
+            logger.warning(
+                f"Aggressive cleanup needed: {new_stats.process_memory_mb:.1f}MB > {target_mb}MB"
+            )
             self._aggressive_cleanup()
 
     def _aggressive_cleanup(self):
@@ -378,8 +404,9 @@ class MemoryMonitor:
         # Clear most of the model cache
         try:
             from src.model_registry.model_manager import get_model_manager
+
             manager = get_model_manager()
-            if hasattr(manager, 'cache'):
+            if hasattr(manager, "cache"):
                 manager.cache.clear()
                 logger.info("Cleared all cached models")
         except:
@@ -393,7 +420,8 @@ class MemoryMonitor:
         # Clear system caches if possible
         try:
             import sys
-            if hasattr(sys, 'intern'):
+
+            if hasattr(sys, "intern"):
                 # This is a hint to Python's string interning
                 pass
         except:
@@ -429,12 +457,12 @@ OPTIMIZATION STATUS:
 RECOMMENDATIONS:
 """
 
-        if summary['within_limits']:
+        if summary["within_limits"]:
             report += "✅ Memory usage is optimal\n"
         else:
             report += f"⚠️  Consider reducing memory usage by {stats.process_memory_mb - self.memory_limit_mb:.1f}MB\n"
 
-        if summary['cleanup_needed']:
+        if summary["cleanup_needed"]:
             report += "🧹 Automatic cleanup will be triggered\n"
 
         if stats.cached_models > 15:
@@ -445,37 +473,46 @@ RECOMMENDATIONS:
 
         return report.strip()
 
+
 # Global memory monitor instance
 _memory_monitor = MemoryMonitor()
+
 
 # Convenience functions
 def start_memory_monitoring():
     """Start memory monitoring"""
     _memory_monitor.start_monitoring()
 
+
 def get_memory_stats() -> MemoryStats:
     """Get current memory statistics"""
     return _memory_monitor.get_memory_stats()
+
 
 def get_memory_summary() -> Dict[str, Any]:
     """Get memory usage summary"""
     return _memory_monitor.get_memory_usage_summary()
 
+
 def optimize_memory(target_mb: int = None):
     """Optimize memory usage"""
     _memory_monitor.optimize_for_target(target_mb)
+
 
 def register_cleanup_callback(callback: Callable):
     """Register cleanup callback"""
     _memory_monitor.register_cleanup_callback(callback)
 
+
 def generate_memory_report() -> str:
     """Generate memory report"""
     return _memory_monitor.generate_memory_report()
 
+
 # Decorator for memory-aware functions
 def memory_efficient(target_mb: int = None):
     """Decorator to ensure memory efficiency"""
+
     def decorator(func):
         def wrapper(*args, **kwargs):
             # Check memory before execution
@@ -486,11 +523,15 @@ def memory_efficient(target_mb: int = None):
 
                 # Check memory after execution
                 final_stats = get_memory_stats()
-                memory_increase = final_stats.process_memory_mb - initial_stats.process_memory_mb
+                memory_increase = (
+                    final_stats.process_memory_mb - initial_stats.process_memory_mb
+                )
 
                 # If memory increased significantly, trigger cleanup
                 if memory_increase > 50:  # 50MB increase
-                    logger.debug(f"Function {func.__name__} increased memory by {memory_increase:.1f}MB")
+                    logger.debug(
+                        f"Function {func.__name__} increased memory by {memory_increase:.1f}MB"
+                    )
                     if target_mb and final_stats.process_memory_mb > target_mb:
                         optimize_memory(target_mb)
 
@@ -502,7 +543,9 @@ def memory_efficient(target_mb: int = None):
                 raise
 
         return wrapper
+
     return decorator
+
 
 # Auto-start monitoring
 _memory_monitor.start_monitoring()

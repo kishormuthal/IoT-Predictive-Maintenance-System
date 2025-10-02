@@ -4,10 +4,11 @@ Unified time range management for synchronized time controls across the dashboar
 """
 
 import logging
-from typing import List, Dict, Optional, Any, Tuple
 from dataclasses import dataclass
-from enum import Enum
 from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+
 import pandas as pd
 
 logger = logging.getLogger(__name__)
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 class TimeRange(Enum):
     """Predefined time range options"""
+
     REAL_TIME = "real_time"
     LAST_1M = "1m"
     LAST_5M = "5m"
@@ -30,6 +32,7 @@ class TimeRange(Enum):
 @dataclass
 class TimeWindow:
     """Time window configuration"""
+
     start_time: datetime
     end_time: datetime
     range_type: TimeRange
@@ -41,6 +44,7 @@ class TimeWindow:
 @dataclass
 class TimeControlConfig:
     """Configuration for time controls"""
+
     default_range: TimeRange = TimeRange.LAST_1H
     enable_realtime: bool = True
     enable_custom_range: bool = True
@@ -51,14 +55,14 @@ class TimeControlConfig:
         if self.auto_refresh_intervals is None:
             self.auto_refresh_intervals = {
                 TimeRange.REAL_TIME.value: 1000,  # 1 second
-                TimeRange.LAST_1M.value: 5000,    # 5 seconds
-                TimeRange.LAST_5M.value: 10000,   # 10 seconds
+                TimeRange.LAST_1M.value: 5000,  # 5 seconds
+                TimeRange.LAST_5M.value: 10000,  # 10 seconds
                 TimeRange.LAST_15M.value: 30000,  # 30 seconds
-                TimeRange.LAST_1H.value: 60000,   # 1 minute
+                TimeRange.LAST_1H.value: 60000,  # 1 minute
                 TimeRange.LAST_6H.value: 300000,  # 5 minutes
-                TimeRange.LAST_24H.value: 600000, # 10 minutes
-                TimeRange.LAST_7D.value: 1800000, # 30 minutes
-                TimeRange.LAST_30D.value: 3600000 # 1 hour
+                TimeRange.LAST_24H.value: 600000,  # 10 minutes
+                TimeRange.LAST_7D.value: 1800000,  # 30 minutes
+                TimeRange.LAST_30D.value: 3600000,  # 1 hour
             }
 
 
@@ -78,24 +82,26 @@ class TimeControlManager:
         self.current_window = self._get_default_window()
         self.subscribers = {}  # Component subscriptions for time updates
         self.global_time_state = {
-            'current_range': self.config.default_range,
-            'start_time': self.current_window.start_time,
-            'end_time': self.current_window.end_time,
-            'is_realtime': False,
-            'last_update': datetime.now()
+            "current_range": self.config.default_range,
+            "start_time": self.current_window.start_time,
+            "end_time": self.current_window.end_time,
+            "is_realtime": False,
+            "last_update": datetime.now(),
         }
 
         # NASA mission-specific time ranges
         self.nasa_time_ranges = {
-            'smap_orbit': timedelta(minutes=99),      # SMAP orbital period
-            'msl_sol': timedelta(hours=24, minutes=37), # Mars sol duration
-            'communication_window': timedelta(minutes=15), # Typical comm window
-            'mission_critical': timedelta(hours=1),    # Critical operations window
+            "smap_orbit": timedelta(minutes=99),  # SMAP orbital period
+            "msl_sol": timedelta(hours=24, minutes=37),  # Mars sol duration
+            "communication_window": timedelta(minutes=15),  # Typical comm window
+            "mission_critical": timedelta(hours=1),  # Critical operations window
         }
 
         logger.info("TimeControlManager initialized with NASA mission-specific ranges")
 
-    def get_time_range_options(self, include_nasa_ranges: bool = True) -> List[Dict[str, Any]]:
+    def get_time_range_options(
+        self, include_nasa_ranges: bool = True
+    ) -> List[Dict[str, Any]]:
         """
         Get available time range options for dropdowns
 
@@ -115,7 +121,7 @@ class TimeControlManager:
             {"label": "📅 Last 24 hours", "value": TimeRange.LAST_24H.value},
             {"label": "📅 Last 7 days", "value": TimeRange.LAST_7D.value},
             {"label": "📅 Last 30 days", "value": TimeRange.LAST_30D.value},
-            {"label": "🔧 Custom Range", "value": TimeRange.CUSTOM.value}
+            {"label": "🔧 Custom Range", "value": TimeRange.CUSTOM.value},
         ]
 
         if include_nasa_ranges:
@@ -123,7 +129,7 @@ class TimeControlManager:
                 {"label": "🛰️ SMAP Orbit (99min)", "value": "smap_orbit"},
                 {"label": "🚗 MSL Sol (24h37m)", "value": "msl_sol"},
                 {"label": "📡 Comm Window (15min)", "value": "communication_window"},
-                {"label": "🚨 Mission Critical (1h)", "value": "mission_critical"}
+                {"label": "🚨 Mission Critical (1h)", "value": "mission_critical"},
             ]
             # Insert NASA options after real-time but before standard ranges
             options = options[:1] + nasa_options + options[1:]
@@ -137,11 +143,15 @@ class TimeControlManager:
             {"label": "⚡ Fast (5s)", "value": 5000},
             {"label": "🔄 Normal (10s)", "value": 10000},
             {"label": "⏳ Slow (30s)", "value": 30000},
-            {"label": "⏸️ Manual", "value": 0}
+            {"label": "⏸️ Manual", "value": 0},
         ]
 
-    def set_time_range(self, range_type: str, custom_start: Optional[datetime] = None,
-                      custom_end: Optional[datetime] = None) -> TimeWindow:
+    def set_time_range(
+        self,
+        range_type: str,
+        custom_start: Optional[datetime] = None,
+        custom_end: Optional[datetime] = None,
+    ) -> TimeWindow:
         """
         Set current time range
 
@@ -163,7 +173,7 @@ class TimeControlManager:
                     end_time=custom_end,
                     range_type=TimeRange.CUSTOM,
                     label=f"Custom: {custom_start.strftime('%m/%d %H:%M')} - {custom_end.strftime('%m/%d %H:%M')}",
-                    is_realtime=False
+                    is_realtime=False,
                 )
 
             elif range_type in self.nasa_time_ranges:
@@ -176,8 +186,10 @@ class TimeControlManager:
                     end_time=end_time,
                     range_type=TimeRange.CUSTOM,  # Treat as custom for processing
                     label=f"NASA {range_type.replace('_', ' ').title()}",
-                    refresh_interval=self.config.auto_refresh_intervals.get(TimeRange.LAST_1H.value),
-                    is_realtime=False
+                    refresh_interval=self.config.auto_refresh_intervals.get(
+                        TimeRange.LAST_1H.value
+                    ),
+                    is_realtime=False,
                 )
 
             else:
@@ -186,13 +198,15 @@ class TimeControlManager:
                 self.current_window = self._calculate_time_window(time_range)
 
             # Update global state
-            self.global_time_state.update({
-                'current_range': range_type,
-                'start_time': self.current_window.start_time,
-                'end_time': self.current_window.end_time,
-                'is_realtime': self.current_window.is_realtime,
-                'last_update': datetime.now()
-            })
+            self.global_time_state.update(
+                {
+                    "current_range": range_type,
+                    "start_time": self.current_window.start_time,
+                    "end_time": self.current_window.end_time,
+                    "is_realtime": self.current_window.is_realtime,
+                    "last_update": datetime.now(),
+                }
+            )
 
             # Notify subscribers
             self._notify_subscribers()
@@ -209,11 +223,13 @@ class TimeControlManager:
         # Update real-time windows
         if self.current_window.is_realtime:
             self.current_window = self._calculate_time_window(TimeRange.REAL_TIME)
-            self.global_time_state.update({
-                'start_time': self.current_window.start_time,
-                'end_time': self.current_window.end_time,
-                'last_update': datetime.now()
-            })
+            self.global_time_state.update(
+                {
+                    "start_time": self.current_window.start_time,
+                    "end_time": self.current_window.end_time,
+                    "last_update": datetime.now(),
+                }
+            )
 
         return self.current_window
 
@@ -228,15 +244,15 @@ class TimeControlManager:
             Refresh interval in milliseconds
         """
         if range_type is None:
-            range_type = self.global_time_state['current_range']
+            range_type = self.global_time_state["current_range"]
 
         return self.config.auto_refresh_intervals.get(
-            range_type,
-            self.config.auto_refresh_intervals[TimeRange.LAST_1H.value]
+            range_type, self.config.auto_refresh_intervals[TimeRange.LAST_1H.value]
         )
 
-    def filter_data_by_time(self, data: pd.DataFrame,
-                           timestamp_column: str = 'timestamp') -> pd.DataFrame:
+    def filter_data_by_time(
+        self, data: pd.DataFrame, timestamp_column: str = "timestamp"
+    ) -> pd.DataFrame:
         """
         Filter data by current time window
 
@@ -260,11 +276,13 @@ class TimeControlManager:
 
             # Filter data
             filtered_data = data[
-                (data[timestamp_column] >= window.start_time) &
-                (data[timestamp_column] <= window.end_time)
+                (data[timestamp_column] >= window.start_time)
+                & (data[timestamp_column] <= window.end_time)
             ]
 
-            logger.debug(f"Filtered data: {len(filtered_data)}/{len(data)} records in time window")
+            logger.debug(
+                f"Filtered data: {len(filtered_data)}/{len(data)} records in time window"
+            )
             return filtered_data
 
         except Exception as e:
@@ -330,57 +348,90 @@ class TimeControlManager:
         Returns:
             Dash components for time controls
         """
-        from dash import html, dcc
         import dash_bootstrap_components as dbc
+        from dash import dcc, html
 
-        return html.Div([
-            dbc.Row([
-                dbc.Col([
-                    html.Label("⏰ Time Range", className="fw-bold mb-2"),
-                    dcc.Dropdown(
-                        id=f"{component_prefix}time-range-select",
-                        options=self.get_time_range_options(include_nasa_ranges=True),
-                        value=self.config.default_range.value,
-                        clearable=False,
-                        className="mb-2"
-                    )
-                ], width=4),
+        return html.Div(
+            [
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            [
+                                html.Label("⏰ Time Range", className="fw-bold mb-2"),
+                                dcc.Dropdown(
+                                    id=f"{component_prefix}time-range-select",
+                                    options=self.get_time_range_options(
+                                        include_nasa_ranges=True
+                                    ),
+                                    value=self.config.default_range.value,
+                                    clearable=False,
+                                    className="mb-2",
+                                ),
+                            ],
+                            width=4,
+                        ),
+                        dbc.Col(
+                            [
+                                html.Label("🔄 Refresh Rate", className="fw-bold mb-2"),
+                                dcc.Dropdown(
+                                    id=f"{component_prefix}refresh-interval-select",
+                                    options=self.get_refresh_interval_options(),
+                                    value=self.get_refresh_interval(),
+                                    clearable=False,
+                                    className="mb-2",
+                                ),
+                            ],
+                            width=3,
+                        ),
+                        dbc.Col(
+                            [
+                                html.Label("📅 Custom Range", className="fw-bold mb-2"),
+                                dcc.DatePickerRange(
+                                    id=f"{component_prefix}custom-date-range",
+                                    start_date=datetime.now().date()
+                                    - timedelta(days=1),
+                                    end_date=datetime.now().date(),
+                                    display_format="MM/DD/YYYY",
+                                    style={"display": "none"},  # Hidden by default
+                                ),
+                            ],
+                            width=3,
+                        ),
+                        dbc.Col(
+                            [
+                                html.Label("Actions", className="fw-bold mb-2"),
+                                dbc.ButtonGroup(
+                                    [
+                                        dbc.Button(
+                                            "🔄",
+                                            id=f"{component_prefix}refresh-now-btn",
+                                            size="sm",
+                                            color="primary",
+                                            title="Refresh Now",
+                                        ),
+                                        dbc.Button(
+                                            "⏸️",
+                                            id=f"{component_prefix}pause-updates-btn",
+                                            size="sm",
+                                            color="secondary",
+                                            title="Pause Updates",
+                                        ),
+                                    ],
+                                    size="sm",
+                                ),
+                            ],
+                            width=2,
+                        ),
+                    ],
+                    className="time-controls-row",
+                )
+            ],
+            className="time-controls-container",
+        )
 
-                dbc.Col([
-                    html.Label("🔄 Refresh Rate", className="fw-bold mb-2"),
-                    dcc.Dropdown(
-                        id=f"{component_prefix}refresh-interval-select",
-                        options=self.get_refresh_interval_options(),
-                        value=self.get_refresh_interval(),
-                        clearable=False,
-                        className="mb-2"
-                    )
-                ], width=3),
-
-                dbc.Col([
-                    html.Label("📅 Custom Range", className="fw-bold mb-2"),
-                    dcc.DatePickerRange(
-                        id=f"{component_prefix}custom-date-range",
-                        start_date=datetime.now().date() - timedelta(days=1),
-                        end_date=datetime.now().date(),
-                        display_format='MM/DD/YYYY',
-                        style={'display': 'none'}  # Hidden by default
-                    )
-                ], width=3),
-
-                dbc.Col([
-                    html.Label("Actions", className="fw-bold mb-2"),
-                    dbc.ButtonGroup([
-                        dbc.Button("🔄", id=f"{component_prefix}refresh-now-btn",
-                                 size="sm", color="primary", title="Refresh Now"),
-                        dbc.Button("⏸️", id=f"{component_prefix}pause-updates-btn",
-                                 size="sm", color="secondary", title="Pause Updates")
-                    ], size="sm")
-                ], width=2)
-            ], className="time-controls-row")
-        ], className="time-controls-container")
-
-    def validate_time_window(self, start_time: datetime, end_time: datetime) -> Dict[str, bool]:
+    def validate_time_window(
+        self, start_time: datetime, end_time: datetime
+    ) -> Dict[str, bool]:
         """
         Validate time window parameters
 
@@ -392,13 +443,13 @@ class TimeControlManager:
             Validation results
         """
         validation = {
-            'valid_range': end_time > start_time,
-            'reasonable_duration': (end_time - start_time) <= timedelta(days=365),
-            'not_future': end_time <= datetime.now() + timedelta(minutes=5),
-            'not_too_old': start_time >= datetime.now() - timedelta(days=365)
+            "valid_range": end_time > start_time,
+            "reasonable_duration": (end_time - start_time) <= timedelta(days=365),
+            "not_future": end_time <= datetime.now() + timedelta(minutes=5),
+            "not_too_old": start_time >= datetime.now() - timedelta(days=365),
         }
 
-        validation['all_valid'] = all(validation.values())
+        validation["all_valid"] = all(validation.values())
         return validation
 
     def _get_default_window(self) -> TimeWindow:
@@ -416,7 +467,7 @@ class TimeControlManager:
                 range_type=range_type,
                 label="Real-time",
                 refresh_interval=self.config.auto_refresh_intervals[range_type.value],
-                is_realtime=True
+                is_realtime=True,
             )
 
         time_deltas = {
@@ -427,7 +478,7 @@ class TimeControlManager:
             TimeRange.LAST_6H: timedelta(hours=6),
             TimeRange.LAST_24H: timedelta(hours=24),
             TimeRange.LAST_7D: timedelta(days=7),
-            TimeRange.LAST_30D: timedelta(days=30)
+            TimeRange.LAST_30D: timedelta(days=30),
         }
 
         delta = time_deltas.get(range_type, timedelta(hours=1))
@@ -437,9 +488,9 @@ class TimeControlManager:
             start_time=start_time,
             end_time=now,
             range_type=range_type,
-            label=range_type.value.replace('_', ' ').title(),
+            label=range_type.value.replace("_", " ").title(),
             refresh_interval=self.config.auto_refresh_intervals.get(range_type.value),
-            is_realtime=False
+            is_realtime=False,
         )
 
     def _notify_subscribers(self):

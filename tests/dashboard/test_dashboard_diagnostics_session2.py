@@ -3,13 +3,14 @@ Dashboard Diagnostic Tests - Session 2
 Detailed analysis of hanging issues in dashboard components
 """
 
-import pytest
-import time
-import sys
-import subprocess
-import signal
 import os
+import signal
+import subprocess
+import sys
+import time
 from pathlib import Path
+
+import pytest
 
 # Test markers
 pytestmark = [pytest.mark.session2, pytest.mark.dashboard, pytest.mark.diagnostic]
@@ -25,10 +26,13 @@ class TestDashboardDiagnostics:
         try:
             # Test just the module import
             from src.presentation.dashboard import enhanced_app
+
             import_time = time.time() - start_time
 
             assert import_time < 10.0, f"Module import too slow: {import_time}s"
-            assert hasattr(enhanced_app, 'EnhancedIoTDashboard'), "Dashboard class not found"
+            assert hasattr(
+                enhanced_app, "EnhancedIoTDashboard"
+            ), "Dashboard class not found"
 
         except Exception as e:
             pytest.fail(f"Module import failed: {e}")
@@ -39,22 +43,26 @@ class TestDashboardDiagnostics:
 
         # Should be able to access the class
         assert EnhancedIoTDashboard is not None, "Dashboard class is None"
-        assert hasattr(EnhancedIoTDashboard, '__init__'), "Dashboard class missing __init__"
+        assert hasattr(
+            EnhancedIoTDashboard, "__init__"
+        ), "Dashboard class missing __init__"
 
     def test_simplified_callbacks_isolated(self):
         """Test simplified callbacks in isolation"""
         start_time = time.time()
 
         from src.presentation.dashboard.enhanced_callbacks_simplified import (
-            register_enhanced_callbacks,
-            create_training_hub_layout,
+            create_config_management_layout,
             create_model_registry_layout,
             create_system_admin_layout,
-            create_config_management_layout
+            create_training_hub_layout,
+            register_enhanced_callbacks,
         )
 
         import_time = time.time() - start_time
-        assert import_time < 5.0, f"Simplified callbacks import too slow: {import_time}s"
+        assert (
+            import_time < 5.0
+        ), f"Simplified callbacks import too slow: {import_time}s"
 
         # Test layout creation
         layout_start = time.time()
@@ -69,13 +77,16 @@ class TestDashboardDiagnostics:
 
         # Test each service individually
         services_to_test = [
-            ('AnomalyDetectionService', 'src.core.services.anomaly_service'),
-            ('ForecastingService', 'src.core.services.forecasting_service'),
-            ('NASADataLoader', 'src.infrastructure.data.nasa_data_loader'),
-            ('TrainingUseCase', 'src.application.use_cases.training_use_case'),
-            ('TrainingConfigManager', 'src.application.services.training_config_manager'),
-            ('ModelRegistry', 'src.infrastructure.ml.model_registry'),
-            ('PerformanceMonitor', 'src.infrastructure.monitoring.performance_monitor')
+            ("AnomalyDetectionService", "src.core.services.anomaly_service"),
+            ("ForecastingService", "src.core.services.forecasting_service"),
+            ("NASADataLoader", "src.infrastructure.data.nasa_data_loader"),
+            ("TrainingUseCase", "src.application.use_cases.training_use_case"),
+            (
+                "TrainingConfigManager",
+                "src.application.services.training_config_manager",
+            ),
+            ("ModelRegistry", "src.infrastructure.ml.model_registry"),
+            ("PerformanceMonitor", "src.infrastructure.monitoring.performance_monitor"),
         ]
 
         results = {}
@@ -93,29 +104,33 @@ class TestDashboardDiagnostics:
 
                 total_time = time.time() - start_time
                 results[service_name] = {
-                    'import_time': total_time - init_time,
-                    'init_time': init_time,
-                    'total_time': total_time,
-                    'success': True
+                    "import_time": total_time - init_time,
+                    "init_time": init_time,
+                    "total_time": total_time,
+                    "success": True,
                 }
 
             except Exception as e:
                 total_time = time.time() - start_time
                 results[service_name] = {
-                    'import_time': 0,
-                    'init_time': 0,
-                    'total_time': total_time,
-                    'success': False,
-                    'error': str(e)
+                    "import_time": 0,
+                    "init_time": 0,
+                    "total_time": total_time,
+                    "success": False,
+                    "error": str(e),
                 }
 
         # Analyze results
         for service_name, result in results.items():
-            if result['success']:
-                assert result['total_time'] < 10.0, f"{service_name} initialization too slow: {result['total_time']}s"
+            if result["success"]:
+                assert (
+                    result["total_time"] < 10.0
+                ), f"{service_name} initialization too slow: {result['total_time']}s"
             else:
                 # Log failed services but don't fail test
-                print(f"Warning: {service_name} failed to initialize: {result.get('error', 'Unknown error')}")
+                print(
+                    f"Warning: {service_name} failed to initialize: {result.get('error', 'Unknown error')}"
+                )
 
     @pytest.mark.slow
     def test_dashboard_timeout_behavior(self):
@@ -152,7 +167,7 @@ except Exception as e:
 
         # Write and execute test script
         script_path = project_root / "temp_dashboard_test.py"
-        with open(script_path, 'w') as f:
+        with open(script_path, "w") as f:
             f.write(test_script)
 
         try:
@@ -162,11 +177,13 @@ except Exception as e:
                 capture_output=True,
                 text=True,
                 timeout=30,
-                cwd=str(project_root)
+                cwd=str(project_root),
             )
 
             if result.returncode == 0:
-                assert "Dashboard created successfully" in result.stdout, "Dashboard creation did not complete"
+                assert (
+                    "Dashboard created successfully" in result.stdout
+                ), "Dashboard creation did not complete"
             else:
                 # Dashboard failed or timed out
                 if "TIMEOUT" in result.stdout:
@@ -189,8 +206,8 @@ except Exception as e:
 
         # Test importing dashboard components
         from src.presentation.dashboard.enhanced_callbacks_simplified import (
+            create_model_registry_layout,
             create_training_hub_layout,
-            create_model_registry_layout
         )
 
         post_import_memory = psutil.Process().memory_info().rss / 1024 / 1024
@@ -206,16 +223,23 @@ except Exception as e:
         total_increase = final_memory - initial_memory
 
         # Memory increases should be reasonable
-        assert import_increase < 50, f"Component import uses too much memory: {import_increase}MB"
-        assert layout_increase < 20, f"Layout creation uses too much memory: {layout_increase}MB"
-        assert total_increase < 70, f"Total component memory usage too high: {total_increase}MB"
+        assert (
+            import_increase < 50
+        ), f"Component import uses too much memory: {import_increase}MB"
+        assert (
+            layout_increase < 20
+        ), f"Layout creation uses too much memory: {layout_increase}MB"
+        assert (
+            total_increase < 70
+        ), f"Total component memory usage too high: {total_increase}MB"
 
     def test_config_dependencies(self):
         """Test configuration and equipment dependencies"""
         start_time = time.time()
 
         try:
-            from config.equipment_config import get_equipment_list, get_equipment_by_id
+            from config.equipment_config import get_equipment_by_id, get_equipment_list
+
             config_time = time.time() - start_time
 
             assert config_time < 5.0, f"Config import too slow: {config_time}s"
@@ -225,7 +249,9 @@ except Exception as e:
             equipment_list = get_equipment_list()
             equipment_time = time.time() - equipment_start
 
-            assert equipment_time < 3.0, f"Equipment list loading too slow: {equipment_time}s"
+            assert (
+                equipment_time < 3.0
+            ), f"Equipment list loading too slow: {equipment_time}s"
             assert len(equipment_list) > 0, "Equipment list is empty"
 
         except Exception as e:
@@ -235,9 +261,11 @@ except Exception as e:
         """Test state management components individually"""
         try:
             # Test individual state management imports
-            from src.presentation.dashboard.state.shared_state import SharedStateManager
-            from src.presentation.dashboard.state.realtime_state import RealtimeStateManager
             from src.presentation.dashboard.state.filter_state import FilterStateManager
+            from src.presentation.dashboard.state.realtime_state import (
+                RealtimeStateManager,
+            )
+            from src.presentation.dashboard.state.shared_state import SharedStateManager
             from src.presentation.dashboard.state.time_state import TimeStateManager
 
             # These should import without hanging
@@ -264,20 +292,19 @@ class TestDashboardComponentPerformance:
 
         # Test component creation
         component_start = time.time()
-        card = dbc.Card([
-            dbc.CardHeader("Test"),
-            dbc.CardBody("Test content")
-        ])
+        card = dbc.Card([dbc.CardHeader("Test"), dbc.CardBody("Test content")])
         component_time = time.time() - component_start
 
-        assert component_time < 1.0, f"DBC component creation too slow: {component_time}s"
+        assert (
+            component_time < 1.0
+        ), f"DBC component creation too slow: {component_time}s"
 
     def test_plotly_performance(self):
         """Test Plotly import and basic functionality"""
         start_time = time.time()
 
-        import plotly.graph_objects as go
         import plotly.express as px
+        import plotly.graph_objects as go
 
         import_time = time.time() - start_time
         assert import_time < 10.0, f"Plotly import too slow: {import_time}s"
@@ -293,20 +320,19 @@ class TestDashboardComponentPerformance:
         """Test Dash core components performance"""
         start_time = time.time()
 
-        from dash import dcc, html, Input, Output, callback, State, ctx
+        from dash import Input, Output, State, callback, ctx, dcc, html
 
         import_time = time.time() - start_time
         assert import_time < 5.0, f"Dash core import too slow: {import_time}s"
 
         # Test component creation
         component_start = time.time()
-        div = html.Div([
-            html.H1("Test"),
-            dcc.Graph(id="test-graph")
-        ])
+        div = html.Div([html.H1("Test"), dcc.Graph(id="test-graph")])
         component_time = time.time() - component_start
 
-        assert component_time < 1.0, f"Dash component creation too slow: {component_time}s"
+        assert (
+            component_time < 1.0
+        ), f"Dash component creation too slow: {component_time}s"
 
 
 def test_session2_diagnostic_summary():
@@ -318,7 +344,9 @@ def test_session2_diagnostic_summary():
     try:
         # Test basic imports
         from src.presentation.dashboard.enhanced_app import EnhancedIoTDashboard
-        from src.presentation.dashboard.enhanced_callbacks_simplified import create_training_hub_layout
+        from src.presentation.dashboard.enhanced_callbacks_simplified import (
+            create_training_hub_layout,
+        )
 
         # Test layout creation
         layout = create_training_hub_layout()

@@ -3,22 +3,24 @@ Data Processing Service
 Centralized data preprocessing, normalization, feature engineering, and quality validation
 """
 
+import hashlib
+import json
+import logging
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Any, Optional, Tuple
-from datetime import datetime, timedelta
-from pathlib import Path
-import logging
-import hashlib
-from dataclasses import dataclass, field
-from enum import Enum
-import json
 
 logger = logging.getLogger(__name__)
 
 
 class NormalizationMethod(Enum):
     """Supported normalization methods"""
+
     ZSCORE = "zscore"
     MINMAX = "minmax"
     ROBUST = "robust"
@@ -27,6 +29,7 @@ class NormalizationMethod(Enum):
 
 class DataQualityStatus(Enum):
     """Data quality assessment status"""
+
     EXCELLENT = "excellent"
     GOOD = "good"
     FAIR = "fair"
@@ -37,6 +40,7 @@ class DataQualityStatus(Enum):
 @dataclass
 class DataQualityReport:
     """Data quality assessment report"""
+
     sensor_id: str
     status: DataQualityStatus
     total_samples: int
@@ -55,6 +59,7 @@ class DataQualityReport:
 @dataclass
 class NormalizationParams:
     """Parameters for data normalization"""
+
     method: NormalizationMethod
     mean: Optional[float] = None
     std: Optional[float] = None
@@ -71,27 +76,31 @@ class NormalizationParams:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization"""
         return {
-            'method': self.method.value,
-            'mean': self.mean,
-            'std': self.std,
-            'min_val': self.min_val,
-            'max_val': self.max_val,
-            'median': self.median,
-            'q1': self.q1,
-            'q3': self.q3,
-            'iqr': self.iqr,
-            'epsilon': self.epsilon,
-            'sensor_id': self.sensor_id,
-            'fit_timestamp': self.fit_timestamp.isoformat() if self.fit_timestamp else None
+            "method": self.method.value,
+            "mean": self.mean,
+            "std": self.std,
+            "min_val": self.min_val,
+            "max_val": self.max_val,
+            "median": self.median,
+            "q1": self.q1,
+            "q3": self.q3,
+            "iqr": self.iqr,
+            "epsilon": self.epsilon,
+            "sensor_id": self.sensor_id,
+            "fit_timestamp": (
+                self.fit_timestamp.isoformat() if self.fit_timestamp else None
+            ),
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'NormalizationParams':
+    def from_dict(cls, data: Dict[str, Any]) -> "NormalizationParams":
         """Create from dictionary"""
         data_copy = data.copy()
-        data_copy['method'] = NormalizationMethod(data_copy['method'])
-        if data_copy.get('fit_timestamp'):
-            data_copy['fit_timestamp'] = datetime.fromisoformat(data_copy['fit_timestamp'])
+        data_copy["method"] = NormalizationMethod(data_copy["method"])
+        if data_copy.get("fit_timestamp"):
+            data_copy["fit_timestamp"] = datetime.fromisoformat(
+                data_copy["fit_timestamp"]
+            )
         return cls(**data_copy)
 
 
@@ -107,7 +116,7 @@ class DataProcessingService:
         default_normalization: NormalizationMethod = NormalizationMethod.ZSCORE,
         outlier_threshold: float = 3.0,
         missing_threshold: float = 0.1,
-        constant_threshold: float = 1e-6
+        constant_threshold: float = 1e-6,
     ):
         """
         Initialize data processing service
@@ -138,11 +147,15 @@ class DataProcessingService:
         try:
             params_file = self.cache_dir / "normalization_params.json"
             if params_file.exists():
-                with open(params_file, 'r') as f:
+                with open(params_file, "r") as f:
                     params_dict = json.load(f)
                     for sensor_id, params in params_dict.items():
-                        self.norm_params_cache[sensor_id] = NormalizationParams.from_dict(params)
-                logger.info(f"Loaded {len(self.norm_params_cache)} cached normalization parameters")
+                        self.norm_params_cache[sensor_id] = (
+                            NormalizationParams.from_dict(params)
+                        )
+                logger.info(
+                    f"Loaded {len(self.norm_params_cache)} cached normalization parameters"
+                )
         except Exception as e:
             logger.warning(f"Could not load cached normalization parameters: {e}")
 
@@ -154,9 +167,11 @@ class DataProcessingService:
                 for sensor_id, params in self.norm_params_cache.items()
             }
             params_file = self.cache_dir / "normalization_params.json"
-            with open(params_file, 'w') as f:
+            with open(params_file, "w") as f:
                 json.dump(params_dict, f, indent=2)
-            logger.debug(f"Saved {len(self.norm_params_cache)} normalization parameters")
+            logger.debug(
+                f"Saved {len(self.norm_params_cache)} normalization parameters"
+            )
         except Exception as e:
             logger.error(f"Error saving normalization parameters: {e}")
 
@@ -164,7 +179,7 @@ class DataProcessingService:
         self,
         data: np.ndarray,
         sensor_id: str,
-        method: Optional[NormalizationMethod] = None
+        method: Optional[NormalizationMethod] = None,
     ) -> NormalizationParams:
         """
         Fit normalization parameters on training data
@@ -181,33 +196,39 @@ class DataProcessingService:
             ValueError: If data is invalid or empty
         """
         if data is None or len(data) == 0:
-            raise ValueError(f"Cannot fit normalization on empty data for sensor {sensor_id}")
+            raise ValueError(
+                f"Cannot fit normalization on empty data for sensor {sensor_id}"
+            )
 
         method = method or self.default_normalization
 
         # Remove NaN/inf values for fitting
         clean_data = data[np.isfinite(data)]
         if len(clean_data) == 0:
-            raise ValueError(f"No valid data points for normalization fitting (sensor {sensor_id})")
+            raise ValueError(
+                f"No valid data points for normalization fitting (sensor {sensor_id})"
+            )
 
         params = NormalizationParams(
-            method=method,
-            sensor_id=sensor_id,
-            fit_timestamp=datetime.now()
+            method=method, sensor_id=sensor_id, fit_timestamp=datetime.now()
         )
 
         if method == NormalizationMethod.ZSCORE:
             params.mean = float(np.mean(clean_data))
             params.std = float(np.std(clean_data))
             if params.std < params.epsilon:
-                logger.warning(f"Constant data detected for {sensor_id}, using unit std")
+                logger.warning(
+                    f"Constant data detected for {sensor_id}, using unit std"
+                )
                 params.std = 1.0
 
         elif method == NormalizationMethod.MINMAX:
             params.min_val = float(np.min(clean_data))
             params.max_val = float(np.max(clean_data))
             if params.max_val - params.min_val < params.epsilon:
-                logger.warning(f"Constant data detected for {sensor_id}, using unit range")
+                logger.warning(
+                    f"Constant data detected for {sensor_id}, using unit range"
+                )
                 params.max_val = params.min_val + 1.0
 
         elif method == NormalizationMethod.ROBUST:
@@ -216,7 +237,9 @@ class DataProcessingService:
             params.q3 = float(np.percentile(clean_data, 75))
             params.iqr = params.q3 - params.q1
             if params.iqr < params.epsilon:
-                logger.warning(f"Constant data detected for {sensor_id}, using unit IQR")
+                logger.warning(
+                    f"Constant data detected for {sensor_id}, using unit IQR"
+                )
                 params.iqr = 1.0
 
         # Cache the parameters
@@ -230,7 +253,7 @@ class DataProcessingService:
         self,
         data: np.ndarray,
         sensor_id: str,
-        params: Optional[NormalizationParams] = None
+        params: Optional[NormalizationParams] = None,
     ) -> np.ndarray:
         """
         Normalize data using fitted parameters
@@ -276,7 +299,7 @@ class DataProcessingService:
         self,
         normalized_data: np.ndarray,
         sensor_id: str,
-        params: Optional[NormalizationParams] = None
+        params: Optional[NormalizationParams] = None,
     ) -> np.ndarray:
         """
         Denormalize data back to original scale
@@ -308,7 +331,9 @@ class DataProcessingService:
             denormalized = normalized_data * params.std + params.mean
 
         elif params.method == NormalizationMethod.MINMAX:
-            denormalized = normalized_data * (params.max_val - params.min_val) + params.min_val
+            denormalized = (
+                normalized_data * (params.max_val - params.min_val) + params.min_val
+            )
 
         elif params.method == NormalizationMethod.ROBUST:
             denormalized = normalized_data * params.iqr + params.median
@@ -319,7 +344,7 @@ class DataProcessingService:
         self,
         data: np.ndarray,
         timestamps: Optional[List[datetime]] = None,
-        sensor_id: str = "unknown"
+        sensor_id: str = "unknown",
     ) -> DataQualityReport:
         """
         Assess data quality and generate report
@@ -339,7 +364,9 @@ class DataProcessingService:
         # Check for missing values (NaN, inf)
         missing_mask = ~np.isfinite(data)
         missing_count = np.sum(missing_mask)
-        missing_percentage = (missing_count / total_samples * 100) if total_samples > 0 else 0
+        missing_percentage = (
+            (missing_count / total_samples * 100) if total_samples > 0 else 0
+        )
 
         if missing_percentage > 0:
             issues.append(f"{missing_percentage:.2f}% missing/invalid data points")
@@ -358,7 +385,7 @@ class DataProcessingService:
                 z_scores = np.abs((valid_data - mean) / std)
                 outlier_mask = z_scores > self.outlier_threshold
                 outlier_count = np.sum(outlier_mask)
-                outlier_percentage = (outlier_count / len(valid_data) * 100)
+                outlier_percentage = outlier_count / len(valid_data) * 100
 
                 if outlier_percentage > 5.0:
                     issues.append(f"{outlier_percentage:.2f}% outliers detected")
@@ -372,7 +399,9 @@ class DataProcessingService:
             constant_periods = np.sum(constant_mask)
 
             if constant_periods > len(valid_data) * 0.5:
-                issues.append(f"High number of constant periods detected ({constant_periods})")
+                issues.append(
+                    f"High number of constant periods detected ({constant_periods})"
+                )
                 recommendations.append("Check sensor calibration")
 
         # Noise level estimation
@@ -423,17 +452,19 @@ class DataProcessingService:
             drift_detected=drift_detected,
             noise_level=noise_level,
             issues=issues,
-            recommendations=recommendations
+            recommendations=recommendations,
         )
 
-        logger.info(f"Data quality for {sensor_id}: {status.value} ({len(issues)} issues)")
+        logger.info(
+            f"Data quality for {sensor_id}: {status.value} ({len(issues)} issues)"
+        )
         return report
 
     def engineer_features(
         self,
         data: np.ndarray,
         timestamps: Optional[List[datetime]] = None,
-        window_sizes: List[int] = [3, 6, 12, 24]
+        window_sizes: List[int] = [3, 6, 12, 24],
     ) -> Dict[str, np.ndarray]:
         """
         Engineer features from raw sensor data
@@ -449,43 +480,48 @@ class DataProcessingService:
         features = {}
 
         # Original data
-        features['raw'] = data
+        features["raw"] = data
 
         # Rolling statistics
         for window in window_sizes:
             if len(data) >= window:
                 # Rolling mean
-                features[f'rolling_mean_{window}'] = self._rolling_stat(data, window, np.mean)
+                features[f"rolling_mean_{window}"] = self._rolling_stat(
+                    data, window, np.mean
+                )
 
                 # Rolling std
-                features[f'rolling_std_{window}'] = self._rolling_stat(data, window, np.std)
+                features[f"rolling_std_{window}"] = self._rolling_stat(
+                    data, window, np.std
+                )
 
                 # Rolling min/max
-                features[f'rolling_min_{window}'] = self._rolling_stat(data, window, np.min)
-                features[f'rolling_max_{window}'] = self._rolling_stat(data, window, np.max)
+                features[f"rolling_min_{window}"] = self._rolling_stat(
+                    data, window, np.min
+                )
+                features[f"rolling_max_{window}"] = self._rolling_stat(
+                    data, window, np.max
+                )
 
         # Differences and rates of change
         if len(data) > 1:
-            features['diff_1'] = np.concatenate([[0], np.diff(data)])
+            features["diff_1"] = np.concatenate([[0], np.diff(data)])
 
             if len(data) > 2:
-                features['diff_2'] = np.concatenate([[0, 0], np.diff(data, n=2)])
+                features["diff_2"] = np.concatenate([[0, 0], np.diff(data, n=2)])
 
         # Time-based features (if timestamps available)
         if timestamps and len(timestamps) == len(data):
-            features['hour'] = np.array([t.hour for t in timestamps])
-            features['day_of_week'] = np.array([t.weekday() for t in timestamps])
-            features['is_weekend'] = np.array([1 if t.weekday() >= 5 else 0 for t in timestamps])
+            features["hour"] = np.array([t.hour for t in timestamps])
+            features["day_of_week"] = np.array([t.weekday() for t in timestamps])
+            features["is_weekend"] = np.array(
+                [1 if t.weekday() >= 5 else 0 for t in timestamps]
+            )
 
         logger.debug(f"Engineered {len(features)} feature sets")
         return features
 
-    def _rolling_stat(
-        self,
-        data: np.ndarray,
-        window: int,
-        stat_func
-    ) -> np.ndarray:
+    def _rolling_stat(self, data: np.ndarray, window: int, stat_func) -> np.ndarray:
         """
         Compute rolling statistic with proper padding
 
@@ -501,7 +537,7 @@ class DataProcessingService:
 
         for i in range(len(data)):
             start_idx = max(0, i - window + 1)
-            window_data = data[start_idx:i+1]
+            window_data = data[start_idx : i + 1]
             result[i] = stat_func(window_data)
 
         return result
@@ -512,7 +548,7 @@ class DataProcessingService:
         sensor_id: str,
         split_ratio: Tuple[float, float, float] = (0.7, 0.15, 0.15),
         normalize: bool = True,
-        assess_quality: bool = True
+        assess_quality: bool = True,
     ) -> Dict[str, Any]:
         """
         Prepare data for model training with all preprocessing steps
@@ -532,7 +568,7 @@ class DataProcessingService:
         # Data quality assessment
         if assess_quality:
             quality_report = self.assess_data_quality(data, sensor_id=sensor_id)
-            result['quality_report'] = quality_report
+            result["quality_report"] = quality_report
 
             if quality_report.status == DataQualityStatus.CRITICAL:
                 logger.warning(
@@ -545,8 +581,8 @@ class DataProcessingService:
         val_size = int(total_len * split_ratio[1])
 
         train_data = data[:train_size]
-        val_data = data[train_size:train_size + val_size]
-        test_data = data[train_size + val_size:]
+        val_data = data[train_size : train_size + val_size]
+        test_data = data[train_size + val_size :]
 
         # Fit normalization on training data only
         norm_params = None
@@ -559,22 +595,24 @@ class DataProcessingService:
         # Compute data hash for lineage
         data_hash = hashlib.sha256(data.tobytes()).hexdigest()[:16]
 
-        result.update({
-            'train_data': train_data,
-            'val_data': val_data,
-            'test_data': test_data,
-            'norm_params': norm_params,
-            'data_hash': data_hash,
-            'metadata': {
-                'sensor_id': sensor_id,
-                'total_samples': total_len,
-                'train_samples': len(train_data),
-                'val_samples': len(val_data),
-                'test_samples': len(test_data),
-                'normalized': normalize,
-                'split_ratio': split_ratio
+        result.update(
+            {
+                "train_data": train_data,
+                "val_data": val_data,
+                "test_data": test_data,
+                "norm_params": norm_params,
+                "data_hash": data_hash,
+                "metadata": {
+                    "sensor_id": sensor_id,
+                    "total_samples": total_len,
+                    "train_samples": len(train_data),
+                    "val_samples": len(val_data),
+                    "test_samples": len(test_data),
+                    "normalized": normalize,
+                    "split_ratio": split_ratio,
+                },
             }
-        })
+        )
 
         logger.info(
             f"Prepared training data for {sensor_id}: "

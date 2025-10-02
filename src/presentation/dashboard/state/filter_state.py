@@ -3,16 +3,16 @@ Filter State Persistence
 Handles filter state persistence across page navigation and browser sessions
 """
 
-import logging
-from typing import Dict, Any, Optional, List
-import json
 import base64
-from urllib.parse import urlencode, parse_qs
-from datetime import datetime
+import json
+import logging
 import uuid
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+from urllib.parse import parse_qs, urlencode
 
+from ..components.filter_manager import FilterCriteria, filter_manager
 from .shared_state import shared_state_manager
-from ..components.filter_manager import filter_manager, FilterCriteria
 
 logger = logging.getLogger(__name__)
 
@@ -59,13 +59,13 @@ class FilterStatePersistence:
 
             # Add metadata
             state_with_metadata = {
-                'filters': filter_state,
-                'metadata': {
-                    'saved_at': datetime.now().isoformat(),
-                    'session_id': self.current_session_id,
-                    'page_path': self.shared_state.get_state('ui.current_page'),
-                    'version': '1.0'
-                }
+                "filters": filter_state,
+                "metadata": {
+                    "saved_at": datetime.now().isoformat(),
+                    "session_id": self.current_session_id,
+                    "page_path": self.shared_state.get_state("ui.current_page"),
+                    "version": "1.0",
+                },
             }
 
             # Save to localStorage (client-side implementation needed)
@@ -145,7 +145,9 @@ class FilterStatePersistence:
             logger.error(f"Error clearing persisted state: {e}")
             return False
 
-    def create_shareable_url(self, base_url: str, filters: Optional[FilterCriteria] = None) -> str:
+    def create_shareable_url(
+        self, base_url: str, filters: Optional[FilterCriteria] = None
+    ) -> str:
         """
         Create shareable URL with current filter state
 
@@ -169,13 +171,13 @@ class FilterStatePersistence:
             params = {self.url_param_key: encoded_filters}
 
             # Add current page if available
-            current_page = self.shared_state.get_state('ui.current_page')
-            if current_page and current_page != '/':
-                params['page'] = current_page
+            current_page = self.shared_state.get_state("ui.current_page")
+            if current_page and current_page != "/":
+                params["page"] = current_page
 
             # Construct URL
             param_string = urlencode(params)
-            separator = '&' if '?' in base_url else '?'
+            separator = "&" if "?" in base_url else "?"
 
             shareable_url = f"{base_url}{separator}{param_string}"
 
@@ -198,10 +200,10 @@ class FilterStatePersistence:
         """
         try:
             # Parse URL parameters
-            if '?' not in url:
+            if "?" not in url:
                 return False
 
-            query_part = url.split('?', 1)[1]
+            query_part = url.split("?", 1)[1]
             params = parse_qs(query_part)
 
             # Get encoded filter data
@@ -212,7 +214,7 @@ class FilterStatePersistence:
             filter_state = self._decode_filter_state(encoded_filters)
 
             if filter_state:
-                return self._apply_loaded_state({'filters': filter_state})
+                return self._apply_loaded_state({"filters": filter_state})
 
             return False
 
@@ -237,11 +239,13 @@ class FilterStatePersistence:
 
             formatted_history = []
             for entry in history:
-                formatted_history.append({
-                    'timestamp': entry['timestamp'].isoformat(),
-                    'filters': self._filter_criteria_to_dict(entry['filters']),
-                    'summary': entry['result_summary']
-                })
+                formatted_history.append(
+                    {
+                        "timestamp": entry["timestamp"].isoformat(),
+                        "filters": self._filter_criteria_to_dict(entry["filters"]),
+                        "summary": entry["result_summary"],
+                    }
+                )
 
             return formatted_history
 
@@ -258,13 +262,13 @@ class FilterStatePersistence:
         """
         try:
             config = {
-                'current_filters': self._get_current_filter_state(),
-                'presets': self.filter_manager.get_filter_presets(),
-                'session_info': {
-                    'session_id': self.current_session_id,
-                    'exported_at': datetime.now().isoformat(),
-                    'current_page': self.shared_state.get_state('ui.current_page')
-                }
+                "current_filters": self._get_current_filter_state(),
+                "presets": self.filter_manager.get_filter_presets(),
+                "session_info": {
+                    "session_id": self.current_session_id,
+                    "exported_at": datetime.now().isoformat(),
+                    "current_page": self.shared_state.get_state("ui.current_page"),
+                },
             }
 
             return json.dumps(config, indent=2, default=str)
@@ -286,9 +290,9 @@ class FilterStatePersistence:
         try:
             config = json.loads(config_json)
 
-            if 'current_filters' in config:
-                filter_state = config['current_filters']
-                return self._apply_loaded_state({'filters': filter_state})
+            if "current_filters" in config:
+                filter_state = config["current_filters"]
+                return self._apply_loaded_state({"filters": filter_state})
 
             return False
 
@@ -301,15 +305,17 @@ class FilterStatePersistence:
         try:
             # Get from shared state
             shared_filters = {
-                'equipment_id': self.shared_state.get_state('selections.equipment_id'),
-                'sensor_id': self.shared_state.get_state('selections.sensor_id'),
-                'metric_id': self.shared_state.get_state('selections.metric_id'),
-                'subsystem': self.shared_state.get_state('selections.subsystem'),
-                'time_range': self.shared_state.get_state('filters.time_range'),
-                'chart_type': self.shared_state.get_state('filters.chart_type'),
-                'show_anomalies': self.shared_state.get_state('filters.show_anomalies'),
-                'show_thresholds': self.shared_state.get_state('filters.show_thresholds'),
-                'is_realtime': self.shared_state.get_state('filters.is_realtime')
+                "equipment_id": self.shared_state.get_state("selections.equipment_id"),
+                "sensor_id": self.shared_state.get_state("selections.sensor_id"),
+                "metric_id": self.shared_state.get_state("selections.metric_id"),
+                "subsystem": self.shared_state.get_state("selections.subsystem"),
+                "time_range": self.shared_state.get_state("filters.time_range"),
+                "chart_type": self.shared_state.get_state("filters.chart_type"),
+                "show_anomalies": self.shared_state.get_state("filters.show_anomalies"),
+                "show_thresholds": self.shared_state.get_state(
+                    "filters.show_thresholds"
+                ),
+                "is_realtime": self.shared_state.get_state("filters.is_realtime"),
             }
 
             # Get from filter manager
@@ -330,18 +336,18 @@ class FilterStatePersistence:
         """Convert FilterCriteria to dictionary"""
         try:
             return {
-                'equipment_ids': criteria.equipment_ids,
-                'sensor_ids': criteria.sensor_ids,
-                'metric_ids': criteria.metric_ids,
-                'subsystems': criteria.subsystems,
-                'criticality_levels': criteria.criticality_levels,
-                'spacecraft': criteria.spacecraft,
-                'min_value': criteria.min_value,
-                'max_value': criteria.max_value,
-                'anomaly_threshold': criteria.anomaly_threshold,
-                'include_anomalies_only': criteria.include_anomalies_only,
-                'include_normal_only': criteria.include_normal_only,
-                'active_alerts_only': criteria.active_alerts_only
+                "equipment_ids": criteria.equipment_ids,
+                "sensor_ids": criteria.sensor_ids,
+                "metric_ids": criteria.metric_ids,
+                "subsystems": criteria.subsystems,
+                "criticality_levels": criteria.criticality_levels,
+                "spacecraft": criteria.spacecraft,
+                "min_value": criteria.min_value,
+                "max_value": criteria.max_value,
+                "anomaly_threshold": criteria.anomaly_threshold,
+                "include_anomalies_only": criteria.include_anomalies_only,
+                "include_normal_only": criteria.include_normal_only,
+                "active_alerts_only": criteria.active_alerts_only,
             }
         except Exception as e:
             logger.error(f"Error converting filter criteria: {e}")
@@ -351,18 +357,18 @@ class FilterStatePersistence:
         """Convert dictionary to FilterCriteria"""
         try:
             return FilterCriteria(
-                equipment_ids=data.get('equipment_ids'),
-                sensor_ids=data.get('sensor_ids'),
-                metric_ids=data.get('metric_ids'),
-                subsystems=data.get('subsystems'),
-                criticality_levels=data.get('criticality_levels'),
-                spacecraft=data.get('spacecraft'),
-                min_value=data.get('min_value'),
-                max_value=data.get('max_value'),
-                anomaly_threshold=data.get('anomaly_threshold'),
-                include_anomalies_only=data.get('include_anomalies_only', False),
-                include_normal_only=data.get('include_normal_only', False),
-                active_alerts_only=data.get('active_alerts_only', False)
+                equipment_ids=data.get("equipment_ids"),
+                sensor_ids=data.get("sensor_ids"),
+                metric_ids=data.get("metric_ids"),
+                subsystems=data.get("subsystems"),
+                criticality_levels=data.get("criticality_levels"),
+                spacecraft=data.get("spacecraft"),
+                min_value=data.get("min_value"),
+                max_value=data.get("max_value"),
+                anomaly_threshold=data.get("anomaly_threshold"),
+                include_anomalies_only=data.get("include_anomalies_only", False),
+                include_normal_only=data.get("include_normal_only", False),
+                active_alerts_only=data.get("active_alerts_only", False),
             )
         except Exception as e:
             logger.error(f"Error converting to filter criteria: {e}")
@@ -371,23 +377,29 @@ class FilterStatePersistence:
     def _apply_loaded_state(self, state_data: Dict[str, Any]) -> bool:
         """Apply loaded state to current session"""
         try:
-            if 'filters' not in state_data:
+            if "filters" not in state_data:
                 return False
 
-            filter_state = state_data['filters']
+            filter_state = state_data["filters"]
 
             # Update shared state
             shared_updates = {}
-            for key in ['equipment_id', 'sensor_id', 'metric_id', 'subsystem']:
+            for key in ["equipment_id", "sensor_id", "metric_id", "subsystem"]:
                 if key in filter_state:
-                    shared_updates[f'selections.{key}'] = filter_state[key]
+                    shared_updates[f"selections.{key}"] = filter_state[key]
 
-            for key in ['time_range', 'chart_type', 'show_anomalies', 'show_thresholds', 'is_realtime']:
+            for key in [
+                "time_range",
+                "chart_type",
+                "show_anomalies",
+                "show_thresholds",
+                "is_realtime",
+            ]:
                 if key in filter_state:
-                    shared_updates[f'filters.{key}'] = filter_state[key]
+                    shared_updates[f"filters.{key}"] = filter_state[key]
 
             if shared_updates:
-                self.shared_state.update_multiple(shared_updates, 'filter_persistence')
+                self.shared_state.update_multiple(shared_updates, "filter_persistence")
 
             # Update filter manager
             filter_criteria = self._dict_to_filter_criteria(filter_state)
@@ -430,14 +442,10 @@ class FilterStatePersistence:
         try:
             # Subscribe to relevant state changes
             self.shared_state.subscribe(
-                'selections.*',
-                self._on_auto_save_trigger,
-                'filter_persistence'
+                "selections.*", self._on_auto_save_trigger, "filter_persistence"
             )
             self.shared_state.subscribe(
-                'filters.*',
-                self._on_auto_save_trigger,
-                'filter_persistence'
+                "filters.*", self._on_auto_save_trigger, "filter_persistence"
             )
         except Exception as e:
             logger.error(f"Error setting up auto-save: {e}")

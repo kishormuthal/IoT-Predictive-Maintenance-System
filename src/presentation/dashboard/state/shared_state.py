@@ -3,13 +3,13 @@ Shared State Manager
 Global state management for dashboard components and cross-page persistence
 """
 
-import logging
-from typing import Dict, Any, Optional, List, Callable
-from dataclasses import dataclass, field
-from datetime import datetime
 import json
+import logging
 import threading
 from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
+from typing import Any, Callable, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class StateUpdate:
     """State update event"""
+
     component_id: str
     state_key: str
     old_value: Any
@@ -47,74 +48,64 @@ class SharedStateManager:
         """Initialize default state structure"""
         self._state = {
             # Global UI state
-            'ui': {
-                'current_page': '/',
-                'sidebar_collapsed': False,
-                'theme': 'light',
-                'notification_count': 0
+            "ui": {
+                "current_page": "/",
+                "sidebar_collapsed": False,
+                "theme": "light",
+                "notification_count": 0,
             },
-
             # Equipment and sensor selections
-            'selections': {
-                'equipment_id': None,
-                'sensor_id': None,
-                'metric_id': None,
-                'subsystem': None,
-                'equipment_type': None
+            "selections": {
+                "equipment_id": None,
+                "sensor_id": None,
+                "metric_id": None,
+                "subsystem": None,
+                "equipment_type": None,
             },
-
             # Time and filtering state
-            'filters': {
-                'time_range': 'last_1h',
-                'start_time': None,
-                'end_time': None,
-                'is_realtime': False,
-                'auto_refresh': True,
-                'refresh_interval': 60000,  # milliseconds
-                'chart_type': 'line',
-                'show_anomalies': True,
-                'show_thresholds': True,
-                'show_confidence': False
+            "filters": {
+                "time_range": "last_1h",
+                "start_time": None,
+                "end_time": None,
+                "is_realtime": False,
+                "auto_refresh": True,
+                "refresh_interval": 60000,  # milliseconds
+                "chart_type": "line",
+                "show_anomalies": True,
+                "show_thresholds": True,
+                "show_confidence": False,
             },
-
             # Dashboard-specific state
-            'anomaly_monitor': {
-                'selected_sensors': [],
-                'detection_status': 'active',
-                'alert_count': 0,
-                'last_anomaly': None
+            "anomaly_monitor": {
+                "selected_sensors": [],
+                "detection_status": "active",
+                "alert_count": 0,
+                "last_anomaly": None,
             },
-
-            'forecast': {
-                'horizon': '24h',
-                'model': 'lstm',
-                'confidence_level': 0.95,
-                'forecast_data': None
+            "forecast": {
+                "horizon": "24h",
+                "model": "lstm",
+                "confidence_level": 0.95,
+                "forecast_data": None,
             },
-
-            'maintenance': {
-                'schedule_view': 'calendar',
-                'filter_status': 'all',
-                'selected_technician': None,
-                'optimization_mode': 'cost'
+            "maintenance": {
+                "schedule_view": "calendar",
+                "filter_status": "all",
+                "selected_technician": None,
+                "optimization_mode": "cost",
             },
-
-            'work_orders': {
-                'view_mode': 'list',
-                'filter_priority': 'all',
-                'filter_status': 'active',
-                'selected_order': None
+            "work_orders": {
+                "view_mode": "list",
+                "filter_priority": "all",
+                "filter_status": "active",
+                "selected_order": None,
             },
-
             # NASA mission state
-            'nasa': {
-                'active_mission': 'both',  # 'smap', 'msl', 'both'
-                'mission_time': 'earth',   # 'earth', 'mars', 'mission'
-                'spacecraft_status': {
-                    'smap': 'nominal',
-                    'msl': 'nominal'
-                }
-            }
+            "nasa": {
+                "active_mission": "both",  # 'smap', 'msl', 'both'
+                "mission_time": "earth",  # 'earth', 'mars', 'mission'
+                "spacecraft_status": {"smap": "nominal", "msl": "nominal"},
+            },
         }
 
     def get_state(self, key_path: str) -> Any:
@@ -129,7 +120,7 @@ class SharedStateManager:
         """
         with self._lock:
             try:
-                keys = key_path.split('.')
+                keys = key_path.split(".")
                 value = self._state
 
                 for key in keys:
@@ -141,7 +132,9 @@ class SharedStateManager:
                 logger.warning(f"State key not found: {key_path}")
                 return None
 
-    def set_state(self, key_path: str, value: Any, component_id: str = "unknown") -> bool:
+    def set_state(
+        self, key_path: str, value: Any, component_id: str = "unknown"
+    ) -> bool:
         """
         Set state value by key path
 
@@ -155,7 +148,7 @@ class SharedStateManager:
         """
         with self._lock:
             try:
-                keys = key_path.split('.')
+                keys = key_path.split(".")
                 current = self._state
                 old_value = self.get_state(key_path)
 
@@ -173,13 +166,13 @@ class SharedStateManager:
                     component_id=component_id,
                     state_key=key_path,
                     old_value=old_value,
-                    new_value=value
+                    new_value=value,
                 )
                 self._update_history.append(update)
 
                 # Trim history if needed
                 if len(self._update_history) > self._max_history:
-                    self._update_history = self._update_history[-self._max_history:]
+                    self._update_history = self._update_history[-self._max_history :]
 
                 # Notify subscribers
                 self._notify_subscribers(key_path, old_value, value)
@@ -196,7 +189,9 @@ class SharedStateManager:
         with self._lock:
             return self._state.copy()
 
-    def update_multiple(self, updates: Dict[str, Any], component_id: str = "unknown") -> bool:
+    def update_multiple(
+        self, updates: Dict[str, Any], component_id: str = "unknown"
+    ) -> bool:
         """
         Update multiple state values atomically
 
@@ -214,8 +209,12 @@ class SharedStateManager:
 
         return success
 
-    def subscribe(self, key_path: str, callback: Callable[[str, Any, Any], None],
-                 component_id: str = "unknown"):
+    def subscribe(
+        self,
+        key_path: str,
+        callback: Callable[[str, Any, Any], None],
+        component_id: str = "unknown",
+    ):
         """
         Subscribe to state changes
 
@@ -225,10 +224,9 @@ class SharedStateManager:
             component_id: Component identifier
         """
         with self._lock:
-            self._subscribers[key_path].append({
-                'callback': callback,
-                'component_id': component_id
-            })
+            self._subscribers[key_path].append(
+                {"callback": callback, "component_id": component_id}
+            )
 
         logger.info(f"Component {component_id} subscribed to {key_path}")
 
@@ -243,8 +241,9 @@ class SharedStateManager:
         with self._lock:
             if key_path in self._subscribers:
                 self._subscribers[key_path] = [
-                    sub for sub in self._subscribers[key_path]
-                    if sub['component_id'] != component_id
+                    sub
+                    for sub in self._subscribers[key_path]
+                    if sub["component_id"] != component_id
                 ]
 
         logger.info(f"Component {component_id} unsubscribed from {key_path}")
@@ -256,27 +255,34 @@ class SharedStateManager:
             if key_path in self._subscribers:
                 for subscriber in self._subscribers[key_path]:
                     try:
-                        subscriber['callback'](key_path, old_value, new_value)
+                        subscriber["callback"](key_path, old_value, new_value)
                     except Exception as e:
-                        logger.error(f"Error notifying subscriber {subscriber['component_id']}: {e}")
+                        logger.error(
+                            f"Error notifying subscriber {subscriber['component_id']}: {e}"
+                        )
 
             # Notify wildcard subscribers (parent paths)
-            parts = key_path.split('.')
+            parts = key_path.split(".")
             for i in range(len(parts)):
-                parent_path = '.'.join(parts[:i+1]) + '.*'
+                parent_path = ".".join(parts[: i + 1]) + ".*"
                 if parent_path in self._subscribers:
                     for subscriber in self._subscribers[parent_path]:
                         try:
-                            subscriber['callback'](key_path, old_value, new_value)
+                            subscriber["callback"](key_path, old_value, new_value)
                         except Exception as e:
-                            logger.error(f"Error notifying wildcard subscriber {subscriber['component_id']}: {e}")
+                            logger.error(
+                                f"Error notifying wildcard subscriber {subscriber['component_id']}: {e}"
+                            )
 
         except Exception as e:
             logger.error(f"Error notifying subscribers for {key_path}: {e}")
 
-    def get_update_history(self, component_id: Optional[str] = None,
-                          key_path: Optional[str] = None,
-                          limit: int = 20) -> List[StateUpdate]:
+    def get_update_history(
+        self,
+        component_id: Optional[str] = None,
+        key_path: Optional[str] = None,
+        limit: int = 20,
+    ) -> List[StateUpdate]:
         """
         Get state update history
 
@@ -358,7 +364,7 @@ class SharedStateManager:
                     component_id=component_id,
                     state_key="*",
                     old_value=old_state,
-                    new_value=self._state.copy()
+                    new_value=self._state.copy(),
                 )
                 self._update_history.append(update)
 
@@ -373,11 +379,15 @@ class SharedStateManager:
         """Get summary of current state"""
         with self._lock:
             return {
-                'total_keys': len(str(self._state).split(':')),
-                'subscriber_count': sum(len(subs) for subs in self._subscribers.values()),
-                'update_count': len(self._update_history),
-                'last_update': self._update_history[-1].timestamp if self._update_history else None,
-                'active_subscriptions': list(self._subscribers.keys())
+                "total_keys": len(str(self._state).split(":")),
+                "subscriber_count": sum(
+                    len(subs) for subs in self._subscribers.values()
+                ),
+                "update_count": len(self._update_history),
+                "last_update": (
+                    self._update_history[-1].timestamp if self._update_history else None
+                ),
+                "active_subscriptions": list(self._subscribers.keys()),
             }
 
 

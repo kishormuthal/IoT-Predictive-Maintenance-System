@@ -5,8 +5,8 @@ Provides lazy initialization to avoid import-time hangs
 """
 
 import logging
-from typing import Optional
 from pathlib import Path
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +24,7 @@ def get_nasa_data_service():
     if _nasa_data_service_instance is None:
         try:
             from src.infrastructure.data.nasa_data_loader import NASADataLoader
+
             _nasa_data_service_instance = NASADataLoader()
             logger.info("✓ NASA Data Service initialized")
         except Exception as e:
@@ -40,6 +41,7 @@ def get_equipment_mapper():
     if _equipment_mapper_instance is None:
         try:
             from .equipment_mapper import EquipmentMapper
+
             _equipment_mapper_instance = EquipmentMapper()
             logger.info("✓ Equipment Mapper initialized")
         except Exception as e:
@@ -57,6 +59,7 @@ def get_pretrained_model_manager():
     if _pretrained_model_manager_instance is None:
         try:
             from .model_manager import PretrainedModelManager
+
             _pretrained_model_manager_instance = PretrainedModelManager()
             logger.info("✓ Pretrained Model Manager initialized")
         except Exception as e:
@@ -73,6 +76,7 @@ def get_unified_data_orchestrator():
     if _unified_data_orchestrator_instance is None:
         try:
             from .unified_orchestrator import UnifiedDataOrchestrator
+
             _unified_data_orchestrator_instance = UnifiedDataOrchestrator()
             logger.info("✓ Unified Data Orchestrator initialized")
         except Exception as e:
@@ -84,18 +88,20 @@ def get_unified_data_orchestrator():
 
 def _create_fallback_equipment_mapper():
     """Create a fallback equipment mapper"""
+
     class FallbackMapper:
         def get_equipment_summary(self):
             return {
-                'total_equipment': 12,
-                'total_sensors': 12,
-                'smap_count': 6,
-                'msl_count': 6
+                "total_equipment": 12,
+                "total_sensors": 12,
+                "smap_count": 6,
+                "msl_count": 6,
             }
 
         def get_all_equipment(self):
             try:
                 from config.equipment_config import get_equipment_list
+
                 return get_equipment_list()
             except:
                 return []
@@ -103,6 +109,7 @@ def _create_fallback_equipment_mapper():
         def get_equipment_info(self, equipment_id):
             try:
                 from config.equipment_config import get_equipment_by_id
+
                 return get_equipment_by_id(equipment_id)
             except:
                 return None
@@ -112,6 +119,7 @@ def _create_fallback_equipment_mapper():
 
 def _create_fallback_orchestrator():
     """Create a fallback orchestrator"""
+
     class FallbackOrchestrator:
         def ensure_services_running(self):
             logger.info("Services check (fallback mode)")
@@ -119,6 +127,7 @@ def _create_fallback_orchestrator():
 
         def get_available_models(self):
             import glob
+
             model_dir = Path("data/models/nasa_equipment_models")
             if model_dir.exists():
                 pkl_files = glob.glob(str(model_dir / "*.pkl"))
@@ -127,9 +136,9 @@ def _create_fallback_orchestrator():
 
         def get_model_performance_summary(self):
             return {
-                'average_accuracy': 0.92,
-                'total_models': len(self.get_available_models()),
-                'avg_inference_time': 0.05
+                "average_accuracy": 0.92,
+                "total_models": len(self.get_available_models()),
+                "avg_inference_time": 0.05,
             }
 
         def is_nasa_service_running(self):
@@ -142,6 +151,7 @@ def _create_fallback_orchestrator():
 # These will be initialized on first access
 class _LazyService:
     """Wrapper for lazy initialization"""
+
     def __init__(self, getter_func):
         self._getter = getter_func
         self._instance = None

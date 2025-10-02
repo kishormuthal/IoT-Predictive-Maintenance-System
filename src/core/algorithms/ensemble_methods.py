@@ -3,10 +3,11 @@ Ensemble Methods for Model Combination
 Advanced techniques for combining multiple anomaly detection and forecasting models
 """
 
-import numpy as np
-from typing import Dict, List, Any, Optional, Tuple, Callable
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class EnsembleResult:
     """Result from ensemble model"""
+
     prediction: Any  # Final ensemble prediction
     individual_predictions: List[Any]  # Predictions from individual models
     weights: List[float]  # Model weights
@@ -23,11 +25,11 @@ class EnsembleResult:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         return {
-            'prediction': self.prediction,
-            'individual_predictions': self.individual_predictions,
-            'weights': self.weights,
-            'confidence': float(self.confidence),
-            'method': self.method
+            "prediction": self.prediction,
+            "individual_predictions": self.individual_predictions,
+            "weights": self.weights,
+            "confidence": float(self.confidence),
+            "method": self.method,
         }
 
 
@@ -45,10 +47,7 @@ class EnsembleAggregator:
     """
 
     @staticmethod
-    def simple_average(
-        predictions: List[float],
-        **kwargs
-    ) -> EnsembleResult:
+    def simple_average(predictions: List[float], **kwargs) -> EnsembleResult:
         """
         Simple average of predictions
 
@@ -74,14 +73,12 @@ class EnsembleAggregator:
             individual_predictions=predictions.tolist(),
             weights=weights,
             confidence=confidence,
-            method="SimpleAverage"
+            method="SimpleAverage",
         )
 
     @staticmethod
     def weighted_average(
-        predictions: List[float],
-        weights: List[float],
-        **kwargs
+        predictions: List[float], weights: List[float], **kwargs
     ) -> EnsembleResult:
         """
         Weighted average of predictions
@@ -110,14 +107,11 @@ class EnsembleAggregator:
             individual_predictions=predictions.tolist(),
             weights=weights.tolist(),
             confidence=confidence,
-            method="WeightedAverage"
+            method="WeightedAverage",
         )
 
     @staticmethod
-    def majority_voting(
-        predictions: List[int],
-        **kwargs
-    ) -> EnsembleResult:
+    def majority_voting(predictions: List[int], **kwargs) -> EnsembleResult:
         """
         Majority voting for classification
 
@@ -145,14 +139,11 @@ class EnsembleAggregator:
             individual_predictions=predictions.tolist(),
             weights=weights,
             confidence=confidence,
-            method="MajorityVoting"
+            method="MajorityVoting",
         )
 
     @staticmethod
-    def median_aggregation(
-        predictions: List[float],
-        **kwargs
-    ) -> EnsembleResult:
+    def median_aggregation(predictions: List[float], **kwargs) -> EnsembleResult:
         """
         Median aggregation (robust to outliers)
 
@@ -181,14 +172,12 @@ class EnsembleAggregator:
             individual_predictions=predictions.tolist(),
             weights=weights,
             confidence=confidence,
-            method="MedianAggregation"
+            method="MedianAggregation",
         )
 
     @staticmethod
     def trimmed_mean(
-        predictions: List[float],
-        trim_percent: float = 0.2,
-        **kwargs
+        predictions: List[float], trim_percent: float = 0.2, **kwargs
     ) -> EnsembleResult:
         """
         Trimmed mean (remove extreme predictions)
@@ -227,14 +216,12 @@ class EnsembleAggregator:
             individual_predictions=predictions.tolist(),
             weights=weights,
             confidence=confidence,
-            method=f"TrimmedMean-{trim_percent}"
+            method=f"TrimmedMean-{trim_percent}",
         )
 
     @staticmethod
     def performance_weighted_average(
-        predictions: List[float],
-        performance_scores: List[float],
-        **kwargs
+        predictions: List[float], performance_scores: List[float], **kwargs
     ) -> EnsembleResult:
         """
         Weight predictions by past performance
@@ -262,14 +249,12 @@ class EnsembleAggregator:
             individual_predictions=predictions.tolist(),
             weights=weights.tolist(),
             confidence=confidence,
-            method="PerformanceWeighted"
+            method="PerformanceWeighted",
         )
 
     @staticmethod
     def inverse_variance_weighting(
-        predictions: List[float],
-        variances: List[float],
-        **kwargs
+        predictions: List[float], variances: List[float], **kwargs
     ) -> EnsembleResult:
         """
         Weight by inverse variance (precision weighting)
@@ -299,7 +284,7 @@ class EnsembleAggregator:
             individual_predictions=predictions.tolist(),
             weights=weights.tolist(),
             confidence=confidence,
-            method="InverseVariance"
+            method="InverseVariance",
         )
 
 
@@ -312,7 +297,7 @@ class DynamicEnsemble:
         self,
         n_models: int,
         learning_rate: float = 0.1,
-        initial_weights: Optional[List[float]] = None
+        initial_weights: Optional[List[float]] = None,
     ):
         """
         Initialize dynamic ensemble
@@ -371,12 +356,14 @@ class DynamicEnsemble:
         self.weights = self.weights / (np.sum(self.weights) + 1e-10)
 
         # Store performance
-        self.performance_history.append({
-            'predictions': predictions.tolist(),
-            'true_value': float(true_value),
-            'errors': errors.tolist(),
-            'weights': self.weights.tolist()
-        })
+        self.performance_history.append(
+            {
+                "predictions": predictions.tolist(),
+                "true_value": float(true_value),
+                "errors": errors.tolist(),
+                "weights": self.weights.tolist(),
+            }
+        )
 
     def get_weights(self) -> np.ndarray:
         """Get current weights"""
@@ -398,11 +385,7 @@ class StackingEnsemble:
         self.meta_model = meta_model
         self.is_fitted = False
 
-    def fit(
-        self,
-        base_predictions: np.ndarray,
-        true_values: np.ndarray
-    ):
+    def fit(self, base_predictions: np.ndarray, true_values: np.ndarray):
         """
         Fit meta-model
 
@@ -455,7 +438,7 @@ class AdaptiveEnsembleSelector:
         predictions: List[float],
         variances: Optional[List[float]] = None,
         performance_scores: Optional[List[float]] = None,
-        task_type: str = 'regression'
+        task_type: str = "regression",
     ) -> EnsembleResult:
         """
         Automatically select best ensemble method
@@ -470,7 +453,7 @@ class AdaptiveEnsembleSelector:
             EnsembleResult
         """
         # For classification, use voting
-        if task_type == 'classification':
+        if task_type == "classification":
             return EnsembleAggregator.majority_voting(predictions)
 
         # For regression, select based on available information
@@ -496,9 +479,7 @@ class AdaptiveEnsembleSelector:
         # If have variances, use inverse variance weighting
         if variances is not None:
             logger.info("Using inverse variance weighting")
-            return EnsembleAggregator.inverse_variance_weighting(
-                predictions, variances
-            )
+            return EnsembleAggregator.inverse_variance_weighting(predictions, variances)
 
         # Default to simple average
         logger.info("Using simple average")

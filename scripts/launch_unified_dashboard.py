@@ -4,9 +4,9 @@ Clean Launch Script for Unified Production Dashboard
 Freshly launches our new consolidated dashboard with all trained models
 """
 
+import logging
 import os
 import sys
-import logging
 from pathlib import Path
 
 # Setup clean environment
@@ -15,14 +15,15 @@ sys.path.insert(0, str(project_root))
 
 # Clear Python cache
 import importlib
-if hasattr(importlib, 'invalidate_caches'):
+
+if hasattr(importlib, "invalidate_caches"):
     importlib.invalidate_caches()
 
 # Configure clean logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
+
 
 def main():
     """Launch the unified production dashboard"""
@@ -45,17 +46,19 @@ def main():
         app = create_app()
 
         print("[URL] Dashboard available at: http://127.0.0.1:8050")
-        print("[FEATURES] Overview | Monitoring | Anomalies | Forecasting | Maintenance | Work Orders | Performance")
+        print(
+            "[FEATURES] Overview | Monitoring | Anomalies | Forecasting | Maintenance | Work Orders | Performance"
+        )
         print("[CTRL] Press Ctrl+C to stop")
         print("-" * 70)
 
         # Launch server
         app.run_server(
-            host='127.0.0.1',
+            host="127.0.0.1",
             port=8050,
             debug=False,
             dev_tools_hot_reload=False,
-            dev_tools_ui=False
+            dev_tools_ui=False,
         )
 
     except Exception as e:
@@ -64,6 +67,7 @@ def main():
         return 1
 
     return 0
+
 
 if __name__ == "__main__":
     exit_code = main()

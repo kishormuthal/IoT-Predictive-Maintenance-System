@@ -4,20 +4,21 @@ High-performance async processing for 80-sensor concurrent operations
 """
 
 import asyncio
-import aiohttp
-import aiodns
 import logging
-import time
-import threading
-from typing import Dict, List, Optional, Any, Callable, Coroutine, Union
-from datetime import datetime, timedelta
-from dataclasses import dataclass, field
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import queue
+import threading
+import time
 import weakref
-from functools import wraps
-import numpy as np
 from collections import defaultdict, deque
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from functools import wraps
+from typing import Any, Callable, Coroutine, Dict, List, Optional, Union
+
+import aiodns
+import aiohttp
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
@@ -25,27 +26,29 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AsyncProcessorConfig:
     """Configuration for async processor"""
+
     # Async settings
     max_concurrent_tasks: int = 80  # Support 80 sensors concurrently
-    max_workers: int = 16          # Thread pool size
-    timeout: int = 30              # Task timeout in seconds
+    max_workers: int = 16  # Thread pool size
+    timeout: int = 30  # Task timeout in seconds
 
     # Batch processing
-    batch_size: int = 20           # Process sensors in batches
-    batch_timeout: float = 0.1     # Max time to wait for batch
+    batch_size: int = 20  # Process sensors in batches
+    batch_timeout: float = 0.1  # Max time to wait for batch
 
     # Performance settings
     enable_process_pool: bool = False  # Use process pool for CPU-intensive tasks
-    process_pool_workers: int = 4      # Process pool size
+    process_pool_workers: int = 4  # Process pool size
 
     # Memory optimization
     task_result_cache_size: int = 1000
-    cleanup_interval: int = 60         # Cleanup every 60 seconds
+    cleanup_interval: int = 60  # Cleanup every 60 seconds
 
 
 @dataclass
 class AsyncTaskResult:
     """Result of an async task"""
+
     task_id: str
     success: bool
     result: Any = None
@@ -57,6 +60,7 @@ class AsyncTaskResult:
 @dataclass
 class ProcessorMetrics:
     """Async processor performance metrics"""
+
     tasks_submitted: int = 0
     tasks_completed: int = 0
     tasks_failed: int = 0
@@ -92,7 +96,9 @@ class AsyncSensorProcessor:
         self.thread_pool = ThreadPoolExecutor(max_workers=self.config.max_workers)
         self.process_pool = None
         if self.config.enable_process_pool:
-            self.process_pool = ProcessPoolExecutor(max_workers=self.config.process_pool_workers)
+            self.process_pool = ProcessPoolExecutor(
+                max_workers=self.config.process_pool_workers
+            )
 
         # Batch processing
         self.batch_queue = asyncio.Queue()
@@ -105,9 +111,11 @@ class AsyncSensorProcessor:
         # Cleanup management
         self.cleanup_task = None
 
-        logger.info(f"Async Sensor Processor initialized: "
-                   f"max_concurrent={self.config.max_concurrent_tasks}, "
-                   f"workers={self.config.max_workers}")
+        logger.info(
+            f"Async Sensor Processor initialized: "
+            f"max_concurrent={self.config.max_concurrent_tasks}, "
+            f"workers={self.config.max_workers}"
+        )
 
     async def start(self):
         """Start the async processor"""
@@ -148,8 +156,9 @@ class AsyncSensorProcessor:
 
         logger.info("Async sensor processor stopped")
 
-    async def process_sensor_batch(self, sensor_data_batch: List[Dict[str, Any]],
-                                 processor_func: Callable) -> List[AsyncTaskResult]:
+    async def process_sensor_batch(
+        self, sensor_data_batch: List[Dict[str, Any]], processor_func: Callable
+    ) -> List[AsyncTaskResult]:
         """
         Process a batch of sensor data asynchronously
         Optimized for 80-sensor concurrent processing
@@ -174,8 +183,7 @@ class AsyncSensorProcessor:
             # Execute batch with timeout
             batch_timeout = self.config.timeout
             results = await asyncio.wait_for(
-                asyncio.gather(*tasks, return_exceptions=True),
-                timeout=batch_timeout
+                asyncio.gather(*tasks, return_exceptions=True), timeout=batch_timeout
             )
 
             # Process results
@@ -184,12 +192,14 @@ class AsyncSensorProcessor:
                 task_id = f"{batch_id}_sensor_{i}"
 
                 if isinstance(result, Exception):
-                    processed_results.append(AsyncTaskResult(
-                        task_id=task_id,
-                        success=False,
-                        error=str(result),
-                        execution_time=time.time() - start_time
-                    ))
+                    processed_results.append(
+                        AsyncTaskResult(
+                            task_id=task_id,
+                            success=False,
+                            error=str(result),
+                            execution_time=time.time() - start_time,
+                        )
+                    )
                 else:
                     processed_results.append(result)
 
@@ -205,29 +215,37 @@ class AsyncSensorProcessor:
         except asyncio.TimeoutError:
             logger.error(f"Batch {batch_id} timed out after {batch_timeout}s")
             # Cancel remaining tasks
-            for task_id in [f"{batch_id}_sensor_{i}" for i in range(len(sensor_data_batch))]:
+            for task_id in [
+                f"{batch_id}_sensor_{i}" for i in range(len(sensor_data_batch))
+            ]:
                 if task_id in self.active_tasks:
                     self.active_tasks[task_id].cancel()
                     del self.active_tasks[task_id]
 
-            return [AsyncTaskResult(
-                task_id=f"{batch_id}_sensor_{i}",
-                success=False,
-                error="Timeout",
-                execution_time=time.time() - start_time
-            ) for i in range(len(sensor_data_batch))]
+            return [
+                AsyncTaskResult(
+                    task_id=f"{batch_id}_sensor_{i}",
+                    success=False,
+                    error="Timeout",
+                    execution_time=time.time() - start_time,
+                )
+                for i in range(len(sensor_data_batch))
+            ]
 
         except Exception as e:
             logger.error(f"Batch processing error: {e}")
-            return [AsyncTaskResult(
-                task_id=f"{batch_id}_error",
-                success=False,
-                error=str(e),
-                execution_time=time.time() - start_time
-            )]
+            return [
+                AsyncTaskResult(
+                    task_id=f"{batch_id}_error",
+                    success=False,
+                    error=str(e),
+                    execution_time=time.time() - start_time,
+                )
+            ]
 
-    async def _process_single_sensor(self, task_id: str, sensor_data: Dict[str, Any],
-                                   processor_func: Callable) -> AsyncTaskResult:
+    async def _process_single_sensor(
+        self, task_id: str, sensor_data: Dict[str, Any], processor_func: Callable
+    ) -> AsyncTaskResult:
         """Process a single sensor with concurrency control"""
         async with self.semaphore:  # Limit concurrent operations
             start_time = time.time()
@@ -249,7 +267,7 @@ class AsyncSensorProcessor:
                     task_id=task_id,
                     success=True,
                     result=result,
-                    execution_time=execution_time
+                    execution_time=execution_time,
                 )
 
                 self.task_results.append(task_result)
@@ -267,7 +285,7 @@ class AsyncSensorProcessor:
                     task_id=task_id,
                     success=False,
                     error=error_msg,
-                    execution_time=execution_time
+                    execution_time=execution_time,
                 )
 
                 self.task_results.append(task_result)
@@ -275,8 +293,9 @@ class AsyncSensorProcessor:
 
                 return task_result
 
-    async def process_sensor_stream(self, sensor_id: str, data_stream: asyncio.Queue,
-                                  processor_func: Callable) -> None:
+    async def process_sensor_stream(
+        self, sensor_id: str, data_stream: asyncio.Queue, processor_func: Callable
+    ) -> None:
         """
         Process continuous sensor data stream
         Optimized for real-time 80-sensor processing
@@ -286,10 +305,7 @@ class AsyncSensorProcessor:
         while self.is_running:
             try:
                 # Wait for data with timeout
-                sensor_data = await asyncio.wait_for(
-                    data_stream.get(),
-                    timeout=1.0
-                )
+                sensor_data = await asyncio.wait_for(data_stream.get(), timeout=1.0)
 
                 # Process data asynchronously
                 task_id = f"stream_{sensor_id}_{int(time.time() * 1000)}"
@@ -313,8 +329,9 @@ class AsyncSensorProcessor:
                 logger.error(f"Stream processing error for {sensor_id}: {e}")
                 await asyncio.sleep(1)  # Brief pause on error
 
-    async def parallel_anomaly_detection(self, sensor_data_list: List[Dict[str, Any]],
-                                       detection_func: Callable) -> List[Dict[str, Any]]:
+    async def parallel_anomaly_detection(
+        self, sensor_data_list: List[Dict[str, Any]], detection_func: Callable
+    ) -> List[Dict[str, Any]]:
         """
         Parallel anomaly detection for multiple sensors
         Optimized for 80-sensor concurrent anomaly detection
@@ -322,7 +339,7 @@ class AsyncSensorProcessor:
         # Split into optimal batch sizes
         batch_size = min(self.config.batch_size, len(sensor_data_list))
         batches = [
-            sensor_data_list[i:i + batch_size]
+            sensor_data_list[i : i + batch_size]
             for i in range(0, len(sensor_data_list), batch_size)
         ]
 
@@ -331,9 +348,7 @@ class AsyncSensorProcessor:
         # Process batches in parallel
         batch_tasks = []
         for batch in batches:
-            task = asyncio.create_task(
-                self.process_sensor_batch(batch, detection_func)
-            )
+            task = asyncio.create_task(self.process_sensor_batch(batch, detection_func))
             batch_tasks.append(task)
 
         # Wait for all batches to complete
@@ -349,7 +364,9 @@ class AsyncSensorProcessor:
                 if task_result.success:
                     all_results.append(task_result.result)
                 else:
-                    logger.warning(f"Anomaly detection failed for task {task_result.task_id}: {task_result.error}")
+                    logger.warning(
+                        f"Anomaly detection failed for task {task_result.task_id}: {task_result.error}"
+                    )
 
         return all_results
 
@@ -397,8 +414,7 @@ class AsyncSensorProcessor:
             # Update average execution time (exponential moving average)
             alpha = 0.1
             self.metrics.avg_execution_time = (
-                alpha * execution_time +
-                (1 - alpha) * self.metrics.avg_execution_time
+                alpha * execution_time + (1 - alpha) * self.metrics.avg_execution_time
             )
 
             self.metrics.last_updated = datetime.now()
@@ -421,7 +437,7 @@ class AsyncSensorProcessor:
                 concurrent_tasks=self.metrics.concurrent_tasks,
                 batch_operations=self.metrics.batch_operations,
                 total_processing_time=self.metrics.total_processing_time,
-                last_updated=self.metrics.last_updated
+                last_updated=self.metrics.last_updated,
             )
 
     def get_performance_stats(self) -> Dict[str, Any]:
@@ -433,14 +449,17 @@ class AsyncSensorProcessor:
             success_rate = metrics.tasks_completed / metrics.tasks_submitted
 
         return {
-            'success_rate': success_rate,
-            'tasks_per_second': metrics.tasks_completed / max(1, metrics.total_processing_time),
-            'avg_execution_time': metrics.avg_execution_time,
-            'concurrent_tasks': metrics.concurrent_tasks,
-            'batch_operations': metrics.batch_operations,
-            'memory_usage': len(self.task_results),
-            'active_tasks': len(self.active_tasks),
-            'recent_execution_times': list(self.execution_times)[-10:] if self.execution_times else []
+            "success_rate": success_rate,
+            "tasks_per_second": metrics.tasks_completed
+            / max(1, metrics.total_processing_time),
+            "avg_execution_time": metrics.avg_execution_time,
+            "concurrent_tasks": metrics.concurrent_tasks,
+            "batch_operations": metrics.batch_operations,
+            "memory_usage": len(self.task_results),
+            "active_tasks": len(self.active_tasks),
+            "recent_execution_times": (
+                list(self.execution_times)[-10:] if self.execution_times else []
+            ),
         }
 
 
@@ -449,8 +468,9 @@ async_processor = AsyncSensorProcessor()
 
 
 # Convenience functions for async operations
-async def process_sensors_async(sensor_data_list: List[Dict[str, Any]],
-                               processor_func: Callable) -> List[AsyncTaskResult]:
+async def process_sensors_async(
+    sensor_data_list: List[Dict[str, Any]], processor_func: Callable
+) -> List[AsyncTaskResult]:
     """Process multiple sensors asynchronously"""
     if not async_processor.is_running:
         await async_processor.start()
@@ -458,17 +478,21 @@ async def process_sensors_async(sensor_data_list: List[Dict[str, Any]],
     return await async_processor.process_sensor_batch(sensor_data_list, processor_func)
 
 
-async def detect_anomalies_async(sensor_data_list: List[Dict[str, Any]],
-                                detection_func: Callable) -> List[Dict[str, Any]]:
+async def detect_anomalies_async(
+    sensor_data_list: List[Dict[str, Any]], detection_func: Callable
+) -> List[Dict[str, Any]]:
     """Detect anomalies across multiple sensors asynchronously"""
     if not async_processor.is_running:
         await async_processor.start()
 
-    return await async_processor.parallel_anomaly_detection(sensor_data_list, detection_func)
+    return await async_processor.parallel_anomaly_detection(
+        sensor_data_list, detection_func
+    )
 
 
 def async_sensor_task(func: Callable) -> Callable:
     """Decorator to make sensor processing functions async-compatible"""
+
     @wraps(func)
     async def async_wrapper(*args, **kwargs):
         loop = asyncio.get_event_loop()

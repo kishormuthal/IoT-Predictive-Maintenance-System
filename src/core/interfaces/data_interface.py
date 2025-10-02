@@ -3,9 +3,10 @@ Abstract interface for data sources
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Any, Optional
-import numpy as np
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import numpy as np
 
 
 class DataSourceInterface(ABC):

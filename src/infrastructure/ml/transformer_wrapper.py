@@ -3,40 +3,54 @@ Transformer-based Time Series Forecaster
 Implementation of Transformer architecture for multi-step ahead forecasting
 """
 
-import os
-import numpy as np
-import logging
-from typing import Dict, List, Tuple, Optional, Any
-from dataclasses import dataclass
-from pathlib import Path
-import pickle
 import json
+import logging
+import os
+import pickle
+from dataclasses import dataclass
 from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
 from sklearn.preprocessing import StandardScaler
+
 
 # Custom Exceptions
 class ModelNotTrainedError(Exception):
     """Raised when attempting to use an untrained model"""
+
     pass
+
 
 class InsufficientDataError(Exception):
     """Raised when there's not enough data for training or inference"""
+
     pass
+
 
 # TensorFlow imports with fallback
 try:
     import tensorflow as tf
     from tensorflow import keras
-    from tensorflow.keras import layers, models, optimizers, callbacks
+    from tensorflow.keras import callbacks, layers, models, optimizers
     from tensorflow.keras.layers import (
-        Dense, Dropout, LayerNormalization, MultiHeadAttention,
-        GlobalAveragePooling1D, Input, Embedding
+        Dense,
+        Dropout,
+        Embedding,
+        GlobalAveragePooling1D,
+        Input,
+        LayerNormalization,
+        MultiHeadAttention,
     )
+
     TENSORFLOW_AVAILABLE = True
     print("[INFO] TensorFlow available for Transformer Forecaster")
 except ImportError:
     TENSORFLOW_AVAILABLE = False
-    print("[WARNING] TensorFlow not available, using mock implementation for Transformer Forecaster")
+    print(
+        "[WARNING] TensorFlow not available, using mock implementation for Transformer Forecaster"
+    )
 
     # Enhanced Mock implementations with informative logging
     logger = logging.getLogger(__name__)
@@ -73,11 +87,15 @@ except ImportError:
             logger.debug("[MOCK] Mock compile called - no actual compilation")
 
         def fit(self, **kwargs):
-            logger.warning("[MOCK] Mock training - returning dummy history without actual training")
+            logger.warning(
+                "[MOCK] Mock training - returning dummy history without actual training"
+            )
             return MockHistory()
 
         def predict(self, x):
-            logger.warning("[MOCK] Mock prediction - returning zeros (no actual prediction)")
+            logger.warning(
+                "[MOCK] Mock prediction - returning zeros (no actual prediction)"
+            )
             return np.zeros((1 if len(x.shape) == 3 else len(x), 1, 1))
 
         def count_params(self):
@@ -88,7 +106,7 @@ except ImportError:
 
     class MockHistory:
         def __init__(self):
-            self.history = {'loss': [0.1, 0.08, 0.06], 'val_loss': [0.12, 0.09, 0.07]}
+            self.history = {"loss": [0.1, 0.08, 0.06], "val_loss": [0.12, 0.09, 0.07]}
 
     class MockModels:
         @staticmethod
@@ -116,7 +134,7 @@ except ImportError:
                 pass
 
     models = MockModels()
-    keras = type('MockKeras', (), {'models': models})()
+    keras = type("MockKeras", (), {"models": models})()
 
 logger = logging.getLogger(__name__)
 
@@ -124,6 +142,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class TransformerConfig:
     """Configuration for Transformer model"""
+
     # Model architecture
     sequence_length: int = 168  # 1 week of hourly data
     forecast_horizon: int = 24  # 24 hours ahead
@@ -145,13 +164,19 @@ class TransformerConfig:
         """Validate configuration parameters"""
         # Validate ranges
         if self.sequence_length <= 0:
-            raise ValueError(f"sequence_length must be positive, got {self.sequence_length}")
+            raise ValueError(
+                f"sequence_length must be positive, got {self.sequence_length}"
+            )
 
         if self.forecast_horizon <= 0:
-            raise ValueError(f"forecast_horizon must be positive, got {self.forecast_horizon}")
+            raise ValueError(
+                f"forecast_horizon must be positive, got {self.forecast_horizon}"
+            )
 
         if not 0 <= self.dropout_rate <= 1:
-            raise ValueError(f"dropout_rate must be between 0 and 1, got {self.dropout_rate}")
+            raise ValueError(
+                f"dropout_rate must be between 0 and 1, got {self.dropout_rate}"
+            )
 
         if self.d_model <= 0:
             raise ValueError(f"d_model must be positive, got {self.d_model}")
@@ -178,7 +203,9 @@ class TransformerConfig:
             raise ValueError(f"batch_size must be positive, got {self.batch_size}")
 
         if not 0 < self.validation_split < 1:
-            raise ValueError(f"validation_split must be between 0 and 1, got {self.validation_split}")
+            raise ValueError(
+                f"validation_split must be between 0 and 1, got {self.validation_split}"
+            )
 
         if self.patience <= 0:
             raise ValueError(f"patience must be positive, got {self.patience}")
@@ -205,10 +232,9 @@ class PositionalEncoding(layers.Layer):
 
     def get_config(self):
         config = super().get_config()
-        config.update({
-            'sequence_length': self.sequence_length,
-            'd_model': self.d_model
-        })
+        config.update(
+            {"sequence_length": self.sequence_length, "d_model": self.d_model}
+        )
         return config
 
     def positional_encoding(self, length, depth):
@@ -228,9 +254,7 @@ class PositionalEncoding(layers.Layer):
         angle_rates = 1 / (10000**depths)
         angle_rads = positions * angle_rates
 
-        pos_encoding = np.concatenate([
-            np.sin(angle_rads), np.cos(angle_rads)
-        ], axis=-1)
+        pos_encoding = np.concatenate([np.sin(angle_rads), np.cos(angle_rads)], axis=-1)
 
         return tf.cast(pos_encoding, dtype=tf.float32)
 
@@ -245,7 +269,7 @@ class PositionalEncoding(layers.Layer):
             otherwise returns input unchanged
         """
         if TENSORFLOW_AVAILABLE and self.pos_encoding is not None:
-            return x + self.pos_encoding[tf.newaxis, :tf.shape(x)[1], :]
+            return x + self.pos_encoding[tf.newaxis, : tf.shape(x)[1], :]
         return x
 
 
@@ -265,10 +289,12 @@ class TransformerBlock(layers.Layer):
 
         if TENSORFLOW_AVAILABLE:
             self.att = MultiHeadAttention(num_heads=num_heads, key_dim=d_model)
-            self.ffn = keras.Sequential([
-                Dense(dff, activation="relu"),
-                Dense(d_model),
-            ])
+            self.ffn = keras.Sequential(
+                [
+                    Dense(dff, activation="relu"),
+                    Dense(d_model),
+                ]
+            )
 
             self.layernorm1 = LayerNormalization(epsilon=1e-6)
             self.layernorm2 = LayerNormalization(epsilon=1e-6)
@@ -287,12 +313,14 @@ class TransformerBlock(layers.Layer):
 
     def get_config(self):
         config = super().get_config()
-        config.update({
-            'd_model': self.d_model,
-            'num_heads': self.num_heads,
-            'dff': self.dff,
-            'dropout_rate': self.dropout_rate
-        })
+        config.update(
+            {
+                "d_model": self.d_model,
+                "num_heads": self.num_heads,
+                "dff": self.dff,
+                "dropout_rate": self.dropout_rate,
+            }
+        )
         return config
 
     def call(self, x, training=None):
@@ -371,7 +399,7 @@ class TransformerForecaster:
                 d_model=self.config.d_model,
                 num_heads=self.config.num_heads,
                 dff=self.config.dff,
-                dropout_rate=self.config.dropout_rate
+                dropout_rate=self.config.dropout_rate,
             )(x)
 
         # Global average pooling
@@ -383,15 +411,17 @@ class TransformerForecaster:
         outputs = Dense(self.config.forecast_horizon * self.n_features)(x)
 
         # Reshape to forecast format
-        outputs = layers.Reshape((self.config.forecast_horizon, self.n_features))(outputs)
+        outputs = layers.Reshape((self.config.forecast_horizon, self.n_features))(
+            outputs
+        )
 
         model = models.Model(inputs=inputs, outputs=outputs)
 
         # Compile model
         model.compile(
             optimizer=optimizers.Adam(learning_rate=self.config.learning_rate),
-            loss='mse',
-            metrics=['mae']
+            loss="mse",
+            metrics=["mae"],
         )
 
         return model
@@ -405,8 +435,8 @@ class TransformerForecaster:
         horizon = self.config.forecast_horizon
 
         for i in range(len(data) - seq_len - horizon + 1):
-            sequence = data[i:i + seq_len]
-            target = data[i + seq_len:i + seq_len + horizon]
+            sequence = data[i : i + seq_len]
+            target = data[i + seq_len : i + seq_len + horizon]
 
             sequences.append(sequence)
             targets.append(target)
@@ -449,7 +479,9 @@ class TransformerForecaster:
         X, y = self._create_sequences(scaled_data)
 
         if len(X) == 0:
-            raise InsufficientDataError(f"Not enough data to create sequences for sensor {self.sensor_id}")
+            raise InsufficientDataError(
+                f"Not enough data to create sequences for sensor {self.sensor_id}"
+            )
 
         # Build model
         self.model = self._build_model()
@@ -461,46 +493,51 @@ class TransformerForecaster:
                 f"TensorFlow not available - model cannot be used for actual inference."
             )
             self.is_trained = False  # Mark as not trained since it's mock
-            self.training_history = {'loss': [0.1, 0.08, 0.06], 'val_loss': [0.12, 0.09, 0.07]}
+            self.training_history = {
+                "loss": [0.1, 0.08, 0.06],
+                "val_loss": [0.12, 0.09, 0.07],
+            }
             return {
-                'sensor_id': self.sensor_id,
-                'training_samples': len(X),
-                'model_parameters': 0,
-                'final_loss': 0.1,
-                'final_val_loss': 0.1,
-                'note': 'Mock training - TensorFlow not available'
+                "sensor_id": self.sensor_id,
+                "training_samples": len(X),
+                "model_parameters": 0,
+                "final_loss": 0.1,
+                "final_val_loss": 0.1,
+                "note": "Mock training - TensorFlow not available",
             }
 
         # Training callbacks
         callbacks_list = [
             callbacks.EarlyStopping(
-                monitor='val_loss',
+                monitor="val_loss",
                 patience=self.config.patience,
-                restore_best_weights=True
+                restore_best_weights=True,
             ),
             callbacks.ReduceLROnPlateau(
-                monitor='val_loss',
-                factor=0.5,
-                patience=5,
-                min_lr=1e-6
-            )
+                monitor="val_loss", factor=0.5, patience=5, min_lr=1e-6
+            ),
         ]
 
         # Train model with configurable verbosity
         history = self.model.fit(
-            X, y,
+            X,
+            y,
             epochs=self.config.epochs,
             batch_size=self.config.batch_size,
             validation_split=self.config.validation_split,
             callbacks=callbacks_list,
-            verbose=self.config.verbose
+            verbose=self.config.verbose,
         )
 
         self.is_trained = True
 
         # Convert NumPy arrays to lists for JSON serialization
         self.training_history = {
-            key: [float(v) for v in values] if isinstance(values, (list, np.ndarray)) else values
+            key: (
+                [float(v) for v in values]
+                if isinstance(values, (list, np.ndarray))
+                else values
+            )
             for key, values in history.history.items()
         }
 
@@ -508,15 +545,21 @@ class TransformerForecaster:
         logger.info(f"Model parameters: {self.model.count_params()}")
 
         # Robust history access with fallbacks
-        final_loss = history.history.get('loss', [0])[-1] if history.history.get('loss') else 0
-        final_val_loss = history.history.get('val_loss', [0])[-1] if history.history.get('val_loss') else 0
+        final_loss = (
+            history.history.get("loss", [0])[-1] if history.history.get("loss") else 0
+        )
+        final_val_loss = (
+            history.history.get("val_loss", [0])[-1]
+            if history.history.get("val_loss")
+            else 0
+        )
 
         return {
-            'sensor_id': self.sensor_id,
-            'training_samples': len(X),
-            'model_parameters': self.model.count_params(),
-            'final_loss': float(final_loss),
-            'final_val_loss': float(final_val_loss)
+            "sensor_id": self.sensor_id,
+            "training_samples": len(X),
+            "model_parameters": self.model.count_params(),
+            "final_loss": float(final_loss),
+            "final_val_loss": float(final_val_loss),
         }
 
     def predict(self, data: np.ndarray, horizon_hours: int = None) -> Dict[str, Any]:
@@ -560,7 +603,7 @@ class TransformerForecaster:
 
         # Use only the required sequence length from the end
         if len(data) > self.config.sequence_length:
-            data = data[-self.config.sequence_length:]
+            data = data[-self.config.sequence_length :]
         elif len(data) < self.config.sequence_length:
             # Pad with mean if not enough data (simple strategy)
             # Note: This is a basic imputation method. For production, consider:
@@ -580,15 +623,21 @@ class TransformerForecaster:
         scaled_data = self.scaler.transform(data)
 
         # Reshape for model input
-        input_data = scaled_data.reshape(1, self.config.sequence_length, self.n_features)
+        input_data = scaled_data.reshape(
+            1, self.config.sequence_length, self.n_features
+        )
 
         # Generate forecast
         if TENSORFLOW_AVAILABLE and self.model:
             forecast_scaled = self.model.predict(input_data, verbose=0)
         else:
             # Mock prediction
-            logger.warning("[MOCK] Generating random forecast - TensorFlow not available")
-            forecast_scaled = np.random.randn(1, self.config.forecast_horizon, self.n_features)
+            logger.warning(
+                "[MOCK] Generating random forecast - TensorFlow not available"
+            )
+            forecast_scaled = np.random.randn(
+                1, self.config.forecast_horizon, self.n_features
+            )
 
         # Inverse transform
         forecast_scaled = forecast_scaled.reshape(-1, self.n_features)
@@ -615,15 +664,17 @@ class TransformerForecaster:
         confidence_lower = forecast - 1.96 * forecast_std
 
         results = {
-            'sensor_id': self.sensor_id,
-            'forecast_values': forecast.flatten().tolist(),
-            'confidence_upper': confidence_upper.flatten().tolist(),
-            'confidence_lower': confidence_lower.flatten().tolist(),
-            'horizon_hours': len(forecast),
-            'forecast_quality': 'high' if self.is_trained else 'mock'
+            "sensor_id": self.sensor_id,
+            "forecast_values": forecast.flatten().tolist(),
+            "confidence_upper": confidence_upper.flatten().tolist(),
+            "confidence_lower": confidence_lower.flatten().tolist(),
+            "horizon_hours": len(forecast),
+            "forecast_quality": "high" if self.is_trained else "mock",
         }
 
-        logger.info(f"Generated {len(forecast)} hour forecast for sensor {self.sensor_id}")
+        logger.info(
+            f"Generated {len(forecast)} hour forecast for sensor {self.sensor_id}"
+        )
 
         return results
 
@@ -646,35 +697,43 @@ class TransformerForecaster:
 
             # Save Keras model (only if TensorFlow is available)
             if TENSORFLOW_AVAILABLE and self.model is not None:
-                self.model.save(model_dir / 'transformer_model.h5')
+                self.model.save(model_dir / "transformer_model.h5")
                 logger.debug(f"Saved Keras model for sensor {self.sensor_id}")
             else:
-                logger.warning(f"TensorFlow not available - Keras model not saved for {self.sensor_id}")
+                logger.warning(
+                    f"TensorFlow not available - Keras model not saved for {self.sensor_id}"
+                )
 
             # Save scaler
-            with open(model_dir / 'scaler.pkl', 'wb') as f:
+            with open(model_dir / "scaler.pkl", "wb") as f:
                 pickle.dump(self.scaler, f)
 
             # Save metadata (training_history already converted to lists in train())
             metadata = {
-                'sensor_id': self.sensor_id,
-                'config': self.config.__dict__,
-                'n_features': int(self.n_features) if self.n_features is not None else None,
-                'is_trained': self.is_trained,
-                'training_history': self.training_history,
-                'tensorflow_available': TENSORFLOW_AVAILABLE
+                "sensor_id": self.sensor_id,
+                "config": self.config.__dict__,
+                "n_features": (
+                    int(self.n_features) if self.n_features is not None else None
+                ),
+                "is_trained": self.is_trained,
+                "training_history": self.training_history,
+                "tensorflow_available": TENSORFLOW_AVAILABLE,
             }
 
-            with open(model_dir / 'transformer_metadata.json', 'w') as f:
+            with open(model_dir / "transformer_metadata.json", "w") as f:
                 json.dump(metadata, f, indent=2)
 
-            logger.info(f"Transformer model saved successfully for sensor {self.sensor_id} at {model_dir}")
+            logger.info(
+                f"Transformer model saved successfully for sensor {self.sensor_id} at {model_dir}"
+            )
 
         except IOError as e:
             logger.error(f"Failed to save model for sensor {self.sensor_id}: {e}")
             raise
         except Exception as e:
-            logger.error(f"Unexpected error saving model for sensor {self.sensor_id}: {e}")
+            logger.error(
+                f"Unexpected error saving model for sensor {self.sensor_id}: {e}"
+            )
             raise
 
     def load_model(self, model_path: Path) -> bool:
@@ -690,32 +749,31 @@ class TransformerForecaster:
             model_dir = model_path / self.sensor_id
 
             # Load metadata
-            metadata_file = model_dir / 'transformer_metadata.json'
+            metadata_file = model_dir / "transformer_metadata.json"
             if not metadata_file.exists():
                 raise FileNotFoundError(f"Metadata file not found: {metadata_file}")
 
-            with open(metadata_file, 'r') as f:
+            with open(metadata_file, "r") as f:
                 metadata = json.load(f)
 
-            self.sensor_id = metadata['sensor_id']
-            self.config = TransformerConfig(**metadata['config'])
-            self.n_features = metadata.get('n_features')
-            self.training_history = metadata.get('training_history')
+            self.sensor_id = metadata["sensor_id"]
+            self.config = TransformerConfig(**metadata["config"])
+            self.n_features = metadata.get("n_features")
+            self.training_history = metadata.get("training_history")
 
             # Check TensorFlow consistency
-            model_file = model_dir / 'transformer_model.h5'
-            was_saved_with_tf = metadata.get('tensorflow_available', True)
+            model_file = model_dir / "transformer_model.h5"
+            was_saved_with_tf = metadata.get("tensorflow_available", True)
 
             if model_file.exists():
                 if TENSORFLOW_AVAILABLE:
                     # Register custom layers and load model
                     custom_objects = {
-                        'PositionalEncoding': PositionalEncoding,
-                        'TransformerBlock': TransformerBlock
+                        "PositionalEncoding": PositionalEncoding,
+                        "TransformerBlock": TransformerBlock,
                     }
                     self.model = keras.models.load_model(
-                        model_file,
-                        custom_objects=custom_objects
+                        model_file, custom_objects=custom_objects
                     )
                     self.is_trained = True
                     logger.debug(f"Loaded Keras model for sensor {self.sensor_id}")
@@ -742,18 +800,22 @@ class TransformerForecaster:
                     return False
 
             # Load scaler
-            scaler_file = model_dir / 'scaler.pkl'
+            scaler_file = model_dir / "scaler.pkl"
             if not scaler_file.exists():
                 raise FileNotFoundError(f"Scaler file not found: {scaler_file}")
 
-            with open(scaler_file, 'rb') as f:
+            with open(scaler_file, "rb") as f:
                 self.scaler = pickle.load(f)
 
-            logger.info(f"Transformer model loaded successfully for sensor {self.sensor_id}")
+            logger.info(
+                f"Transformer model loaded successfully for sensor {self.sensor_id}"
+            )
             return True
 
         except FileNotFoundError as e:
-            logger.error(f"File not found while loading model for sensor {self.sensor_id}: {e}")
+            logger.error(
+                f"File not found while loading model for sensor {self.sensor_id}: {e}"
+            )
             self.is_trained = False
             return False
         except (KeyError, json.JSONDecodeError) as e:
@@ -761,6 +823,8 @@ class TransformerForecaster:
             self.is_trained = False
             return False
         except Exception as e:
-            logger.error(f"Unexpected error loading model for sensor {self.sensor_id}: {e}")
+            logger.error(
+                f"Unexpected error loading model for sensor {self.sensor_id}: {e}"
+            )
             self.is_trained = False
             return False

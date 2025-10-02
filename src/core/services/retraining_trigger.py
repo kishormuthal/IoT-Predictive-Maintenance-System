@@ -3,23 +3,25 @@ Automated Retraining Trigger System
 Monitors model performance and data drift to trigger automated retraining
 """
 
-import numpy as np
-from typing import Dict, List, Any, Optional, Callable
-from datetime import datetime, timedelta
-from dataclasses import dataclass, field
-from enum import Enum
-import logging
 import json
+import logging
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
 
-from ..services.data_drift_detector import DataDriftDetector, DriftReport, DriftSeverity
+import numpy as np
+
 from ...infrastructure.ml.mlflow_tracker import MLflowTracker, ModelStage
+from ..services.data_drift_detector import DataDriftDetector, DriftReport, DriftSeverity
 
 logger = logging.getLogger(__name__)
 
 
 class RetrainingReason(Enum):
     """Reasons for triggering retraining"""
+
     DRIFT_DETECTED = "drift_detected"
     PERFORMANCE_DEGRADATION = "performance_degradation"
     SCHEDULE = "scheduled_retraining"
@@ -30,6 +32,7 @@ class RetrainingReason(Enum):
 @dataclass
 class RetrainingTrigger:
     """Retraining trigger event"""
+
     sensor_id: str
     model_type: str
     reason: RetrainingReason
@@ -43,6 +46,7 @@ class RetrainingTrigger:
 @dataclass
 class RetrainingPolicy:
     """Policy configuration for automated retraining"""
+
     # Drift-based triggers
     enable_drift_trigger: bool = True
     drift_severity_threshold: DriftSeverity = DriftSeverity.MODERATE
@@ -87,7 +91,7 @@ class RetrainingTriggerSystem:
         policy: Optional[RetrainingPolicy] = None,
         drift_detector: Optional[DataDriftDetector] = None,
         mlflow_tracker: Optional[MLflowTracker] = None,
-        trigger_log_path: str = "data/retraining_triggers.json"
+        trigger_log_path: str = "data/retraining_triggers.json",
     ):
         """
         Initialize retraining trigger system
@@ -118,27 +122,30 @@ class RetrainingTriggerSystem:
         """Load trigger history from disk"""
         try:
             if self.trigger_log_path.exists():
-                with open(self.trigger_log_path, 'r') as f:
+                with open(self.trigger_log_path, "r") as f:
                     history = json.load(f)
 
                     for trigger_data in history:
                         # Reconstruct trigger
                         trigger = RetrainingTrigger(
-                            sensor_id=trigger_data['sensor_id'],
-                            model_type=trigger_data['model_type'],
-                            reason=RetrainingReason(trigger_data['reason']),
-                            severity=trigger_data['severity'],
-                            timestamp=datetime.fromisoformat(trigger_data['timestamp']),
-                            metrics=trigger_data.get('metrics', {}),
-                            details=trigger_data.get('details', {}),
-                            triggered=trigger_data.get('triggered', False)
+                            sensor_id=trigger_data["sensor_id"],
+                            model_type=trigger_data["model_type"],
+                            reason=RetrainingReason(trigger_data["reason"]),
+                            severity=trigger_data["severity"],
+                            timestamp=datetime.fromisoformat(trigger_data["timestamp"]),
+                            metrics=trigger_data.get("metrics", {}),
+                            details=trigger_data.get("details", {}),
+                            triggered=trigger_data.get("triggered", False),
                         )
                         self.triggers.append(trigger)
 
                         # Update last_retrained
                         if trigger.triggered:
                             sensor_key = f"{trigger.sensor_id}_{trigger.model_type}"
-                            if sensor_key not in self.last_retrained or trigger.timestamp > self.last_retrained[sensor_key]:
+                            if (
+                                sensor_key not in self.last_retrained
+                                or trigger.timestamp > self.last_retrained[sensor_key]
+                            ):
                                 self.last_retrained[sensor_key] = trigger.timestamp
 
                 logger.info(f"Loaded {len(self.triggers)} trigger events from history")
@@ -153,28 +160,27 @@ class RetrainingTriggerSystem:
 
             history = []
             for trigger in self.triggers:
-                history.append({
-                    'sensor_id': trigger.sensor_id,
-                    'model_type': trigger.model_type,
-                    'reason': trigger.reason.value,
-                    'severity': trigger.severity,
-                    'timestamp': trigger.timestamp.isoformat(),
-                    'metrics': trigger.metrics,
-                    'details': trigger.details,
-                    'triggered': trigger.triggered
-                })
+                history.append(
+                    {
+                        "sensor_id": trigger.sensor_id,
+                        "model_type": trigger.model_type,
+                        "reason": trigger.reason.value,
+                        "severity": trigger.severity,
+                        "timestamp": trigger.timestamp.isoformat(),
+                        "metrics": trigger.metrics,
+                        "details": trigger.details,
+                        "triggered": trigger.triggered,
+                    }
+                )
 
-            with open(self.trigger_log_path, 'w') as f:
+            with open(self.trigger_log_path, "w") as f:
                 json.dump(history, f, indent=2)
 
         except Exception as e:
             logger.error(f"Error saving trigger history: {e}")
 
     def check_drift_trigger(
-        self,
-        sensor_id: str,
-        model_type: str,
-        drift_report: DriftReport
+        self, sensor_id: str, model_type: str, drift_report: DriftReport
     ) -> Optional[RetrainingTrigger]:
         """
         Check if drift warrants retraining
@@ -196,13 +202,16 @@ class RetrainingTriggerSystem:
             DriftSeverity.LOW,
             DriftSeverity.MODERATE,
             DriftSeverity.HIGH,
-            DriftSeverity.CRITICAL
+            DriftSeverity.CRITICAL,
         ]
 
         drift_severity_index = severity_levels.index(drift_report.severity)
         threshold_index = severity_levels.index(self.policy.drift_severity_threshold)
 
-        if drift_severity_index >= threshold_index or drift_report.drift_score >= self.policy.drift_score_threshold:
+        if (
+            drift_severity_index >= threshold_index
+            or drift_report.drift_score >= self.policy.drift_score_threshold
+        ):
             trigger = RetrainingTrigger(
                 sensor_id=sensor_id,
                 model_type=model_type,
@@ -210,15 +219,15 @@ class RetrainingTriggerSystem:
                 severity=drift_report.severity.value,
                 timestamp=datetime.now(),
                 metrics={
-                    'drift_score': drift_report.drift_score,
-                    'psi': drift_report.metrics.get('psi', 0.0),
-                    'mean_shift': drift_report.metrics.get('mean_shift_std', 0.0)
+                    "drift_score": drift_report.drift_score,
+                    "psi": drift_report.metrics.get("psi", 0.0),
+                    "mean_shift": drift_report.metrics.get("mean_shift_std", 0.0),
                 },
                 details={
-                    'drift_types': [dt.value for dt in drift_report.drift_types],
-                    'recommendations': drift_report.recommendations,
-                    'statistical_tests': drift_report.statistical_tests
-                }
+                    "drift_types": [dt.value for dt in drift_report.drift_types],
+                    "recommendations": drift_report.recommendations,
+                    "statistical_tests": drift_report.statistical_tests,
+                },
             )
 
             logger.warning(
@@ -236,7 +245,7 @@ class RetrainingTriggerSystem:
         model_type: str,
         current_performance: float,
         baseline_performance: float,
-        metric_name: str = "accuracy"
+        metric_name: str = "accuracy",
     ) -> Optional[RetrainingTrigger]:
         """
         Check if performance degradation warrants retraining
@@ -255,11 +264,15 @@ class RetrainingTriggerSystem:
             return None
 
         # Calculate degradation
-        degradation = (baseline_performance - current_performance) / (baseline_performance + 1e-10)
+        degradation = (baseline_performance - current_performance) / (
+            baseline_performance + 1e-10
+        )
 
         # Check thresholds
-        if degradation >= self.policy.performance_degradation_threshold or \
-           current_performance < self.policy.min_performance_threshold:
+        if (
+            degradation >= self.policy.performance_degradation_threshold
+            or current_performance < self.policy.min_performance_threshold
+        ):
 
             trigger = RetrainingTrigger(
                 sensor_id=sensor_id,
@@ -268,11 +281,11 @@ class RetrainingTriggerSystem:
                 severity="HIGH" if degradation >= 0.25 else "MODERATE",
                 timestamp=datetime.now(),
                 metrics={
-                    'current_performance': current_performance,
-                    'baseline_performance': baseline_performance,
-                    'degradation_pct': degradation * 100,
-                    'metric_name': metric_name
-                }
+                    "current_performance": current_performance,
+                    "baseline_performance": baseline_performance,
+                    "degradation_pct": degradation * 100,
+                    "metric_name": metric_name,
+                },
             )
 
             logger.warning(
@@ -286,10 +299,7 @@ class RetrainingTriggerSystem:
         return None
 
     def check_scheduled_trigger(
-        self,
-        sensor_id: str,
-        model_type: str,
-        last_training_date: datetime
+        self, sensor_id: str, model_type: str, last_training_date: datetime
     ) -> Optional[RetrainingTrigger]:
         """
         Check if scheduled retraining is due
@@ -315,9 +325,9 @@ class RetrainingTriggerSystem:
                 severity="LOW",
                 timestamp=datetime.now(),
                 metrics={
-                    'days_since_training': days_since_training,
-                    'interval_days': self.policy.retraining_interval_days
-                }
+                    "days_since_training": days_since_training,
+                    "interval_days": self.policy.retraining_interval_days,
+                },
             )
 
             logger.info(
@@ -334,7 +344,7 @@ class RetrainingTriggerSystem:
         sensor_id: str,
         model_type: str,
         quality_score: float,
-        quality_issues: List[str]
+        quality_issues: List[str],
     ) -> Optional[RetrainingTrigger]:
         """
         Check if data quality issues warrant retraining
@@ -359,12 +369,10 @@ class RetrainingTriggerSystem:
                 severity="MODERATE",
                 timestamp=datetime.now(),
                 metrics={
-                    'quality_score': quality_score,
-                    'min_threshold': self.policy.min_data_quality_score
+                    "quality_score": quality_score,
+                    "min_threshold": self.policy.min_data_quality_score,
                 },
-                details={
-                    'issues': quality_issues
-                }
+                details={"issues": quality_issues},
             )
 
             logger.warning(
@@ -377,10 +385,7 @@ class RetrainingTriggerSystem:
         return None
 
     def should_retrain(
-        self,
-        sensor_id: str,
-        model_type: str,
-        trigger: RetrainingTrigger
+        self, sensor_id: str, model_type: str, trigger: RetrainingTrigger
     ) -> bool:
         """
         Determine if retraining should proceed based on cooldown period
@@ -411,9 +416,7 @@ class RetrainingTriggerSystem:
         return True
 
     def register_trigger(
-        self,
-        trigger: RetrainingTrigger,
-        execute_retraining: bool = False
+        self, trigger: RetrainingTrigger, execute_retraining: bool = False
     ):
         """
         Register a retraining trigger
@@ -441,7 +444,7 @@ class RetrainingTriggerSystem:
         self,
         sensor_id: Optional[str] = None,
         model_type: Optional[str] = None,
-        days_back: int = 30
+        days_back: int = 30,
     ) -> List[RetrainingTrigger]:
         """
         Get trigger history
@@ -456,10 +459,7 @@ class RetrainingTriggerSystem:
         """
         cutoff_date = datetime.now() - timedelta(days=days_back)
 
-        filtered = [
-            t for t in self.triggers
-            if t.timestamp >= cutoff_date
-        ]
+        filtered = [t for t in self.triggers if t.timestamp >= cutoff_date]
 
         if sensor_id:
             filtered = [t for t in filtered if t.sensor_id == sensor_id]
@@ -472,7 +472,7 @@ class RetrainingTriggerSystem:
     def get_trigger_summary(self) -> Dict[str, Any]:
         """Get summary of trigger history"""
         if not self.triggers:
-            return {'total_triggers': 0}
+            return {"total_triggers": 0}
 
         # Count by reason
         reason_counts = {}
@@ -484,11 +484,13 @@ class RetrainingTriggerSystem:
         triggered_count = sum(1 for t in self.triggers if t.triggered)
 
         return {
-            'total_triggers': len(self.triggers),
-            'triggered_count': triggered_count,
-            'not_triggered_count': len(self.triggers) - triggered_count,
-            'triggers_by_reason': reason_counts,
-            'last_trigger': self.triggers[-1].timestamp.isoformat() if self.triggers else None
+            "total_triggers": len(self.triggers),
+            "triggered_count": triggered_count,
+            "not_triggered_count": len(self.triggers) - triggered_count,
+            "triggers_by_reason": reason_counts,
+            "last_trigger": (
+                self.triggers[-1].timestamp.isoformat() if self.triggers else None
+            ),
         }
 
     def auto_promote_model(
@@ -496,7 +498,7 @@ class RetrainingTriggerSystem:
         model_name: str,
         new_version: str,
         new_performance: float,
-        production_performance: float
+        production_performance: float,
     ) -> bool:
         """
         Automatically promote model to production if improvement threshold met
@@ -513,7 +515,9 @@ class RetrainingTriggerSystem:
         if not self.policy.auto_promote_to_production or not self.mlflow_tracker:
             return False
 
-        improvement = (new_performance - production_performance) / (production_performance + 1e-10)
+        improvement = (new_performance - production_performance) / (
+            production_performance + 1e-10
+        )
 
         if improvement >= self.policy.min_improvement_for_promotion:
             try:
@@ -521,7 +525,7 @@ class RetrainingTriggerSystem:
                     model_name=model_name,
                     version=new_version,
                     stage=ModelStage.PRODUCTION,
-                    archive_existing=True
+                    archive_existing=True,
                 )
 
                 logger.info(

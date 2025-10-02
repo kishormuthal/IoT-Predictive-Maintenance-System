@@ -3,14 +3,18 @@ Unit tests for core forecast models
 Session 1: Foundation & Environment Setup
 """
 
-import pytest
-import numpy as np
-from datetime import datetime, timedelta
 from dataclasses import asdict
+from datetime import datetime, timedelta
+
+import numpy as np
+import pytest
 
 from src.core.models.forecast import (
-    ForecastPoint, ForecastResult, ForecastSummary,
-    ForecastConfidence, RiskLevel
+    ForecastConfidence,
+    ForecastPoint,
+    ForecastResult,
+    ForecastSummary,
+    RiskLevel,
 )
 
 # Test markers
@@ -58,7 +62,7 @@ class TestForecastPoint:
             confidence_lower=50.1,
             confidence_upper=60.3,
             confidence_level=ForecastConfidence.HIGH,
-            risk_level=RiskLevel.LOW
+            risk_level=RiskLevel.LOW,
         )
 
         assert point.timestamp == timestamp
@@ -76,7 +80,7 @@ class TestForecastPoint:
             confidence_lower=50.1,
             confidence_upper=60.3,
             confidence_level=ForecastConfidence.HIGH,
-            risk_level=RiskLevel.LOW
+            risk_level=RiskLevel.LOW,
         )
 
         # Confidence interval should be valid
@@ -93,7 +97,7 @@ class TestForecastPoint:
                 confidence_lower=50.1,
                 confidence_upper=60.3,
                 confidence_level=confidence,
-                risk_level=RiskLevel.LOW
+                risk_level=RiskLevel.LOW,
             )
             assert point.confidence_level == confidence
 
@@ -106,7 +110,7 @@ class TestForecastPoint:
                 confidence_lower=50.1,
                 confidence_upper=60.3,
                 confidence_level=ForecastConfidence.HIGH,
-                risk_level=risk
+                risk_level=risk,
             )
             assert point.risk_level == risk
 
@@ -128,19 +132,15 @@ class TestForecastResult:
 
         confidence_intervals = {
             "upper": forecast_values + 5,
-            "lower": forecast_values - 5
+            "lower": forecast_values - 5,
         }
 
-        accuracy_metrics = {
-            "mae": 2.5,
-            "rmse": 3.2,
-            "mape": 5.1
-        }
+        accuracy_metrics = {"mae": 2.5, "rmse": 3.2, "mape": 5.1}
 
         risk_assessment = {
             "overall_risk": "LOW",
             "risk_factors": ["minor_drift"],
-            "recommendations": ["continue_monitoring"]
+            "recommendations": ["continue_monitoring"],
         }
 
         result = ForecastResult(
@@ -154,7 +154,7 @@ class TestForecastResult:
             accuracy_metrics=accuracy_metrics,
             model_version="transformer_v1.0",
             generated_at=now,
-            risk_assessment=risk_assessment
+            risk_assessment=risk_assessment,
         )
 
         assert result.sensor_id == "SMAP-ATT-001"
@@ -182,11 +182,14 @@ class TestForecastResult:
             historical_values=historical_values,
             forecast_timestamps=forecast_timestamps,
             forecast_values=forecast_values,
-            confidence_intervals={"upper": forecast_values + 2, "lower": forecast_values - 2},
+            confidence_intervals={
+                "upper": forecast_values + 2,
+                "lower": forecast_values - 2,
+            },
             accuracy_metrics={"mae": 1.0},
             model_version="test_v1.0",
             generated_at=now,
-            risk_assessment={}
+            risk_assessment={},
         )
 
         # Check data consistency
@@ -201,7 +204,7 @@ class TestForecastResult:
 
         confidence_intervals = {
             "upper": forecast_values + 3,
-            "lower": forecast_values - 3
+            "lower": forecast_values - 3,
         }
 
         result = ForecastResult(
@@ -215,7 +218,7 @@ class TestForecastResult:
             accuracy_metrics={},
             model_version="test_v1.0",
             generated_at=now,
-            risk_assessment={}
+            risk_assessment={},
         )
 
         # Validate confidence intervals
@@ -239,28 +242,28 @@ class TestForecastSummary:
             forecast = ForecastResult(
                 sensor_id=sensor_id,
                 forecast_horizon_hours=12,
-                historical_timestamps=[now - timedelta(hours=j) for j in range(24, 0, -1)],
+                historical_timestamps=[
+                    now - timedelta(hours=j) for j in range(24, 0, -1)
+                ],
                 historical_values=np.random.normal(50, 10, 24),
                 forecast_timestamps=[now + timedelta(hours=j) for j in range(1, 13)],
                 forecast_values=np.random.normal(55, 8, 12),
-                confidence_intervals={"upper": np.ones(12) * 60, "lower": np.ones(12) * 50},
+                confidence_intervals={
+                    "upper": np.ones(12) * 60,
+                    "lower": np.ones(12) * 50,
+                },
                 accuracy_metrics={"mae": 2.0 + i, "rmse": 3.0 + i},
                 model_version="transformer_v1.0",
                 generated_at=now,
-                risk_assessment={"overall_risk": "LOW"}
+                risk_assessment={"overall_risk": "LOW"},
             )
             recent_forecasts.append(forecast)
 
-        risk_distribution = {
-            "LOW": 8,
-            "MEDIUM": 3,
-            "HIGH": 1,
-            "CRITICAL": 0
-        }
+        risk_distribution = {"LOW": 8, "MEDIUM": 3, "HIGH": 1, "CRITICAL": 0}
 
         model_performance = {
             "transformer_v1.0": {"mae": 2.1, "rmse": 3.1, "accuracy": 0.95},
-            "lstm_v1.0": {"mae": 2.8, "rmse": 3.8, "accuracy": 0.92}
+            "lstm_v1.0": {"mae": 2.8, "rmse": 3.8, "accuracy": 0.92},
         }
 
         summary = ForecastSummary(
@@ -269,7 +272,7 @@ class TestForecastSummary:
             risk_distribution=risk_distribution,
             recent_forecasts=recent_forecasts,
             model_performance=model_performance,
-            generated_at=now
+            generated_at=now,
         )
 
         assert summary.total_sensors_forecasted == 12
@@ -281,12 +284,7 @@ class TestForecastSummary:
 
     def test_forecast_summary_risk_distribution_validation(self):
         """Test that risk distribution contains correct keys"""
-        risk_distribution = {
-            "LOW": 8,
-            "MEDIUM": 3,
-            "HIGH": 1,
-            "CRITICAL": 0
-        }
+        risk_distribution = {"LOW": 8, "MEDIUM": 3, "HIGH": 1, "CRITICAL": 0}
 
         summary = ForecastSummary(
             total_sensors_forecasted=12,
@@ -294,7 +292,7 @@ class TestForecastSummary:
             risk_distribution=risk_distribution,
             recent_forecasts=[],
             model_performance={},
-            generated_at=datetime.now()
+            generated_at=datetime.now(),
         )
 
         expected_keys = {"LOW", "MEDIUM", "HIGH", "CRITICAL"}
@@ -303,8 +301,18 @@ class TestForecastSummary:
     def test_forecast_summary_model_performance_metrics(self):
         """Test model performance metrics in forecast summary"""
         model_performance = {
-            "transformer_v1.0": {"mae": 2.1, "rmse": 3.1, "accuracy": 0.95, "training_time": 120.5},
-            "lstm_v1.0": {"mae": 2.8, "rmse": 3.8, "accuracy": 0.92, "training_time": 85.2}
+            "transformer_v1.0": {
+                "mae": 2.1,
+                "rmse": 3.1,
+                "accuracy": 0.95,
+                "training_time": 120.5,
+            },
+            "lstm_v1.0": {
+                "mae": 2.8,
+                "rmse": 3.8,
+                "accuracy": 0.92,
+                "training_time": 85.2,
+            },
         }
 
         summary = ForecastSummary(
@@ -313,7 +321,7 @@ class TestForecastSummary:
             risk_distribution={"LOW": 12, "MEDIUM": 0, "HIGH": 0, "CRITICAL": 0},
             recent_forecasts=[],
             model_performance=model_performance,
-            generated_at=datetime.now()
+            generated_at=datetime.now(),
         )
 
         # Validate model performance metrics
@@ -346,7 +354,7 @@ class TestForecastModelIntegration:
                 confidence_lower=value - 2,
                 confidence_upper=value + 2,
                 confidence_level=ForecastConfidence.MEDIUM,
-                risk_level=RiskLevel.LOW if value < 55 else RiskLevel.MEDIUM
+                risk_level=RiskLevel.LOW if value < 55 else RiskLevel.MEDIUM,
             )
 
             forecast_points.append(point)
@@ -363,12 +371,12 @@ class TestForecastModelIntegration:
             forecast_values=np.array(forecast_values),
             confidence_intervals={
                 "upper": np.array([p.confidence_upper for p in forecast_points]),
-                "lower": np.array([p.confidence_lower for p in forecast_points])
+                "lower": np.array([p.confidence_lower for p in forecast_points]),
             },
             accuracy_metrics={"mae": 1.5, "rmse": 2.1},
             model_version="transformer_v1.0",
             generated_at=now,
-            risk_assessment={"overall_risk": "LOW"}
+            risk_assessment={"overall_risk": "LOW"},
         )
 
         assert len(result.forecast_timestamps) == len(forecast_points)
@@ -383,21 +391,23 @@ class TestForecastModelIntegration:
             result = ForecastResult(
                 sensor_id=sensor_id,
                 forecast_horizon_hours=24,
-                historical_timestamps=[now - timedelta(hours=i) for i in range(48, 0, -1)],
+                historical_timestamps=[
+                    now - timedelta(hours=i) for i in range(48, 0, -1)
+                ],
                 historical_values=np.random.normal(50, 10, 48),
                 forecast_timestamps=[now + timedelta(hours=i) for i in range(1, 25)],
                 forecast_values=np.random.normal(52, 8, 24),
                 confidence_intervals={
                     "upper": np.random.normal(57, 5, 24),
-                    "lower": np.random.normal(47, 5, 24)
+                    "lower": np.random.normal(47, 5, 24),
                 },
                 accuracy_metrics={"mae": 2.0, "rmse": 3.0, "mape": 4.0},
                 model_version="nasa_transformer_v1.0",
                 generated_at=now,
                 risk_assessment={
                     "mission": "SMAP" if "SMAP" in sensor_id else "MSL",
-                    "overall_risk": "LOW"
-                }
+                    "overall_risk": "LOW",
+                },
             )
 
             assert result.sensor_id == sensor_id
@@ -414,7 +424,7 @@ class TestForecastModelIntegration:
             "mae": 1.5,  # Mean Absolute Error
             "rmse": 2.1,  # Root Mean Square Error
             "mape": 3.2,  # Mean Absolute Percentage Error
-            "r2": 0.95   # R-squared
+            "r2": 0.95,  # R-squared
         }
 
         result = ForecastResult(
@@ -428,7 +438,7 @@ class TestForecastModelIntegration:
             accuracy_metrics=accuracy_metrics,
             model_version="transformer_v1.0",
             generated_at=now,
-            risk_assessment={}
+            risk_assessment={},
         )
 
         # Validate accuracy metrics
@@ -447,7 +457,7 @@ class TestForecastModelIntegration:
             confidence_lower=49.5,
             confidence_upper=50.5,
             confidence_level=ForecastConfidence.HIGH,
-            risk_level=RiskLevel.LOW
+            risk_level=RiskLevel.LOW,
         )
 
         # Low confidence might correlate with higher risk
@@ -457,12 +467,21 @@ class TestForecastModelIntegration:
             confidence_lower=45.0,
             confidence_upper=55.0,
             confidence_level=ForecastConfidence.LOW,
-            risk_level=RiskLevel.HIGH
+            risk_level=RiskLevel.HIGH,
         )
 
         # Validate confidence intervals width
-        high_conf_width = high_confidence_point.confidence_upper - high_confidence_point.confidence_lower
-        low_conf_width = low_confidence_point.confidence_upper - low_confidence_point.confidence_lower
+        high_conf_width = (
+            high_confidence_point.confidence_upper
+            - high_confidence_point.confidence_lower
+        )
+        low_conf_width = (
+            low_confidence_point.confidence_upper
+            - low_confidence_point.confidence_lower
+        )
 
         assert high_conf_width < low_conf_width  # High confidence = narrower interval
-        assert high_confidence_point.confidence_level != low_confidence_point.confidence_level
+        assert (
+            high_confidence_point.confidence_level
+            != low_confidence_point.confidence_level
+        )

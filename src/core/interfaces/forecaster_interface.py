@@ -3,16 +3,19 @@ Abstract interface for forecasters
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple, Any, Optional
-import numpy as np
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
 
 
 class ForecasterInterface(ABC):
     """Abstract base class for all forecasters"""
 
     @abstractmethod
-    def generate_forecast(self, sensor_id: str, data: np.ndarray, horizon_hours: int = 24) -> Dict[str, Any]:
+    def generate_forecast(
+        self, sensor_id: str, data: np.ndarray, horizon_hours: int = 24
+    ) -> Dict[str, Any]:
         """
         Generate forecast for sensor data
 

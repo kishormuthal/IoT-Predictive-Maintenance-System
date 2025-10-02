@@ -33,8 +33,9 @@ class TestImports:
 
     def test_import_integration_service(self):
         """Test dashboard integration service import"""
-        from src.presentation.dashboard.services.dashboard_integration import \
-            DashboardIntegrationService
+        from src.presentation.dashboard.services.dashboard_integration import (
+            DashboardIntegrationService,
+        )
 
         assert DashboardIntegrationService is not None
 
@@ -111,8 +112,9 @@ class TestIntegrationService:
 
     def test_integration_service_initialization(self):
         """Test integration service initializes without errors"""
-        from src.presentation.dashboard.services.dashboard_integration import \
-            DashboardIntegrationService
+        from src.presentation.dashboard.services.dashboard_integration import (
+            DashboardIntegrationService,
+        )
 
         service = DashboardIntegrationService()
         assert service is not None
@@ -120,8 +122,9 @@ class TestIntegrationService:
     def test_get_sensor_data(self):
         """Test get_sensor_data method"""
         from config.equipment_config import get_equipment_list
-        from src.presentation.dashboard.services.dashboard_integration import \
-            DashboardIntegrationService
+        from src.presentation.dashboard.services.dashboard_integration import (
+            DashboardIntegrationService,
+        )
 
         service = DashboardIntegrationService()
         equipment_list = get_equipment_list()
@@ -169,8 +172,7 @@ class TestServices:
     def test_anomaly_service_init(self):
         """Test anomaly service can be initialized"""
         try:
-            from src.core.services.anomaly_service import \
-                AnomalyDetectionService
+            from src.core.services.anomaly_service import AnomalyDetectionService
 
             service = AnomalyDetectionService()
             assert service is not None
@@ -182,8 +184,7 @@ class TestServices:
     def test_forecasting_service_init(self):
         """Test forecasting service can be initialized"""
         try:
-            from src.core.services.forecasting_service import \
-                ForecastingService
+            from src.core.services.forecasting_service import ForecastingService
 
             service = ForecastingService()
             assert service is not None
@@ -198,22 +199,23 @@ class TestAdvancedAlgorithms:
 
     def test_adaptive_thresholding_import(self):
         """Test adaptive thresholding module imports"""
-        from src.core.algorithms.adaptive_thresholding import \
-            AdaptiveThresholdCalculator
+        from src.core.algorithms.adaptive_thresholding import (
+            AdaptiveThresholdCalculator,
+        )
 
         assert AdaptiveThresholdCalculator is not None
 
     def test_probabilistic_scoring_import(self):
         """Test probabilistic scoring module imports"""
-        from src.core.algorithms.probabilistic_scoring import \
-            ProbabilisticAnomalyScorer
+        from src.core.algorithms.probabilistic_scoring import ProbabilisticAnomalyScorer
 
         assert ProbabilisticAnomalyScorer is not None
 
     def test_adaptive_threshold_calculation(self):
         """Test basic threshold calculation"""
-        from src.core.algorithms.adaptive_thresholding import \
-            AdaptiveThresholdCalculator
+        from src.core.algorithms.adaptive_thresholding import (
+            AdaptiveThresholdCalculator,
+        )
 
         # Generate test data
         data = np.random.normal(100, 10, 1000)
@@ -245,8 +247,7 @@ class TestDashboardLayouts:
 
     def test_import_anomaly_monitor_layout(self):
         """Test anomaly monitor layout imports"""
-        from src.presentation.dashboard.layouts.anomaly_monitor import \
-            create_layout
+        from src.presentation.dashboard.layouts.anomaly_monitor import create_layout
 
         assert create_layout is not None
 

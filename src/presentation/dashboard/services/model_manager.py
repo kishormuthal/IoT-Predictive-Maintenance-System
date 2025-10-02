@@ -3,13 +3,14 @@ Pretrained Model Manager
 Manages access to trained Telemanom and Transformer models
 """
 
-import logging
 import glob
+import logging
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
+
 import numpy as np
 import pandas as pd
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -32,9 +33,9 @@ class PretrainedModelManager:
 
         # Model performance tracking
         self.inference_stats = {
-            'total_inferences': 0,
-            'avg_inference_time': 0.0,
-            'model_accuracies': {}
+            "total_inferences": 0,
+            "avg_inference_time": 0.0,
+            "model_accuracies": {},
         }
 
         # Discover available models
@@ -49,11 +50,11 @@ class PretrainedModelManager:
                 for pkl_file in pkl_files:
                     model_name = Path(pkl_file).stem
                     self.loaded_models[model_name] = {
-                        'type': 'telemanom',
-                        'path': pkl_file,
-                        'h5_path': pkl_file.replace('.pkl', '_model.h5'),
-                        'is_simulated': False,
-                        'loaded': False
+                        "type": "telemanom",
+                        "path": pkl_file,
+                        "h5_path": pkl_file.replace(".pkl", "_model.h5"),
+                        "is_simulated": False,
+                        "loaded": False,
                     }
 
             # Find Transformer models
@@ -63,10 +64,10 @@ class PretrainedModelManager:
                     if Path(model_dir).is_dir():
                         model_name = Path(model_dir).name
                         self.loaded_models[f"transformer_{model_name}"] = {
-                            'type': 'transformer',
-                            'path': model_dir,
-                            'is_simulated': False,
-                            'loaded': False
+                            "type": "transformer",
+                            "path": model_dir,
+                            "is_simulated": False,
+                            "loaded": False,
                         }
 
             logger.info(f"Discovered {len(self.loaded_models)} pretrained models")
@@ -84,19 +85,25 @@ class PretrainedModelManager:
 
     def get_model_performance_summary(self) -> Dict[str, Any]:
         """Get summary of model performance metrics"""
-        telemanom_count = sum(1 for m in self.loaded_models.values() if m['type'] == 'telemanom')
-        transformer_count = sum(1 for m in self.loaded_models.values() if m['type'] == 'transformer')
+        telemanom_count = sum(
+            1 for m in self.loaded_models.values() if m["type"] == "telemanom"
+        )
+        transformer_count = sum(
+            1 for m in self.loaded_models.values() if m["type"] == "transformer"
+        )
 
         return {
-            'total_models': len(self.loaded_models),
-            'telemanom_models': telemanom_count,
-            'transformer_models': transformer_count,
-            'average_accuracy': 0.92,  # Default accuracy
-            'total_inferences': self.inference_stats['total_inferences'],
-            'avg_inference_time': self.inference_stats.get('avg_inference_time', 0.05)
+            "total_models": len(self.loaded_models),
+            "telemanom_models": telemanom_count,
+            "transformer_models": transformer_count,
+            "average_accuracy": 0.92,  # Default accuracy
+            "total_inferences": self.inference_stats["total_inferences"],
+            "avg_inference_time": self.inference_stats.get("avg_inference_time", 0.05),
         }
 
-    def predict_anomaly(self, equipment_id: str, sensor_data: np.ndarray) -> Dict[str, Any]:
+    def predict_anomaly(
+        self, equipment_id: str, sensor_data: np.ndarray
+    ) -> Dict[str, Any]:
         """Predict anomaly for given sensor data
 
         Args:
@@ -123,9 +130,11 @@ class PretrainedModelManager:
 
         except Exception as e:
             logger.error(f"Error in anomaly prediction: {e}")
-            return {'error': str(e), 'anomaly_score': 0.0}
+            return {"error": str(e), "anomaly_score": 0.0}
 
-    def _simulate_anomaly_prediction(self, equipment_id: str, sensor_data: np.ndarray) -> Dict[str, Any]:
+    def _simulate_anomaly_prediction(
+        self, equipment_id: str, sensor_data: np.ndarray
+    ) -> Dict[str, Any]:
         """Simulate anomaly prediction for demonstration"""
         # Generate realistic-looking anomaly scores
         base_score = 0.1 + np.random.random() * 0.3
@@ -135,16 +144,18 @@ class PretrainedModelManager:
         is_anomaly = base_score > 0.6
 
         return {
-            'equipment_id': equipment_id,
-            'anomaly_score': float(base_score),
-            'is_anomaly': is_anomaly,
-            'confidence': float(0.85 + np.random.random() * 0.1),
-            'timestamp': datetime.now().isoformat(),
-            'model_type': 'telemanom',
-            'simulated': True
+            "equipment_id": equipment_id,
+            "anomaly_score": float(base_score),
+            "is_anomaly": is_anomaly,
+            "confidence": float(0.85 + np.random.random() * 0.1),
+            "timestamp": datetime.now().isoformat(),
+            "model_type": "telemanom",
+            "simulated": True,
         }
 
-    def get_real_time_predictions(self, time_window_minutes: int = 60) -> List[Dict[str, Any]]:
+    def get_real_time_predictions(
+        self, time_window_minutes: int = 60
+    ) -> List[Dict[str, Any]]:
         """Get recent real-time predictions
 
         Args:
@@ -157,6 +168,7 @@ class PretrainedModelManager:
         predictions = []
         try:
             from config.equipment_config import get_equipment_list
+
             equipment_list = get_equipment_list()
 
             for equipment in equipment_list[:12]:  # First 12 sensors
@@ -169,7 +181,9 @@ class PretrainedModelManager:
 
         return predictions
 
-    def simulate_real_time_data(self, equipment_id: str, num_points: int = 100) -> np.ndarray:
+    def simulate_real_time_data(
+        self, equipment_id: str, num_points: int = 100
+    ) -> np.ndarray:
         """Simulate real-time sensor data
 
         Args:
@@ -180,7 +194,7 @@ class PretrainedModelManager:
             Simulated sensor data
         """
         # Generate realistic sensor data with some anomalies
-        base_signal = 50 + 10 * np.sin(np.linspace(0, 4*np.pi, num_points))
+        base_signal = 50 + 10 * np.sin(np.linspace(0, 4 * np.pi, num_points))
         noise = np.random.randn(num_points) * 2
 
         # Add occasional spikes (anomalies)

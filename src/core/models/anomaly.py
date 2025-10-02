@@ -3,10 +3,11 @@ Data models for anomaly detection
 """
 
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
 from datetime import datetime
-import numpy as np
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+import numpy as np
 
 
 class AnomalySeverity(Enum):
@@ -25,6 +26,7 @@ class AnomalyType(Enum):
 @dataclass
 class AnomalyDetection:
     """Single anomaly detection result"""
+
     sensor_id: str
     timestamp: datetime
     value: float
@@ -43,6 +45,7 @@ class AnomalyDetection:
 @dataclass
 class AnomalyDetectionResult:
     """Result of anomaly detection for a sensor"""
+
     sensor_id: str
     data_processed: int
     anomalies_detected: List[AnomalyDetection]
@@ -55,6 +58,7 @@ class AnomalyDetectionResult:
 @dataclass
 class AnomalySummary:
     """Summary of anomaly detection across all sensors"""
+
     total_anomalies: int
     severity_breakdown: Dict[str, int]
     recent_anomalies: List[AnomalyDetection]

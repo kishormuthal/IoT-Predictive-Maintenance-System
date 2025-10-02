@@ -4,14 +4,15 @@ Smart Incremental NASA Sensor Training
 Only trains sensors that don't already have trained models
 """
 
+import json
+import logging
+import os
+import sys
+from datetime import datetime
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
-import sys
-import logging
-from datetime import datetime
-import json
-import os
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parent))
@@ -19,8 +20,11 @@ sys.path.append(str(Path(__file__).parent))
 from src.anomaly_detection.nasa_telemanom import NASATelemanom, Telemanom_Config
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
+
 
 def check_existing_models(models_dir: Path):
     """Check which sensors already have trained models"""
@@ -34,8 +38,11 @@ def check_existing_models(models_dir: Path):
         if sensor_id.startswith(("SMAP_", "MSL_")) and len(sensor_id) >= 6:
             existing_models.add(sensor_id)
 
-    logger.info(f"Found {len(existing_models)} existing models: {sorted(existing_models)}")
+    logger.info(
+        f"Found {len(existing_models)} existing models: {sorted(existing_models)}"
+    )
     return existing_models
+
 
 def get_missing_sensors(existing_models):
     """Determine which sensors still need training"""
@@ -54,30 +61,36 @@ def get_missing_sensors(existing_models):
 
     return sorted(smap_missing), sorted(msl_missing)
 
+
 def load_nasa_raw_data():
     """Load NASA raw datasets directly"""
     try:
         # Load SMAP data
-        smap_train = np.load('data/raw/smap/train.npy')
-        smap_test = np.load('data/raw/smap/test.npy')
+        smap_train = np.load("data/raw/smap/train.npy")
+        smap_test = np.load("data/raw/smap/test.npy")
 
         # Load MSL data
-        msl_train = np.load('data/raw/msl/train.npy')
-        msl_test = np.load('data/raw/msl/test.npy')
+        msl_train = np.load("data/raw/msl/train.npy")
+        msl_test = np.load("data/raw/msl/test.npy")
 
-        logger.info(f"Loaded NASA data - SMAP: {smap_train.shape}, MSL: {msl_train.shape}")
+        logger.info(
+            f"Loaded NASA data - SMAP: {smap_train.shape}, MSL: {msl_train.shape}"
+        )
 
         return {
-            'smap_train': smap_train,
-            'smap_test': smap_test,
-            'msl_train': msl_train,
-            'msl_test': msl_test
+            "smap_train": smap_train,
+            "smap_test": smap_test,
+            "msl_train": msl_train,
+            "msl_test": msl_test,
         }
     except Exception as e:
         logger.error(f"Failed to load NASA data: {e}")
         return None
 
-def train_sensor_model(sensor_id: str, data: np.ndarray, models_dir: Path, quick_mode=True):
+
+def train_sensor_model(
+    sensor_id: str, data: np.ndarray, models_dir: Path, quick_mode=True
+):
     """Train a single sensor model with NASA Telemanom"""
     try:
         # Ensure we have enough data
@@ -95,7 +108,7 @@ def train_sensor_model(sensor_id: str, data: np.ndarray, models_dir: Path, quick
             dropout_rate=0.2,
             prediction_length=10,
             sequence_length=100,
-            smoothing_window=30
+            smoothing_window=30,
         )
 
         # Initialize and train model
@@ -106,23 +119,22 @@ def train_sensor_model(sensor_id: str, data: np.ndarray, models_dir: Path, quick
         model_path = models_dir / f"{sensor_id}.pkl"
         model.save_model(str(model_path))
 
-        logger.info(f"Successfully trained {sensor_id} - threshold: {model.error_threshold:.4f}")
+        logger.info(
+            f"Successfully trained {sensor_id} - threshold: {model.error_threshold:.4f}"
+        )
 
         return {
-            'sensor_id': sensor_id,
-            'model_path': str(model_path),
-            'threshold': model.error_threshold,
-            'data_samples': len(data),
-            'status': 'success'
+            "sensor_id": sensor_id,
+            "model_path": str(model_path),
+            "threshold": model.error_threshold,
+            "data_samples": len(data),
+            "status": "success",
         }
 
     except Exception as e:
         logger.error(f"Failed to train {sensor_id}: {e}")
-        return {
-            'sensor_id': sensor_id,
-            'status': 'failed',
-            'error': str(e)
-        }
+        return {"sensor_id": sensor_id, "status": "failed", "error": str(e)}
+
 
 def train_missing_sensors():
     """Train only the sensors that don't already have models"""
@@ -157,11 +169,11 @@ def train_missing_sensors():
     # Train missing SMAP sensors
     if smap_missing:
         logger.info(f"Training {len(smap_missing)} missing SMAP sensors")
-        smap_data = nasa_data['smap_train']
+        smap_data = nasa_data["smap_train"]
 
         for sensor_id in smap_missing:
             # Extract sensor index (e.g., "SMAP_20" -> 20)
-            sensor_idx = int(sensor_id.split('_')[1])
+            sensor_idx = int(sensor_id.split("_")[1])
 
             if sensor_idx >= smap_data.shape[1]:
                 logger.warning(f"SMAP sensor {sensor_idx} not available in data")
@@ -169,61 +181,77 @@ def train_missing_sensors():
 
             sensor_data = smap_data[:, sensor_idx]
 
-            result = train_sensor_model(sensor_id, sensor_data, models_dir, quick_mode=True)
+            result = train_sensor_model(
+                sensor_id, sensor_data, models_dir, quick_mode=True
+            )
             results.append(result)
 
-            if result and result['status'] == 'success':
+            if result and result["status"] == "success":
                 successful += 1
             else:
                 failed += 1
 
-            logger.info(f"SMAP Progress: {successful + failed}/{len(smap_missing)} completed")
+            logger.info(
+                f"SMAP Progress: {successful + failed}/{len(smap_missing)} completed"
+            )
 
     # Train missing MSL sensors
     if msl_missing:
         logger.info(f"Training {len(msl_missing)} missing MSL sensors")
-        msl_data = nasa_data['msl_train']
+        msl_data = nasa_data["msl_train"]
 
         for sensor_id in msl_missing:
             # Extract sensor index (e.g., "MSL_25" -> 25, map to MSL column 0)
-            sensor_idx = int(sensor_id.split('_')[1]) - 25  # MSL_25 maps to column 0
+            sensor_idx = int(sensor_id.split("_")[1]) - 25  # MSL_25 maps to column 0
 
             if sensor_idx >= msl_data.shape[1] or sensor_idx < 0:
-                logger.warning(f"MSL sensor {sensor_id} (column {sensor_idx}) not available in data")
+                logger.warning(
+                    f"MSL sensor {sensor_id} (column {sensor_idx}) not available in data"
+                )
                 continue
 
             sensor_data = msl_data[:, sensor_idx]
 
-            result = train_sensor_model(sensor_id, sensor_data, models_dir, quick_mode=True)
+            result = train_sensor_model(
+                sensor_id, sensor_data, models_dir, quick_mode=True
+            )
             results.append(result)
 
-            if result and result['status'] == 'success':
+            if result and result["status"] == "success":
                 successful += 1
             else:
                 failed += 1
 
-            logger.info(f"MSL Progress: {successful + failed - len(smap_missing)}/{len(msl_missing)} completed")
+            logger.info(
+                f"MSL Progress: {successful + failed - len(smap_missing)}/{len(msl_missing)} completed"
+            )
 
     # Save training summary
     summary = {
-        'timestamp': datetime.now().isoformat(),
-        'total_missing': total_missing,
-        'smap_missing': len(smap_missing),
-        'msl_missing': len(msl_missing),
-        'successful': successful,
-        'failed': failed,
-        'success_rate': successful / total_missing * 100 if total_missing > 0 else 100,
-        'results': results
+        "timestamp": datetime.now().isoformat(),
+        "total_missing": total_missing,
+        "smap_missing": len(smap_missing),
+        "msl_missing": len(msl_missing),
+        "successful": successful,
+        "failed": failed,
+        "success_rate": successful / total_missing * 100 if total_missing > 0 else 100,
+        "results": results,
     }
 
-    summary_path = models_dir / f"incremental_training_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    with open(summary_path, 'w') as f:
+    summary_path = (
+        models_dir
+        / f"incremental_training_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    )
+    with open(summary_path, "w") as f:
         json.dump(summary, f, indent=2)
 
-    logger.info(f"Incremental training completed: {successful}/{total_missing} successful ({successful/total_missing*100:.1f}%)")
+    logger.info(
+        f"Incremental training completed: {successful}/{total_missing} successful ({successful/total_missing*100:.1f}%)"
+    )
     logger.info(f"Summary saved to: {summary_path}")
 
     return summary
+
 
 if __name__ == "__main__":
     print("=== NASA Incremental Sensor Training ===")

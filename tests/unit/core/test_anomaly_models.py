@@ -3,14 +3,18 @@ Unit tests for core anomaly detection models
 Session 1: Foundation & Environment Setup
 """
 
-import pytest
-import numpy as np
-from datetime import datetime, timedelta
 from dataclasses import asdict
+from datetime import datetime, timedelta
+
+import numpy as np
+import pytest
 
 from src.core.models.anomaly import (
-    AnomalyDetection, AnomalyDetectionResult, AnomalySummary,
-    AnomalySeverity, AnomalyType
+    AnomalyDetection,
+    AnomalyDetectionResult,
+    AnomalySeverity,
+    AnomalySummary,
+    AnomalyType,
 )
 
 # Test markers
@@ -58,7 +62,7 @@ class TestAnomalyDetection:
             value=95.5,
             score=0.85,
             severity=AnomalySeverity.HIGH,
-            anomaly_type=AnomalyType.POINT
+            anomaly_type=AnomalyType.POINT,
         )
 
         assert anomaly.sensor_id == "SMAP-ATT-001"
@@ -80,7 +84,7 @@ class TestAnomalyDetection:
             score=0.85,
             severity=AnomalySeverity.HIGH,
             anomaly_type=AnomalyType.POINT,
-            confidence=0.92
+            confidence=0.92,
         )
 
         assert anomaly.confidence == 0.92
@@ -95,7 +99,7 @@ class TestAnomalyDetection:
             score=0.85,
             severity=AnomalySeverity.HIGH,
             anomaly_type=AnomalyType.POINT,
-            description=description
+            description=description,
         )
 
         assert anomaly.description == description
@@ -110,7 +114,7 @@ class TestAnomalyDetection:
             score=0.85,
             severity=AnomalySeverity.HIGH,
             anomaly_type=AnomalyType.POINT,
-            metadata=metadata
+            metadata=metadata,
         )
 
         assert anomaly.metadata == metadata
@@ -124,7 +128,7 @@ class TestAnomalyDetection:
             score=0.85,
             severity=AnomalySeverity.HIGH,
             anomaly_type=AnomalyType.POINT,
-            metadata=None
+            metadata=None,
         )
 
         assert anomaly.metadata == {}
@@ -138,7 +142,7 @@ class TestAnomalyDetection:
                 value=95.5,
                 score=score,
                 severity=AnomalySeverity.HIGH,
-                anomaly_type=AnomalyType.POINT
+                anomaly_type=AnomalyType.POINT,
             )
             assert anomaly.score == score
 
@@ -151,7 +155,7 @@ class TestAnomalyDetection:
                 value=95.5,
                 score=0.85,
                 severity=severity,
-                anomaly_type=AnomalyType.POINT
+                anomaly_type=AnomalyType.POINT,
             )
             assert anomaly.severity == severity
 
@@ -164,7 +168,7 @@ class TestAnomalyDetection:
                 value=95.5,
                 score=0.85,
                 severity=AnomalySeverity.HIGH,
-                anomaly_type=anomaly_type
+                anomaly_type=anomaly_type,
             )
             assert anomaly.anomaly_type == anomaly_type
 
@@ -182,15 +186,11 @@ class TestAnomalyDetectionResult:
                 value=95.5,
                 score=0.85,
                 severity=AnomalySeverity.HIGH,
-                anomaly_type=AnomalyType.POINT
+                anomaly_type=AnomalyType.POINT,
             )
         ]
 
-        statistics = {
-            "total_points": 1000,
-            "anomaly_rate": 0.001,
-            "avg_score": 0.85
-        }
+        statistics = {"total_points": 1000, "anomaly_rate": 0.001, "avg_score": 0.85}
 
         result = AnomalyDetectionResult(
             sensor_id="SMAP-ATT-001",
@@ -199,7 +199,7 @@ class TestAnomalyDetectionResult:
             processing_time=2.5,
             model_version="telemanom_v1.0",
             detection_timestamp=timestamp,
-            statistics=statistics
+            statistics=statistics,
         )
 
         assert result.sensor_id == "SMAP-ATT-001"
@@ -218,7 +218,7 @@ class TestAnomalyDetectionResult:
             processing_time=1.2,
             model_version="telemanom_v1.0",
             detection_timestamp=datetime.now(),
-            statistics={"total_points": 1000}
+            statistics={"total_points": 1000},
         )
 
         assert len(result.anomalies_detected) == 0
@@ -236,7 +236,7 @@ class TestAnomalyDetectionResult:
                 value=90.0 + i,
                 score=0.8 + i * 0.02,
                 severity=AnomalySeverity.HIGH,
-                anomaly_type=AnomalyType.POINT
+                anomaly_type=AnomalyType.POINT,
             )
             anomalies.append(anomaly)
 
@@ -247,7 +247,7 @@ class TestAnomalyDetectionResult:
             processing_time=3.0,
             model_version="telemanom_v1.0",
             detection_timestamp=timestamp,
-            statistics={"total_points": 1000, "anomaly_count": 5}
+            statistics={"total_points": 1000, "anomaly_count": 5},
         )
 
         assert len(result.anomalies_detected) == 5
@@ -268,7 +268,7 @@ class TestAnomalySummary:
                 value=95.5,
                 score=0.85,
                 severity=AnomalySeverity.HIGH,
-                anomaly_type=AnomalyType.POINT
+                anomaly_type=AnomalyType.POINT,
             ),
             AnomalyDetection(
                 sensor_id="MSL-COM-001",
@@ -276,20 +276,15 @@ class TestAnomalySummary:
                 value=88.0,
                 score=0.75,
                 severity=AnomalySeverity.MEDIUM,
-                anomaly_type=AnomalyType.CONTEXTUAL
-            )
+                anomaly_type=AnomalyType.CONTEXTUAL,
+            ),
         ]
 
-        severity_breakdown = {
-            "LOW": 2,
-            "MEDIUM": 3,
-            "HIGH": 4,
-            "CRITICAL": 1
-        }
+        severity_breakdown = {"LOW": 2, "MEDIUM": 3, "HIGH": 4, "CRITICAL": 1}
 
         sensor_stats = {
             "SMAP-ATT-001": {"anomaly_count": 5, "avg_score": 0.82},
-            "MSL-COM-001": {"anomaly_count": 3, "avg_score": 0.76}
+            "MSL-COM-001": {"anomaly_count": 3, "avg_score": 0.76},
         }
 
         summary = AnomalySummary(
@@ -297,7 +292,7 @@ class TestAnomalySummary:
             severity_breakdown=severity_breakdown,
             recent_anomalies=recent_anomalies,
             sensor_stats=sensor_stats,
-            generated_at=timestamp
+            generated_at=timestamp,
         )
 
         assert summary.total_anomalies == 10
@@ -308,19 +303,14 @@ class TestAnomalySummary:
 
     def test_anomaly_summary_severity_breakdown_validation(self):
         """Test that severity breakdown contains correct keys"""
-        severity_breakdown = {
-            "LOW": 2,
-            "MEDIUM": 3,
-            "HIGH": 4,
-            "CRITICAL": 1
-        }
+        severity_breakdown = {"LOW": 2, "MEDIUM": 3, "HIGH": 4, "CRITICAL": 1}
 
         summary = AnomalySummary(
             total_anomalies=10,
             severity_breakdown=severity_breakdown,
             recent_anomalies=[],
             sensor_stats={},
-            generated_at=datetime.now()
+            generated_at=datetime.now(),
         )
 
         expected_keys = {"LOW", "MEDIUM", "HIGH", "CRITICAL"}
@@ -333,7 +323,7 @@ class TestAnomalySummary:
             severity_breakdown={"LOW": 0, "MEDIUM": 0, "HIGH": 0, "CRITICAL": 0},
             recent_anomalies=[],
             sensor_stats={},
-            generated_at=datetime.now()
+            generated_at=datetime.now(),
         )
 
         assert summary.total_anomalies == 0
@@ -361,23 +351,27 @@ class TestAnomalyModelIntegration:
                     timestamp=timestamp + timedelta(minutes=j),
                     value=90.0 + j,
                     score=0.8 + j * 0.05,
-                    severity=AnomalySeverity.HIGH if j % 2 == 0 else AnomalySeverity.MEDIUM,
-                    anomaly_type=AnomalyType.POINT
+                    severity=(
+                        AnomalySeverity.HIGH if j % 2 == 0 else AnomalySeverity.MEDIUM
+                    ),
+                    anomaly_type=AnomalyType.POINT,
                 )
                 sensor_anomalies.append(anomaly)
                 all_anomalies.append(anomaly)
 
             sensor_stats[sensor_id] = {
                 "anomaly_count": anomaly_count,
-                "avg_score": np.mean([a.score for a in sensor_anomalies])
+                "avg_score": np.mean([a.score for a in sensor_anomalies]),
             }
 
         # Calculate severity breakdown
         severity_breakdown = {
             "LOW": 0,
-            "MEDIUM": sum(1 for a in all_anomalies if a.severity == AnomalySeverity.MEDIUM),
+            "MEDIUM": sum(
+                1 for a in all_anomalies if a.severity == AnomalySeverity.MEDIUM
+            ),
             "HIGH": sum(1 for a in all_anomalies if a.severity == AnomalySeverity.HIGH),
-            "CRITICAL": 0
+            "CRITICAL": 0,
         }
 
         summary = AnomalySummary(
@@ -385,12 +379,15 @@ class TestAnomalyModelIntegration:
             severity_breakdown=severity_breakdown,
             recent_anomalies=all_anomalies[-5:],  # Last 5 anomalies
             sensor_stats=sensor_stats,
-            generated_at=timestamp
+            generated_at=timestamp,
         )
 
         assert summary.total_anomalies == 6  # 1 + 2 + 3
         assert len(summary.sensor_stats) == 3
-        assert summary.severity_breakdown["MEDIUM"] + summary.severity_breakdown["HIGH"] == 6
+        assert (
+            summary.severity_breakdown["MEDIUM"] + summary.severity_breakdown["HIGH"]
+            == 6
+        )
 
     def test_nasa_sensor_anomaly_detection(self, sample_sensors):
         """Test anomaly detection for NASA sensors"""
@@ -405,11 +402,14 @@ class TestAnomalyModelIntegration:
                 severity=AnomalySeverity.HIGH,
                 anomaly_type=AnomalyType.POINT,
                 description=f"Anomaly detected in {sensor_id}",
-                metadata={"mission": "SMAP" if "SMAP" in sensor_id else "MSL"}
+                metadata={"mission": "SMAP" if "SMAP" in sensor_id else "MSL"},
             )
 
             assert anomaly.sensor_id == sensor_id
-            assert "SMAP" in anomaly.metadata["mission"] or "MSL" in anomaly.metadata["mission"]
+            assert (
+                "SMAP" in anomaly.metadata["mission"]
+                or "MSL" in anomaly.metadata["mission"]
+            )
             assert anomaly.description.endswith(sensor_id)
 
     def test_anomaly_severity_escalation(self):
@@ -420,7 +420,7 @@ class TestAnomalyModelIntegration:
             value=95.5,
             score=0.85,
             severity=AnomalySeverity.MEDIUM,
-            anomaly_type=AnomalyType.POINT
+            anomaly_type=AnomalyType.POINT,
         )
 
         # Simulate escalation by creating new anomaly with higher severity
@@ -431,10 +431,13 @@ class TestAnomalyModelIntegration:
             score=0.95,
             severity=AnomalySeverity.CRITICAL,
             anomaly_type=AnomalyType.POINT,
-            description="Escalated from previous medium severity anomaly"
+            description="Escalated from previous medium severity anomaly",
         )
 
         # Check that severity escalated (CRITICAL > MEDIUM)
         severity_order = {"LOW": 1, "MEDIUM": 2, "HIGH": 3, "CRITICAL": 4}
-        assert severity_order[escalated_anomaly.severity.value] > severity_order[base_anomaly.severity.value]
+        assert (
+            severity_order[escalated_anomaly.severity.value]
+            > severity_order[base_anomaly.severity.value]
+        )
         assert escalated_anomaly.score > base_anomaly.score

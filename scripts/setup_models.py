@@ -4,12 +4,12 @@ Complete Model Training Setup for GitHub Codespaces
 Trains both anomaly detection and forecasting models for all 12 sensors
 """
 
+import logging
 import os
 import sys
 import time
-import logging
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 # Add project root to path
 project_root = Path(__file__).parent
@@ -17,10 +17,10 @@ sys.path.insert(0, str(project_root))
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
+
 
 def print_banner():
     """Print setup banner"""
@@ -33,6 +33,7 @@ def print_banner():
     print("⚡ Optimized for cloud environments")
     print("-" * 80)
 
+
 def check_environment():
     """Check if running in suitable environment"""
     print("🔍 Checking environment...")
@@ -40,6 +41,7 @@ def check_environment():
     # Check available memory (rough estimate)
     try:
         import psutil
+
         memory_gb = psutil.virtual_memory().total / (1024**3)
         print(f"✅ Available RAM: {memory_gb:.1f}GB")
         if memory_gb < 2:
@@ -56,6 +58,7 @@ def check_environment():
         print(f"📁 Found {len(forecast_models)} forecasting models")
 
     print()
+
 
 def train_anomaly_models(quick_mode=False):
     """Train anomaly detection models"""
@@ -85,6 +88,7 @@ def train_anomaly_models(quick_mode=False):
         print(f"❌ Error training anomaly models: {e}")
         return False
 
+
 def train_forecasting_models(quick_mode=False):
     """Train forecasting models"""
     print("🔮 TRAINING FORECASTING MODELS")
@@ -113,15 +117,30 @@ def train_forecasting_models(quick_mode=False):
         print(f"❌ Error training forecasting models: {e}")
         return False
 
+
 def main():
     """Main setup function"""
     import argparse
 
-    parser = argparse.ArgumentParser(description='Complete Model Training Setup')
-    parser.add_argument('--quick', action='store_true', help='Quick training mode (faster, smaller models)')
-    parser.add_argument('--anomaly-only', action='store_true', help='Train only anomaly detection models')
-    parser.add_argument('--forecasting-only', action='store_true', help='Train only forecasting models')
-    parser.add_argument('--skip-existing', action='store_true', help='Skip training if models already exist')
+    parser = argparse.ArgumentParser(description="Complete Model Training Setup")
+    parser.add_argument(
+        "--quick",
+        action="store_true",
+        help="Quick training mode (faster, smaller models)",
+    )
+    parser.add_argument(
+        "--anomaly-only",
+        action="store_true",
+        help="Train only anomaly detection models",
+    )
+    parser.add_argument(
+        "--forecasting-only", action="store_true", help="Train only forecasting models"
+    )
+    parser.add_argument(
+        "--skip-existing",
+        action="store_true",
+        help="Skip training if models already exist",
+    )
 
     args = parser.parse_args()
 
@@ -168,7 +187,9 @@ def main():
     print("📊 TRAINING COMPLETE!")
     print("=" * 80)
     print(f"✅ Successful: {success_count}/{total_tasks} training tasks")
-    print(f"⏱️  Total time: {total_elapsed:.1f} seconds ({total_elapsed/60:.1f} minutes)")
+    print(
+        f"⏱️  Total time: {total_elapsed:.1f} seconds ({total_elapsed/60:.1f} minutes)"
+    )
 
     if success_count == total_tasks:
         print("🎉 ALL MODELS TRAINED SUCCESSFULLY!")
@@ -182,6 +203,7 @@ def main():
         print("⚠️  Some training tasks failed. Check logs above.")
         print("💡 Try running with --quick flag for faster training")
         return 1
+
 
 if __name__ == "__main__":
     exit_code = main()

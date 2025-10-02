@@ -3,17 +3,17 @@ Model Registry with SQLite Backend
 Provides ACID properties, concurrency support, and robust data management
 """
 
-import sqlite3
-import json
-import shutil
-import logging
 import hashlib
-from typing import Dict, List, Any, Optional, Tuple
+import json
+import logging
+import shutil
+import sqlite3
+from contextlib import contextmanager
+from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from dataclasses import dataclass, asdict
-from contextlib import contextmanager
 from threading import Lock
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ModelMetadata:
     """Model metadata structure"""
+
     model_id: str
     sensor_id: str
     model_type: str  # 'telemanom' or 'transformer'
@@ -43,18 +44,30 @@ class ModelMetadata:
         """Convert to dictionary with JSON serialization for nested fields"""
         data = asdict(self)
         # Convert dict fields to JSON strings for SQLite storage
-        data['training_config'] = json.dumps(self.training_config)
-        data['training_metrics'] = json.dumps(self.training_metrics)
-        data['validation_metrics'] = json.dumps(self.validation_metrics)
+        data["training_config"] = json.dumps(self.training_config)
+        data["training_metrics"] = json.dumps(self.training_metrics)
+        data["validation_metrics"] = json.dumps(self.validation_metrics)
         return data
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'ModelMetadata':
+    def from_dict(cls, data: Dict[str, Any]) -> "ModelMetadata":
         """Create from dictionary with JSON deserialization"""
         # Parse JSON strings back to dicts
-        data['training_config'] = json.loads(data['training_config']) if isinstance(data['training_config'], str) else data['training_config']
-        data['training_metrics'] = json.loads(data['training_metrics']) if isinstance(data['training_metrics'], str) else data['training_metrics']
-        data['validation_metrics'] = json.loads(data['validation_metrics']) if isinstance(data['validation_metrics'], str) else data['validation_metrics']
+        data["training_config"] = (
+            json.loads(data["training_config"])
+            if isinstance(data["training_config"], str)
+            else data["training_config"]
+        )
+        data["training_metrics"] = (
+            json.loads(data["training_metrics"])
+            if isinstance(data["training_metrics"], str)
+            else data["training_metrics"]
+        )
+        data["validation_metrics"] = (
+            json.loads(data["validation_metrics"])
+            if isinstance(data["validation_metrics"], str)
+            else data["validation_metrics"]
+        )
         return cls(**data)
 
 
@@ -66,7 +79,7 @@ class ModelRegistrySQLite:
     def __init__(
         self,
         registry_path: str = "./models/registry",
-        performance_score_weights: Dict[str, float] = None
+        performance_score_weights: Dict[str, float] = None,
     ):
         """
         Initialize SQLite model registry
@@ -86,10 +99,10 @@ class ModelRegistrySQLite:
 
         # Performance scoring configuration
         self.performance_score_weights = performance_score_weights or {
-            'r2_weight': 0.7,
-            'mape_weight': 0.3,
-            'anomaly_min': 0.01,
-            'anomaly_max': 0.1
+            "r2_weight": 0.7,
+            "mape_weight": 0.3,
+            "anomaly_min": 0.01,
+            "anomaly_max": 0.1,
         }
 
         # Initialize database
@@ -114,7 +127,8 @@ class ModelRegistrySQLite:
             cursor = conn.cursor()
 
             # Models table
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS models (
                     model_id TEXT PRIMARY KEY,
                     sensor_id TEXT NOT NULL,
@@ -124,10 +138,12 @@ class ModelRegistrySQLite:
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE(sensor_id, model_type)
                 )
-            """)
+            """
+            )
 
             # Versions table with all metadata
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS versions (
                     version_id TEXT PRIMARY KEY,
                     model_id TEXT NOT NULL,
@@ -148,31 +164,41 @@ class ModelRegistrySQLite:
                     performance_score REAL DEFAULT 0.0,
                     FOREIGN KEY (model_id) REFERENCES models(model_id) ON DELETE CASCADE
                 )
-            """)
+            """
+            )
 
             # Create indices for performance
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_versions_model_id
                 ON versions(model_id)
-            """)
+            """
+            )
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_versions_sensor_id
                 ON versions(sensor_id)
-            """)
+            """
+            )
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_versions_is_active
                 ON versions(is_active)
-            """)
+            """
+            )
 
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE INDEX IF NOT EXISTS idx_versions_performance
                 ON versions(performance_score)
-            """)
+            """
+            )
 
             # Data lineage table for tracking training data
-            cursor.execute("""
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS data_lineage (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     version_id TEXT NOT NULL,
@@ -184,7 +210,8 @@ class ModelRegistrySQLite:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (version_id) REFERENCES versions(version_id) ON DELETE CASCADE
                 )
-            """)
+            """
+            )
 
             conn.commit()
             logger.info("SQLite database schema initialized")
@@ -202,8 +229,8 @@ class ModelRegistrySQLite:
         """Calculate hash of a file"""
         try:
             hasher = hashlib.sha256()
-            with open(file_path, 'rb') as f:
-                for chunk in iter(lambda: f.read(8192), b''):
+            with open(file_path, "rb") as f:
+                for chunk in iter(lambda: f.read(8192), b""):
                     hasher.update(chunk)
             return hasher.hexdigest()[:16]
         except FileNotFoundError:
@@ -217,7 +244,7 @@ class ModelRegistrySQLite:
         """Calculate total size of model files"""
         total_size = 0
         try:
-            for file_path in model_dir.rglob('*'):
+            for file_path in model_dir.rglob("*"):
                 if file_path.is_file():
                     total_size += file_path.stat().st_size
         except Exception as e:
@@ -238,37 +265,42 @@ class ModelRegistrySQLite:
                 return 0.0
 
             # Check if validation was actually performed
-            if not validation_metrics.get('validation_performed', False):
+            if not validation_metrics.get("validation_performed", False):
                 logger.warning("Validation not performed - returning score 0.0")
                 return 0.0
 
             # For anomaly detection (telemanom)
-            if 'anomaly_rate' in validation_metrics:
-                anomaly_rate = validation_metrics.get('anomaly_rate', 0.5)
-                anomaly_min = self.performance_score_weights.get('anomaly_min', 0.01)
-                anomaly_max = self.performance_score_weights.get('anomaly_max', 0.1)
+            if "anomaly_rate" in validation_metrics:
+                anomaly_rate = validation_metrics.get("anomaly_rate", 0.5)
+                anomaly_min = self.performance_score_weights.get("anomaly_min", 0.01)
+                anomaly_max = self.performance_score_weights.get("anomaly_max", 0.1)
 
                 # Good score for reasonable anomaly rate
                 if anomaly_min <= anomaly_rate <= anomaly_max:
-                    return 0.8 + (anomaly_max - anomaly_rate) / (anomaly_max - anomaly_min) * 0.2
+                    return (
+                        0.8
+                        + (anomaly_max - anomaly_rate)
+                        / (anomaly_max - anomaly_min)
+                        * 0.2
+                    )
                 elif anomaly_rate == 0:
                     return 0.3  # Too conservative
                 else:
                     return max(0.1, 1.0 - anomaly_rate)  # Too sensitive
 
             # For forecasting (transformer)
-            elif 'r2_score' in validation_metrics:
-                r2 = validation_metrics.get('r2_score', 0)
-                mape = validation_metrics.get('mape', 100)
+            elif "r2_score" in validation_metrics:
+                r2 = validation_metrics.get("r2_score", 0)
+                mape = validation_metrics.get("mape", 100)
 
                 # Combine R² and MAPE with configurable weights
                 r2_score = max(0, min(1, r2))  # Clip to [0, 1]
                 mape_score = max(0, 1 - (mape / 100))  # Convert MAPE to score
 
-                r2_weight = self.performance_score_weights.get('r2_weight', 0.7)
-                mape_weight = self.performance_score_weights.get('mape_weight', 0.3)
+                r2_weight = self.performance_score_weights.get("r2_weight", 0.7)
+                mape_weight = self.performance_score_weights.get("mape_weight", 0.3)
 
-                return (r2_score * r2_weight + mape_score * mape_weight)
+                return r2_score * r2_weight + mape_score * mape_weight
 
             return 0.5  # Default score
 
@@ -291,7 +323,7 @@ class ModelRegistrySQLite:
         data_end_date: str = None,
         num_samples: int = None,
         description: str = "",
-        tags: List[str] = None
+        tags: List[str] = None,
     ) -> str:
         """
         Register a new model version with proper data lineage
@@ -320,7 +352,7 @@ class ModelRegistrySQLite:
         """
         try:
             # Enforce proper validation metrics
-            if not validation_metrics.get('validation_performed', False):
+            if not validation_metrics.get("validation_performed", False):
                 raise ValueError(
                     "validation_metrics must include 'validation_performed': True. "
                     "Ensure model is validated on held-out data before registration."
@@ -337,7 +369,9 @@ class ModelRegistrySQLite:
             if model_path.exists():
                 model_size = self._calculate_model_size(model_path)
                 # Use main model file for hash
-                main_files = list(model_path.glob("*.h5")) + list(model_path.glob("*.pkl"))
+                main_files = list(model_path.glob("*.h5")) + list(
+                    model_path.glob("*.pkl")
+                )
                 if main_files:
                     model_hash = self._calculate_file_hash(main_files[0])
 
@@ -347,7 +381,9 @@ class ModelRegistrySQLite:
                     f"No data_hash provided for {sensor_id}. "
                     f"Consider passing data_hash from training pipeline for proper lineage tracking."
                 )
-                data_hash = hashlib.sha256(f"{sensor_id}_{timestamp}".encode()).hexdigest()[:16]
+                data_hash = hashlib.sha256(
+                    f"{sensor_id}_{timestamp}".encode()
+                ).hexdigest()[:16]
 
             # Calculate performance score
             performance_score = self._calculate_performance_score(validation_metrics)
@@ -359,62 +395,99 @@ class ModelRegistrySQLite:
                 cursor = conn.cursor()
 
                 # Insert or update model entry
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO models (model_id, sensor_id, model_type, active_version, updated_at)
                     VALUES (?, ?, ?, ?, ?)
                     ON CONFLICT(model_id) DO UPDATE SET
                         updated_at = excluded.updated_at
-                """, (model_id, sensor_id, model_type, version_id, timestamp))
+                """,
+                    (model_id, sensor_id, model_type, version_id, timestamp),
+                )
 
                 # Insert version
-                cursor.execute("""
+                cursor.execute(
+                    """
                     INSERT INTO versions (
                         version_id, model_id, sensor_id, model_type, created_at,
                         training_config, training_metrics, validation_metrics,
                         model_size_bytes, training_time_seconds, data_hash, model_hash,
                         model_path, description, tags, is_active, performance_score
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    version_id, model_id, sensor_id, model_type, timestamp,
-                    json.dumps(training_config), json.dumps(training_metrics),
-                    json.dumps(validation_metrics), model_size, training_time_seconds,
-                    data_hash, model_hash, model_path_str, description,
-                    json.dumps(tags or []), 1, performance_score
-                ))
+                """,
+                    (
+                        version_id,
+                        model_id,
+                        sensor_id,
+                        model_type,
+                        timestamp,
+                        json.dumps(training_config),
+                        json.dumps(training_metrics),
+                        json.dumps(validation_metrics),
+                        model_size,
+                        training_time_seconds,
+                        data_hash,
+                        model_hash,
+                        model_path_str,
+                        description,
+                        json.dumps(tags or []),
+                        1,
+                        performance_score,
+                    ),
+                )
 
                 # Insert data lineage if provided
                 if any([data_source, data_start_date, data_end_date, num_samples]):
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         INSERT INTO data_lineage (
                             version_id, data_hash, data_source, data_start_date,
                             data_end_date, num_samples
                         ) VALUES (?, ?, ?, ?, ?, ?)
-                    """, (
-                        version_id, data_hash, data_source, data_start_date,
-                        data_end_date, num_samples
-                    ))
+                    """,
+                        (
+                            version_id,
+                            data_hash,
+                            data_source,
+                            data_start_date,
+                            data_end_date,
+                            num_samples,
+                        ),
+                    )
 
                 # Check if this should be the new active version
                 # Compare against ALL previous versions, not just current active
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT version_id, performance_score
                     FROM versions
                     WHERE model_id = ? AND version_id != ?
                     ORDER BY performance_score DESC
                     LIMIT 1
-                """, (model_id, version_id))
+                """,
+                    (model_id, version_id),
+                )
 
                 best_previous = cursor.fetchone()
 
-                if best_previous and performance_score > best_previous['performance_score']:
+                if (
+                    best_previous
+                    and performance_score > best_previous["performance_score"]
+                ):
                     # New version is better - make it active
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         UPDATE versions SET is_active = 0 WHERE model_id = ? AND version_id != ?
-                    """, (model_id, version_id))
+                    """,
+                        (model_id, version_id),
+                    )
 
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         UPDATE models SET active_version = ? WHERE model_id = ?
-                    """, (version_id, model_id))
+                    """,
+                        (version_id, model_id),
+                    )
 
                     logger.info(
                         f"New active version: {version_id} (score: {performance_score:.4f}) "
@@ -422,9 +495,12 @@ class ModelRegistrySQLite:
                     )
                 elif not best_previous:
                     # First version - make it active
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         UPDATE models SET active_version = ? WHERE model_id = ?
-                    """, (version_id, model_id))
+                    """,
+                        (version_id, model_id),
+                    )
 
                 conn.commit()
 
@@ -446,9 +522,12 @@ class ModelRegistrySQLite:
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT * FROM versions WHERE version_id = ?
-                """, (version_id,))
+                """,
+                    (version_id,),
+                )
 
                 row = cursor.fetchone()
                 if not row:
@@ -460,22 +539,29 @@ class ModelRegistrySQLite:
             logger.error(f"Error loading model metadata for {version_id}: {e}")
             return None
 
-    def get_active_model_version(self, sensor_id: str, model_type: str) -> Optional[str]:
+    def get_active_model_version(
+        self, sensor_id: str, model_type: str
+    ) -> Optional[str]:
         """Get active version for a model"""
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
                 model_id = self._generate_model_id(sensor_id, model_type)
 
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT active_version FROM models WHERE model_id = ?
-                """, (model_id,))
+                """,
+                    (model_id,),
+                )
 
                 row = cursor.fetchone()
-                return row['active_version'] if row else None
+                return row["active_version"] if row else None
 
         except Exception as e:
-            logger.error(f"Error getting active version for {sensor_id} ({model_type}): {e}")
+            logger.error(
+                f"Error getting active version for {sensor_id} ({model_type}): {e}"
+            )
             return None
 
     def list_models(self, model_type: str = None) -> List[Dict[str, Any]]:
@@ -485,20 +571,25 @@ class ModelRegistrySQLite:
                 cursor = conn.cursor()
 
                 if model_type:
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         SELECT m.*, COUNT(v.version_id) as total_versions
                         FROM models m
                         LEFT JOIN versions v ON m.model_id = v.model_id
                         WHERE m.model_type = ?
                         GROUP BY m.model_id
-                    """, (model_type,))
+                    """,
+                        (model_type,),
+                    )
                 else:
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         SELECT m.*, COUNT(v.version_id) as total_versions
                         FROM models m
                         LEFT JOIN versions v ON m.model_id = v.model_id
                         GROUP BY m.model_id
-                    """)
+                    """
+                    )
 
                 return [dict(row) for row in cursor.fetchall()]
 
@@ -513,25 +604,30 @@ class ModelRegistrySQLite:
                 cursor = conn.cursor()
                 model_id = self._generate_model_id(sensor_id, model_type)
 
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT
                         version_id, created_at, performance_score, is_active,
                         model_size_bytes, training_time_seconds
                     FROM versions
                     WHERE model_id = ?
                     ORDER BY created_at DESC
-                """, (model_id,))
+                """,
+                    (model_id,),
+                )
 
                 versions = []
                 for row in cursor.fetchall():
-                    versions.append({
-                        'version_id': row['version_id'],
-                        'created_at': row['created_at'],
-                        'performance_score': row['performance_score'],
-                        'is_active': bool(row['is_active']),
-                        'model_size_mb': row['model_size_bytes'] / (1024 * 1024),
-                        'training_time_seconds': row['training_time_seconds']
-                    })
+                    versions.append(
+                        {
+                            "version_id": row["version_id"],
+                            "created_at": row["created_at"],
+                            "performance_score": row["performance_score"],
+                            "is_active": bool(row["is_active"]),
+                            "model_size_mb": row["model_size_bytes"] / (1024 * 1024),
+                            "training_time_seconds": row["training_time_seconds"],
+                        }
+                    )
 
                 return versions
 
@@ -546,42 +642,58 @@ class ModelRegistrySQLite:
                 cursor = conn.cursor()
 
                 # Get model_id for this version
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT model_id FROM versions WHERE version_id = ?
-                """, (version_id,))
+                """,
+                    (version_id,),
+                )
 
                 row = cursor.fetchone()
                 if not row:
                     logger.warning(f"Version {version_id} not found")
                     return False
 
-                model_id = row['model_id']
+                model_id = row["model_id"]
 
                 # Deactivate all versions for this model
-                cursor.execute("""
+                cursor.execute(
+                    """
                     UPDATE versions SET is_active = 0 WHERE model_id = ?
-                """, (model_id,))
+                """,
+                    (model_id,),
+                )
 
                 # Activate the selected version
-                cursor.execute("""
+                cursor.execute(
+                    """
                     UPDATE versions SET is_active = 1 WHERE version_id = ?
-                """, (version_id,))
+                """,
+                    (version_id,),
+                )
 
                 # Update active version in models table
-                cursor.execute("""
+                cursor.execute(
+                    """
                     UPDATE models SET active_version = ?, updated_at = ?
                     WHERE model_id = ?
-                """, (version_id, datetime.now().isoformat(), model_id))
+                """,
+                    (version_id, datetime.now().isoformat(), model_id),
+                )
 
                 conn.commit()
-                logger.info(f"Promoted version {version_id} to active for model {model_id}")
+                logger.info(
+                    f"Promoted version {version_id} to active for model {model_id}"
+                )
                 return True
 
         except Exception as e:
             logger.error(f"Error promoting version {version_id}: {e}")
             return False
 
-    def delete_version(self, version_id: str, force: bool = False, delete_artifacts: bool = True) -> bool:
+    def delete_version(
+        self, version_id: str, force: bool = False, delete_artifacts: bool = True
+    ) -> bool:
         """Delete a model version and optionally its artifacts
 
         Args:
@@ -597,9 +709,12 @@ class ModelRegistrySQLite:
                 cursor = conn.cursor()
 
                 # Get version metadata
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT is_active, model_path FROM versions WHERE version_id = ?
-                """, (version_id,))
+                """,
+                    (version_id,),
+                )
 
                 row = cursor.fetchone()
                 if not row:
@@ -607,13 +722,15 @@ class ModelRegistrySQLite:
                     return False
 
                 # Check if active
-                if row['is_active'] and not force:
-                    logger.warning(f"Cannot delete active version {version_id} without force=True")
+                if row["is_active"] and not force:
+                    logger.warning(
+                        f"Cannot delete active version {version_id} without force=True"
+                    )
                     return False
 
                 # Delete model artifacts from disk if requested
-                if delete_artifacts and row['model_path']:
-                    model_path = Path(row['model_path'])
+                if delete_artifacts and row["model_path"]:
+                    model_path = Path(row["model_path"])
                     if model_path.exists():
                         try:
                             shutil.rmtree(model_path)
@@ -622,9 +739,12 @@ class ModelRegistrySQLite:
                             logger.error(f"Error deleting model artifacts: {e}")
 
                 # Delete from database (cascades to data_lineage)
-                cursor.execute("""
+                cursor.execute(
+                    """
                     DELETE FROM versions WHERE version_id = ?
-                """, (version_id,))
+                """,
+                    (version_id,),
+                )
 
                 conn.commit()
                 logger.info(f"Deleted version {version_id}")
@@ -646,16 +766,19 @@ class ModelRegistrySQLite:
                 models = cursor.fetchall()
 
                 for model in models:
-                    model_id = model['model_id']
-                    active_version = model['active_version']
+                    model_id = model["model_id"]
+                    active_version = model["active_version"]
 
                     # Get all versions sorted by date
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         SELECT version_id, created_at
                         FROM versions
                         WHERE model_id = ?
                         ORDER BY created_at DESC
-                    """, (model_id,))
+                    """,
+                        (model_id,),
+                    )
 
                     versions = cursor.fetchall()
 
@@ -663,12 +786,16 @@ class ModelRegistrySQLite:
                     versions_to_keep = set([active_version])
                     for i, version in enumerate(versions):
                         if i < keep_last_n:
-                            versions_to_keep.add(version['version_id'])
+                            versions_to_keep.add(version["version_id"])
 
                     # Delete older versions
                     for version in versions[keep_last_n:]:
-                        if version['version_id'] not in versions_to_keep:
-                            if self.delete_version(version['version_id'], force=False, delete_artifacts=True):
+                        if version["version_id"] not in versions_to_keep:
+                            if self.delete_version(
+                                version["version_id"],
+                                force=False,
+                                delete_artifacts=True,
+                            ):
                                 cleaned += 1
 
             logger.info(f"Cleaned up {cleaned} old model versions")
@@ -686,31 +813,35 @@ class ModelRegistrySQLite:
 
                 # Total models
                 cursor.execute("SELECT COUNT(*) as count FROM models")
-                total_models = cursor.fetchone()['count']
+                total_models = cursor.fetchone()["count"]
 
                 # Total versions
                 cursor.execute("SELECT COUNT(*) as count FROM versions")
-                total_versions = cursor.fetchone()['count']
+                total_versions = cursor.fetchone()["count"]
 
                 # Model types distribution
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT model_type, COUNT(*) as count
                     FROM models
                     GROUP BY model_type
-                """)
-                model_types = {row['model_type']: row['count'] for row in cursor.fetchall()}
+                """
+                )
+                model_types = {
+                    row["model_type"]: row["count"] for row in cursor.fetchall()
+                }
 
                 # Total size
                 cursor.execute("SELECT SUM(model_size_bytes) as total FROM versions")
-                total_size = cursor.fetchone()['total'] or 0
+                total_size = cursor.fetchone()["total"] or 0
 
                 return {
-                    'total_models': total_models,
-                    'total_versions': total_versions,
-                    'model_types': model_types,
-                    'total_size_mb': total_size / (1024 * 1024),
-                    'registry_path': str(self.registry_path),
-                    'database_path': str(self.db_path)
+                    "total_models": total_models,
+                    "total_versions": total_versions,
+                    "model_types": model_types,
+                    "total_size_mb": total_size / (1024 * 1024),
+                    "registry_path": str(self.registry_path),
+                    "database_path": str(self.db_path),
                 }
 
         except Exception as e:
@@ -723,9 +854,12 @@ class ModelRegistrySQLite:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
 
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT * FROM data_lineage WHERE version_id = ?
-                """, (version_id,))
+                """,
+                    (version_id,),
+                )
 
                 row = cursor.fetchone()
                 return dict(row) if row else None

@@ -4,13 +4,14 @@ Responsive design and improved user experience styles
 """
 
 import dash
-from dash import html
 import dash_bootstrap_components as dbc
+from dash import html
 
 
 def get_enhanced_css():
     """Get enhanced CSS styles for the dashboard"""
-    return html.Style("""
+    return html.Style(
+        """
         /* ==================== ENHANCED DASHBOARD STYLES ==================== */
 
         /* Root Variables for Consistent Theming */
@@ -514,84 +515,92 @@ def get_enhanced_css():
                 break-inside: avoid;
             }
         }
-    """)
+    """
+    )
 
 
 def get_component_styles():
     """Get component-specific style classes"""
     return {
         # Header styles
-        'header_class': 'dashboard-header',
-        'header_title_class': 'text-gradient-primary',
-
+        "header_class": "dashboard-header",
+        "header_title_class": "text-gradient-primary",
         # Card styles
-        'metric_card_class': 'metric-card fade-in',
-        'status_card_class': 'status-card shadow-hover',
-        'chart_container_class': 'chart-container',
-
+        "metric_card_class": "metric-card fade-in",
+        "status_card_class": "status-card shadow-hover",
+        "chart_container_class": "chart-container",
         # Button styles
-        'primary_button_class': 'btn btn-gradient-primary',
-        'success_button_class': 'btn btn-gradient-success',
-        'warning_button_class': 'btn btn-gradient-warning',
-
+        "primary_button_class": "btn btn-gradient-primary",
+        "success_button_class": "btn btn-gradient-success",
+        "warning_button_class": "btn btn-gradient-warning",
         # Navigation styles
-        'tabs_class': 'custom-tabs',
-
+        "tabs_class": "custom-tabs",
         # Animation classes
-        'fade_in_class': 'fade-in',
-        'slide_in_class': 'slide-in-right',
-        'pulse_class': 'alert-pulse',
-
+        "fade_in_class": "fade-in",
+        "slide_in_class": "slide-in-right",
+        "pulse_class": "alert-pulse",
         # Utility classes
-        'loading_class': 'loading-spinner',
-        'mobile_hide_class': 'mobile-hide',
-        'shadow_hover_class': 'shadow-hover'
+        "loading_class": "loading-spinner",
+        "mobile_hide_class": "mobile-hide",
+        "shadow_hover_class": "shadow-hover",
     }
 
 
 def get_responsive_breakpoints():
     """Get responsive design breakpoints"""
     return {
-        'xs': 576,   # Extra small devices
-        'sm': 768,   # Small devices
-        'md': 992,   # Medium devices
-        'lg': 1200,  # Large devices
-        'xl': 1400   # Extra large devices
+        "xs": 576,  # Extra small devices
+        "sm": 768,  # Small devices
+        "md": 992,  # Medium devices
+        "lg": 1200,  # Large devices
+        "xl": 1400,  # Extra large devices
     }
 
 
 def create_loading_component(message="Loading..."):
     """Create a loading component with spinner"""
-    return html.Div([
-        html.Div(className="loading-spinner"),
-        html.P(message, className="mt-2 text-muted")
-    ], className="text-center p-4")
+    return html.Div(
+        [
+            html.Div(className="loading-spinner"),
+            html.P(message, className="mt-2 text-muted"),
+        ],
+        className="text-center p-4",
+    )
 
 
 def create_error_component(error_message="An error occurred"):
     """Create an error component"""
-    return dbc.Alert([
-        html.I(className="fas fa-exclamation-triangle me-2"),
-        html.Strong("Error: "),
-        error_message
-    ], color="danger", className="fade-in")
+    return dbc.Alert(
+        [
+            html.I(className="fas fa-exclamation-triangle me-2"),
+            html.Strong("Error: "),
+            error_message,
+        ],
+        color="danger",
+        className="fade-in",
+    )
 
 
-def create_empty_state_component(title="No Data", message="No data available to display"):
+def create_empty_state_component(
+    title="No Data", message="No data available to display"
+):
     """Create an empty state component"""
-    return html.Div([
-        html.I(className="fas fa-inbox fa-3x text-muted mb-3"),
-        html.H5(title, className="text-muted"),
-        html.P(message, className="text-muted")
-    ], className="text-center p-5 fade-in")
+    return html.Div(
+        [
+            html.I(className="fas fa-inbox fa-3x text-muted mb-3"),
+            html.H5(title, className="text-muted"),
+            html.P(message, className="text-muted"),
+        ],
+        className="text-center p-5 fade-in",
+    )
 
 
 # Export all style functions
 __all__ = [
-    'get_enhanced_css',
-    'get_component_styles',
-    'get_responsive_breakpoints',
-    'create_loading_component',
-    'create_error_component',
-    'create_empty_state_component'
+    "get_enhanced_css",
+    "get_component_styles",
+    "get_responsive_breakpoints",
+    "create_loading_component",
+    "create_error_component",
+    "create_empty_state_component",
 ]

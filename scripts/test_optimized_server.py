@@ -3,17 +3,19 @@ Test the optimized dashboard server startup and basic functionality
 Session 3 - Server validation test
 """
 
-import sys
-import time
-import threading
-import requests
 import subprocess
-from pathlib import Path
+import sys
+import threading
+import time
 from datetime import datetime
+from pathlib import Path
+
+import requests
 
 # Add project root to path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
+
 
 def test_server_startup():
     """Test if the optimized dashboard server starts properly"""
@@ -24,7 +26,10 @@ def test_server_startup():
     # Import and create dashboard
     print("\n1. Creating dashboard instance...")
     try:
-        from src.presentation.dashboard.enhanced_app_optimized import OptimizedIoTDashboard
+        from src.presentation.dashboard.enhanced_app_optimized import (
+            OptimizedIoTDashboard,
+        )
+
         dashboard = OptimizedIoTDashboard(debug=False)
         print("   [OK] Dashboard instance created successfully")
     except Exception as e:
@@ -34,15 +39,15 @@ def test_server_startup():
     # Test server startup in separate thread
     print("\n2. Testing server startup...")
 
-    server_result = {'started': False, 'error': None}
+    server_result = {"started": False, "error": None}
 
     def run_server():
         try:
             # Run server for 10 seconds
-            dashboard.run(host='127.0.0.1', port=8052, debug=False)
-            server_result['started'] = True
+            dashboard.run(host="127.0.0.1", port=8052, debug=False)
+            server_result["started"] = True
         except Exception as e:
-            server_result['error'] = str(e)
+            server_result["error"] = str(e)
 
     # Start server in background
     server_thread = threading.Thread(target=run_server)
@@ -55,7 +60,7 @@ def test_server_startup():
     # Test if server is responsive
     print("\n3. Testing server responsiveness...")
     try:
-        response = requests.get('http://127.0.0.1:8052', timeout=5)
+        response = requests.get("http://127.0.0.1:8052", timeout=5)
         if response.status_code == 200:
             print("   [OK] Server responding successfully")
             print(f"   [OK] Response status: {response.status_code}")
@@ -76,15 +81,18 @@ def test_server_startup():
     # Results
     print(f"\n=== SERVER TEST RESULTS ===")
     print(f"Dashboard created: [OK] YES")
-    print(f"Server started: {'[OK] YES' if not server_result['error'] else '[FAIL] NO'}")
+    print(
+        f"Server started: {'[OK] YES' if not server_result['error'] else '[FAIL] NO'}"
+    )
     print(f"Server responsive: {'[OK] YES' if server_responsive else '[FAIL] NO'}")
 
-    if server_result['error']:
+    if server_result["error"]:
         print(f"Server error: {server_result['error']}")
 
-    overall_success = not server_result['error'] and server_responsive
+    overall_success = not server_result["error"] and server_responsive
 
     return overall_success
+
 
 def test_dashboard_tabs():
     """Test if all dashboard tabs are accessible"""
@@ -99,7 +107,7 @@ def test_dashboard_tabs():
         "forecasting",
         "maintenance",
         "work-orders",
-        "system-performance"
+        "system-performance",
     ]
 
     print(f"Expected tabs: {len(expected_tabs)}")
@@ -109,10 +117,13 @@ def test_dashboard_tabs():
     # We can't easily test tab functionality without running server
     # But we can verify the dashboard has the expected structure
     try:
-        from src.presentation.dashboard.enhanced_app_optimized import OptimizedIoTDashboard
+        from src.presentation.dashboard.enhanced_app_optimized import (
+            OptimizedIoTDashboard,
+        )
+
         dashboard = OptimizedIoTDashboard(debug=False)
 
-        if hasattr(dashboard, 'app') and hasattr(dashboard.app, 'layout'):
+        if hasattr(dashboard, "app") and hasattr(dashboard.app, "layout"):
             print("   [OK] Dashboard has proper structure")
             return True
         else:
@@ -122,6 +133,7 @@ def test_dashboard_tabs():
     except Exception as e:
         print(f"   [FAIL] Tab test failed: {e}")
         return False
+
 
 if __name__ == "__main__":
     print("Starting optimized dashboard server validation...")

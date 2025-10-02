@@ -3,10 +3,11 @@ Data models for forecasting
 """
 
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
 from datetime import datetime
-import numpy as np
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+import numpy as np
 
 
 class ForecastConfidence(Enum):
@@ -25,6 +26,7 @@ class RiskLevel(Enum):
 @dataclass
 class ForecastPoint:
     """Single forecast point"""
+
     timestamp: datetime
     predicted_value: float
     confidence_lower: float
@@ -36,6 +38,7 @@ class ForecastPoint:
 @dataclass
 class ForecastResult:
     """Forecast result for a sensor"""
+
     sensor_id: str
     forecast_horizon_hours: int
     historical_timestamps: List[datetime]
@@ -52,6 +55,7 @@ class ForecastResult:
 @dataclass
 class ForecastSummary:
     """Summary of forecasts across all sensors"""
+
     total_sensors_forecasted: int
     average_confidence: float
     risk_distribution: Dict[str, int]

@@ -3,25 +3,30 @@ Telemanom Model Training Pipeline
 Train NASA Telemanom models for all 80 sensors in SMAP/MSL systems
 """
 
+import argparse
+import json
+import logging
 import os
 import sys
-import argparse
+import traceback
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
-from datetime import datetime
-import logging
-from typing import Dict, List, Tuple, Optional
-import json
-import traceback
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.anomaly_detection.nasa_telemanom import NASATelemanom, Telemanom_Config, quick_train_telemanom
+from config.settings import get_data_path
+from src.anomaly_detection.nasa_telemanom import (
+    NASATelemanom,
+    Telemanom_Config,
+    quick_train_telemanom,
+)
 from src.data_ingestion.equipment_mapper import IoTEquipmentMapper
 from src.data_ingestion.nasa_data_ingestion_service import NASADataIngestionService
-from config.settings import get_data_path
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -52,7 +57,9 @@ class TelemanoMTrainingPipeline:
         self.training_results = {}
         self.failed_sensors = []
 
-        logger.info(f"Initialized training pipeline. Models will be saved to: {self.models_dir}")
+        logger.info(
+            f"Initialized training pipeline. Models will be saved to: {self.models_dir}"
+        )
 
     def get_sensor_mapping(self) -> Dict[str, Dict]:
         """Get mapping of all 80 sensors to their equipment
@@ -68,14 +75,14 @@ class TelemanoMTrainingPipeline:
             for sensor in equipment.sensors:
                 sensor_key = f"SMAP_{sensor_id:02d}_{sensor.name.replace(' ', '_')}"
                 sensor_mapping[sensor_key] = {
-                    'equipment_id': equipment.equipment_id,
-                    'equipment_type': equipment.equipment_type,
-                    'subsystem': equipment.subsystem,
-                    'sensor_name': sensor.name,
-                    'sensor_unit': sensor.unit,
-                    'sensor_id': sensor_id,
-                    'criticality': equipment.criticality,
-                    'dataset': 'SMAP'
+                    "equipment_id": equipment.equipment_id,
+                    "equipment_type": equipment.equipment_type,
+                    "subsystem": equipment.subsystem,
+                    "sensor_name": sensor.name,
+                    "sensor_unit": sensor.unit,
+                    "sensor_id": sensor_id,
+                    "criticality": equipment.criticality,
+                    "dataset": "SMAP",
                 }
                 sensor_id += 1
 
@@ -84,21 +91,23 @@ class TelemanoMTrainingPipeline:
             for sensor in equipment.sensors:
                 sensor_key = f"MSL_{sensor_id:02d}_{sensor.name.replace(' ', '_')}"
                 sensor_mapping[sensor_key] = {
-                    'equipment_id': equipment.equipment_id,
-                    'equipment_type': equipment.equipment_type,
-                    'subsystem': equipment.subsystem,
-                    'sensor_name': sensor.name,
-                    'sensor_unit': sensor.unit,
-                    'sensor_id': sensor_id,
-                    'criticality': equipment.criticality,
-                    'dataset': 'MSL'
+                    "equipment_id": equipment.equipment_id,
+                    "equipment_type": equipment.equipment_type,
+                    "subsystem": equipment.subsystem,
+                    "sensor_name": sensor.name,
+                    "sensor_unit": sensor.unit,
+                    "sensor_id": sensor_id,
+                    "criticality": equipment.criticality,
+                    "dataset": "MSL",
                 }
                 sensor_id += 1
 
         logger.info(f"Mapped {len(sensor_mapping)} sensors total")
         return sensor_mapping
 
-    def load_sensor_data(self, sensor_info: Dict, sample_size: int = 10000) -> Optional[np.ndarray]:
+    def load_sensor_data(
+        self, sensor_info: Dict, sample_size: int = 10000
+    ) -> Optional[np.ndarray]:
         """Load training data for a specific sensor
 
         Args:
@@ -109,19 +118,25 @@ class TelemanoMTrainingPipeline:
             Training data array or None if failed
         """
         try:
-            dataset = sensor_info['dataset']
-            sensor_id = sensor_info['sensor_id']
+            dataset = sensor_info["dataset"]
+            sensor_id = sensor_info["sensor_id"]
 
             # Load NASA data (this would be adapted based on your actual data format)
-            if dataset == 'SMAP':
+            if dataset == "SMAP":
                 # Load SMAP data - adapt this to your actual data loading
-                data = self.data_service.get_smap_sensor_data(sensor_id, limit=sample_size)
+                data = self.data_service.get_smap_sensor_data(
+                    sensor_id, limit=sample_size
+                )
             else:  # MSL
                 # Load MSL data - adapt this to your actual data loading
-                data = self.data_service.get_msl_sensor_data(sensor_id, limit=sample_size)
+                data = self.data_service.get_msl_sensor_data(
+                    sensor_id, limit=sample_size
+                )
 
             if data is None or len(data) < 500:  # Minimum data requirement
-                logger.warning(f"Insufficient data for sensor {sensor_info['sensor_name']}: {len(data) if data is not None else 0} samples")
+                logger.warning(
+                    f"Insufficient data for sensor {sensor_info['sensor_name']}: {len(data) if data is not None else 0} samples"
+                )
                 return None
 
             # Convert to numpy array and handle preprocessing
@@ -138,15 +153,20 @@ class TelemanoMTrainingPipeline:
             if len(sensor_data.shape) == 1:
                 sensor_data = sensor_data.reshape(-1, 1)
 
-            logger.info(f"Loaded {len(sensor_data)} samples for {sensor_info['sensor_name']}")
+            logger.info(
+                f"Loaded {len(sensor_data)} samples for {sensor_info['sensor_name']}"
+            )
             return sensor_data
 
         except Exception as e:
-            logger.error(f"Failed to load data for sensor {sensor_info['sensor_name']}: {e}")
+            logger.error(
+                f"Failed to load data for sensor {sensor_info['sensor_name']}: {e}"
+            )
             return None
 
-    def train_single_sensor(self, sensor_key: str, sensor_info: Dict,
-                           quick_mode: bool = False) -> Optional[NASATelemanom]:
+    def train_single_sensor(
+        self, sensor_key: str, sensor_info: Dict, quick_mode: bool = False
+    ) -> Optional[NASATelemanom]:
         """Train Telemanom model for a single sensor
 
         Args:
@@ -170,18 +190,18 @@ class TelemanoMTrainingPipeline:
                 config = Telemanom_Config(
                     epochs=5,
                     sequence_length=50,  # Shorter for quick training
-                    batch_size=32
+                    batch_size=32,
                 )
             else:
                 # Full training configuration
                 config = Telemanom_Config(
                     epochs=35,  # NASA default
                     sequence_length=100,  # Shorter than NASA default for efficiency
-                    batch_size=70
+                    batch_size=70,
                 )
 
                 # Adjust based on equipment criticality
-                if sensor_info['criticality'] == 'CRITICAL':
+                if sensor_info["criticality"] == "CRITICAL":
                     config.epochs = 50
                     config.sequence_length = 150
 
@@ -202,17 +222,19 @@ class TelemanoMTrainingPipeline:
 
             # Store training results
             self.training_results[sensor_key] = {
-                'success': True,
-                'sensor_info': sensor_info,
-                'model_path': str(model_path),
-                'training_loss': history['loss'][-1] if 'loss' in history else None,
-                'val_loss': history['val_loss'][-1] if 'val_loss' in history else None,
-                'threshold': model.error_threshold,
-                'training_samples': len(train_data),
-                'model_params': model.model.count_params() if model.model else 0
+                "success": True,
+                "sensor_info": sensor_info,
+                "model_path": str(model_path),
+                "training_loss": history["loss"][-1] if "loss" in history else None,
+                "val_loss": history["val_loss"][-1] if "val_loss" in history else None,
+                "threshold": model.error_threshold,
+                "training_samples": len(train_data),
+                "model_params": model.model.count_params() if model.model else 0,
             }
 
-            logger.info(f"Successfully trained {sensor_key} - Threshold: {model.error_threshold:.4f}")
+            logger.info(
+                f"Successfully trained {sensor_key} - Threshold: {model.error_threshold:.4f}"
+            )
             return model
 
         except Exception as e:
@@ -220,15 +242,16 @@ class TelemanoMTrainingPipeline:
             logger.error(traceback.format_exc())
 
             self.training_results[sensor_key] = {
-                'success': False,
-                'sensor_info': sensor_info,
-                'error': str(e)
+                "success": False,
+                "sensor_info": sensor_info,
+                "error": str(e),
             }
             self.failed_sensors.append(sensor_key)
             return None
 
-    def train_all_sensors(self, quick_mode: bool = False,
-                         sensor_range: Optional[Tuple[int, int]] = None) -> Dict:
+    def train_all_sensors(
+        self, quick_mode: bool = False, sensor_range: Optional[Tuple[int, int]] = None
+    ) -> Dict:
         """Train models for all sensors
 
         Args:
@@ -238,7 +261,9 @@ class TelemanoMTrainingPipeline:
         Returns:
             Training results summary
         """
-        logger.info(f"Starting {'quick' if quick_mode else 'full'} training for all sensors")
+        logger.info(
+            f"Starting {'quick' if quick_mode else 'full'} training for all sensors"
+        )
 
         # Get sensor mapping
         sensor_mapping = self.get_sensor_mapping()
@@ -247,8 +272,9 @@ class TelemanoMTrainingPipeline:
         # Filter by range if specified
         if sensor_range:
             start, end = sensor_range
-            sensors_to_train = [(k, v) for k, v in sensors_to_train
-                              if start <= v['sensor_id'] <= end]
+            sensors_to_train = [
+                (k, v) for k, v in sensors_to_train if start <= v["sensor_id"] <= end
+            ]
 
         logger.info(f"Training {len(sensors_to_train)} sensors")
 
@@ -260,27 +286,34 @@ class TelemanoMTrainingPipeline:
                 successful_models += 1
 
             # Log progress
-            progress = ((sensor_info['sensor_id'] - (sensor_range[0] if sensor_range else 0)) + 1)
+            progress = (
+                sensor_info["sensor_id"] - (sensor_range[0] if sensor_range else 0)
+            ) + 1
             total = len(sensors_to_train)
             logger.info(f"Progress: {progress}/{total} sensors processed")
 
         # Save training summary
         summary = {
-            'total_sensors': len(sensors_to_train),
-            'successful_models': successful_models,
-            'failed_models': len(self.failed_sensors),
-            'quick_mode': quick_mode,
-            'sensor_range': sensor_range,
-            'timestamp': datetime.now().isoformat(),
-            'results': self.training_results
+            "total_sensors": len(sensors_to_train),
+            "successful_models": successful_models,
+            "failed_models": len(self.failed_sensors),
+            "quick_mode": quick_mode,
+            "sensor_range": sensor_range,
+            "timestamp": datetime.now().isoformat(),
+            "results": self.training_results,
         }
 
         # Save summary to file
-        summary_path = self.models_dir / f"training_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        with open(summary_path, 'w') as f:
+        summary_path = (
+            self.models_dir
+            / f"training_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        )
+        with open(summary_path, "w") as f:
             json.dump(summary, f, indent=2)
 
-        logger.info(f"Training completed: {successful_models}/{len(sensors_to_train)} successful")
+        logger.info(
+            f"Training completed: {successful_models}/{len(sensors_to_train)} successful"
+        )
         logger.info(f"Summary saved to: {summary_path}")
 
         return summary
@@ -300,7 +333,7 @@ class TelemanoMTrainingPipeline:
         model_files = list(self.models_dir.glob("*.pkl"))
         if len(model_files) == 0:
             logger.warning("No trained models found")
-            return {'error': 'No trained models found'}
+            return {"error": "No trained models found"}
 
         # Test sample of models
         test_results = {}
@@ -318,44 +351,52 @@ class TelemanoMTrainingPipeline:
                 results = model.predict_anomalies(test_data)
 
                 test_results[model.sensor_id] = {
-                    'model_loaded': True,
-                    'anomalies_detected': int(np.sum(results['anomalies'])),
-                    'max_score': float(np.max(results['scores'])),
-                    'threshold': float(model.error_threshold),
-                    'model_info': model.get_model_info()
+                    "model_loaded": True,
+                    "anomalies_detected": int(np.sum(results["anomalies"])),
+                    "max_score": float(np.max(results["scores"])),
+                    "threshold": float(model.error_threshold),
+                    "model_info": model.get_model_info(),
                 }
 
                 tested_count += 1
                 logger.info(f"Test passed for {model.sensor_id}")
 
             except Exception as e:
-                test_results[model_file.stem] = {
-                    'model_loaded': False,
-                    'error': str(e)
-                }
+                test_results[model_file.stem] = {"model_loaded": False, "error": str(e)}
                 logger.error(f"Test failed for {model_file.stem}: {e}")
 
         summary = {
-            'tested_models': tested_count,
-            'successful_tests': sum(1 for r in test_results.values() if r.get('model_loaded', False)),
-            'results': test_results
+            "tested_models": tested_count,
+            "successful_tests": sum(
+                1 for r in test_results.values() if r.get("model_loaded", False)
+            ),
+            "results": test_results,
         }
 
-        logger.info(f"Testing completed: {summary['successful_tests']}/{tested_count} models passed")
+        logger.info(
+            f"Testing completed: {summary['successful_tests']}/{tested_count} models passed"
+        )
         return summary
 
 
 def main():
     """Main training script"""
-    parser = argparse.ArgumentParser(description='Train NASA Telemanom models')
-    parser.add_argument('--quick', action='store_true',
-                       help='Quick training mode (5 epochs)')
-    parser.add_argument('--sensor-range', type=str,
-                       help='Sensor range to train (e.g., "0-10")')
-    parser.add_argument('--test-only', action='store_true',
-                       help='Only test existing models')
-    parser.add_argument('--models-dir', type=str, default='data/models/telemanom',
-                       help='Directory to save models')
+    parser = argparse.ArgumentParser(description="Train NASA Telemanom models")
+    parser.add_argument(
+        "--quick", action="store_true", help="Quick training mode (5 epochs)"
+    )
+    parser.add_argument(
+        "--sensor-range", type=str, help='Sensor range to train (e.g., "0-10")'
+    )
+    parser.add_argument(
+        "--test-only", action="store_true", help="Only test existing models"
+    )
+    parser.add_argument(
+        "--models-dir",
+        type=str,
+        default="data/models/telemanom",
+        help="Directory to save models",
+    )
 
     args = parser.parse_args()
 
@@ -373,7 +414,7 @@ def main():
     sensor_range = None
     if args.sensor_range:
         try:
-            start, end = map(int, args.sensor_range.split('-'))
+            start, end = map(int, args.sensor_range.split("-"))
             sensor_range = (start, end)
         except ValueError:
             logger.error("Invalid sensor range format. Use 'start-end' (e.g., '0-10')")
@@ -382,8 +423,7 @@ def main():
     # Train models
     try:
         results = pipeline.train_all_sensors(
-            quick_mode=args.quick,
-            sensor_range=sensor_range
+            quick_mode=args.quick, sensor_range=sensor_range
         )
 
         print("\nTraining Summary:")
@@ -391,14 +431,16 @@ def main():
         print(f"Successful: {results['successful_models']}")
         print(f"Failed: {results['failed_models']}")
 
-        if results['failed_models'] > 0:
+        if results["failed_models"] > 0:
             print(f"Failed sensors: {pipeline.failed_sensors}")
 
         # Test a few models
-        if results['successful_models'] > 0:
+        if results["successful_models"] > 0:
             print("\nTesting trained models...")
             test_results = pipeline.test_trained_models(3)
-            print(f"Test results: {test_results['successful_tests']}/{test_results['tested_models']} passed")
+            print(
+                f"Test results: {test_results['successful_tests']}/{test_results['tested_models']} passed"
+            )
 
     except Exception as e:
         logger.error(f"Training pipeline failed: {e}")

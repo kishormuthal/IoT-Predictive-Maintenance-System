@@ -3,21 +3,23 @@ Model Monitoring Service
 Comprehensive model performance monitoring, degradation detection, and alerting
 """
 
-import numpy as np
-from typing import Dict, List, Any, Optional, Tuple
-from datetime import datetime, timedelta
-from dataclasses import dataclass, field
-from enum import Enum
-from pathlib import Path
 import json
 import logging
 from collections import deque
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 
 
 class MetricType(Enum):
     """Types of metrics"""
+
     CLASSIFICATION = "classification"
     REGRESSION = "regression"
     ANOMALY_DETECTION = "anomaly_detection"
@@ -26,6 +28,7 @@ class MetricType(Enum):
 
 class AlertSeverity(Enum):
     """Alert severity levels"""
+
     INFO = "info"
     WARNING = "warning"
     CRITICAL = "critical"
@@ -34,6 +37,7 @@ class AlertSeverity(Enum):
 @dataclass
 class PerformanceMetrics:
     """Container for model performance metrics"""
+
     timestamp: datetime
     sensor_id: str
     model_type: str
@@ -71,21 +75,29 @@ class PerformanceMetrics:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         result = {
-            'timestamp': self.timestamp.isoformat(),
-            'sensor_id': self.sensor_id,
-            'model_type': self.model_type,
-            'metric_type': self.metric_type.value,
-            'sample_size': self.sample_size
+            "timestamp": self.timestamp.isoformat(),
+            "sensor_id": self.sensor_id,
+            "model_type": self.model_type,
+            "metric_type": self.metric_type.value,
+            "sample_size": self.sample_size,
         }
 
         # Add non-None metrics
         for key, value in self.__dict__.items():
-            if key not in ['timestamp', 'sensor_id', 'model_type', 'metric_type', 'sample_size']:
+            if key not in [
+                "timestamp",
+                "sensor_id",
+                "model_type",
+                "metric_type",
+                "sample_size",
+            ]:
                 if value is not None:
                     if isinstance(value, list):
                         result[key] = value
                     else:
-                        result[key] = float(value) if isinstance(value, (int, float)) else value
+                        result[key] = (
+                            float(value) if isinstance(value, (int, float)) else value
+                        )
 
         return result
 
@@ -93,6 +105,7 @@ class PerformanceMetrics:
 @dataclass
 class PerformanceAlert:
     """Performance degradation alert"""
+
     timestamp: datetime
     sensor_id: str
     model_type: str
@@ -107,16 +120,16 @@ class PerformanceAlert:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         return {
-            'timestamp': self.timestamp.isoformat(),
-            'sensor_id': self.sensor_id,
-            'model_type': self.model_type,
-            'severity': self.severity.value,
-            'metric_name': self.metric_name,
-            'current_value': self.current_value,
-            'baseline_value': self.baseline_value,
-            'degradation_pct': self.degradation_pct,
-            'message': self.message,
-            'recommendations': self.recommendations
+            "timestamp": self.timestamp.isoformat(),
+            "sensor_id": self.sensor_id,
+            "model_type": self.model_type,
+            "severity": self.severity.value,
+            "metric_name": self.metric_name,
+            "current_value": self.current_value,
+            "baseline_value": self.baseline_value,
+            "degradation_pct": self.degradation_pct,
+            "message": self.message,
+            "recommendations": self.recommendations,
         }
 
 
@@ -139,7 +152,7 @@ class ModelMonitoringService:
         baseline_window_days: int = 7,
         degradation_threshold: float = 0.10,  # 10% degradation
         critical_threshold: float = 0.25,  # 25% degradation
-        window_size: int = 100  # Rolling window for recent metrics
+        window_size: int = 100,  # Rolling window for recent metrics
     ):
         """
         Initialize model monitoring service
@@ -186,7 +199,7 @@ class ModelMonitoringService:
         try:
             baseline_file = self.metrics_path / "baselines.json"
             if baseline_file.exists():
-                with open(baseline_file, 'r') as f:
+                with open(baseline_file, "r") as f:
                     self.baselines = json.load(f)
                 logger.info(f"Loaded {len(self.baselines)} baseline metrics")
         except Exception as e:
@@ -196,7 +209,7 @@ class ModelMonitoringService:
         """Save baseline metrics to storage"""
         try:
             baseline_file = self.metrics_path / "baselines.json"
-            with open(baseline_file, 'w') as f:
+            with open(baseline_file, "w") as f:
                 json.dump(self.baselines, f, indent=2)
         except Exception as e:
             logger.error(f"Error saving baselines: {e}")
@@ -206,20 +219,20 @@ class ModelMonitoringService:
         try:
             alerts_file = self.alerts_path / "alerts_history.json"
             if alerts_file.exists():
-                with open(alerts_file, 'r') as f:
+                with open(alerts_file, "r") as f:
                     alerts_data = json.load(f)
                     for alert_dict in alerts_data:
                         alert = PerformanceAlert(
-                            timestamp=datetime.fromisoformat(alert_dict['timestamp']),
-                            sensor_id=alert_dict['sensor_id'],
-                            model_type=alert_dict['model_type'],
-                            severity=AlertSeverity(alert_dict['severity']),
-                            metric_name=alert_dict['metric_name'],
-                            current_value=alert_dict['current_value'],
-                            baseline_value=alert_dict['baseline_value'],
-                            degradation_pct=alert_dict['degradation_pct'],
-                            message=alert_dict['message'],
-                            recommendations=alert_dict.get('recommendations', [])
+                            timestamp=datetime.fromisoformat(alert_dict["timestamp"]),
+                            sensor_id=alert_dict["sensor_id"],
+                            model_type=alert_dict["model_type"],
+                            severity=AlertSeverity(alert_dict["severity"]),
+                            metric_name=alert_dict["metric_name"],
+                            current_value=alert_dict["current_value"],
+                            baseline_value=alert_dict["baseline_value"],
+                            degradation_pct=alert_dict["degradation_pct"],
+                            message=alert_dict["message"],
+                            recommendations=alert_dict.get("recommendations", []),
                         )
                         self.alerts.append(alert)
                 logger.info(f"Loaded {len(self.alerts)} alerts")
@@ -231,7 +244,7 @@ class ModelMonitoringService:
         try:
             alerts_file = self.alerts_path / "alerts_history.json"
             alerts_data = [alert.to_dict() for alert in self.alerts]
-            with open(alerts_file, 'w') as f:
+            with open(alerts_file, "w") as f:
                 json.dump(alerts_data, f, indent=2)
         except Exception as e:
             logger.error(f"Error saving alerts: {e}")
@@ -265,24 +278,21 @@ class ModelMonitoringService:
         """Save metrics to disk"""
         try:
             # Organize by sensor and date
-            date_str = metrics.timestamp.strftime('%Y%m%d')
+            date_str = metrics.timestamp.strftime("%Y%m%d")
             sensor_dir = self.metrics_path / metrics.sensor_id
             sensor_dir.mkdir(exist_ok=True)
 
             metrics_file = sensor_dir / f"{metrics.model_type}_{date_str}.jsonl"
 
             # Append to JSONL file
-            with open(metrics_file, 'a') as f:
-                f.write(json.dumps(metrics.to_dict()) + '\n')
+            with open(metrics_file, "a") as f:
+                f.write(json.dumps(metrics.to_dict()) + "\n")
 
         except Exception as e:
             logger.error(f"Error saving metrics to disk: {e}")
 
     def set_baseline(
-        self,
-        sensor_id: str,
-        model_type: str,
-        baseline_metrics: Dict[str, float]
+        self, sensor_id: str, model_type: str, baseline_metrics: Dict[str, float]
     ):
         """
         Set baseline metrics for a model
@@ -302,10 +312,7 @@ class ModelMonitoringService:
         )
 
     def compute_baseline_from_history(
-        self,
-        sensor_id: str,
-        model_type: str,
-        days_back: Optional[int] = None
+        self, sensor_id: str, model_type: str, days_back: Optional[int] = None
     ) -> Dict[str, float]:
         """
         Compute baseline from historical metrics
@@ -344,36 +351,36 @@ class ModelMonitoringService:
             # Classification metrics
             accuracies = [m.accuracy for m in recent if m.accuracy is not None]
             if accuracies:
-                baseline['accuracy'] = safe_mean(accuracies)
+                baseline["accuracy"] = safe_mean(accuracies)
 
             precisions = [m.precision for m in recent if m.precision is not None]
             if precisions:
-                baseline['precision'] = safe_mean(precisions)
+                baseline["precision"] = safe_mean(precisions)
 
             recalls = [m.recall for m in recent if m.recall is not None]
             if recalls:
-                baseline['recall'] = safe_mean(recalls)
+                baseline["recall"] = safe_mean(recalls)
 
             f1_scores = [m.f1_score for m in recent if m.f1_score is not None]
             if f1_scores:
-                baseline['f1_score'] = safe_mean(f1_scores)
+                baseline["f1_score"] = safe_mean(f1_scores)
 
             # Regression metrics
             maes = [m.mae for m in recent if m.mae is not None]
             if maes:
-                baseline['mae'] = safe_mean(maes)
+                baseline["mae"] = safe_mean(maes)
 
             rmses = [m.rmse for m in recent if m.rmse is not None]
             if rmses:
-                baseline['rmse'] = safe_mean(rmses)
+                baseline["rmse"] = safe_mean(rmses)
 
             mapes = [m.mape for m in recent if m.mape is not None]
             if mapes:
-                baseline['mape'] = safe_mean(mapes)
+                baseline["mape"] = safe_mean(mapes)
 
             r2_scores = [m.r2_score for m in recent if m.r2_score is not None]
             if r2_scores:
-                baseline['r2_score'] = safe_mean(r2_scores)
+                baseline["r2_score"] = safe_mean(r2_scores)
 
             # Set as baseline
             if baseline:
@@ -395,14 +402,14 @@ class ModelMonitoringService:
 
         # Check each metric
         metrics_to_check = {
-            'accuracy': (metrics.accuracy, True),  # (value, higher_is_better)
-            'precision': (metrics.precision, True),
-            'recall': (metrics.recall, True),
-            'f1_score': (metrics.f1_score, True),
-            'mae': (metrics.mae, False),
-            'rmse': (metrics.rmse, False),
-            'mape': (metrics.mape, False),
-            'r2_score': (metrics.r2_score, True)
+            "accuracy": (metrics.accuracy, True),  # (value, higher_is_better)
+            "precision": (metrics.precision, True),
+            "recall": (metrics.recall, True),
+            "f1_score": (metrics.f1_score, True),
+            "mae": (metrics.mae, False),
+            "rmse": (metrics.rmse, False),
+            "mape": (metrics.mape, False),
+            "r2_score": (metrics.r2_score, True),
         }
 
         for metric_name, (current_value, higher_is_better) in metrics_to_check.items():
@@ -413,10 +420,14 @@ class ModelMonitoringService:
 
             # Calculate degradation
             if higher_is_better:
-                degradation = (baseline_value - current_value) / (baseline_value + 1e-10)
+                degradation = (baseline_value - current_value) / (
+                    baseline_value + 1e-10
+                )
             else:
                 # For error metrics (lower is better), degradation is increase
-                degradation = (current_value - baseline_value) / (baseline_value + 1e-10)
+                degradation = (current_value - baseline_value) / (
+                    baseline_value + 1e-10
+                )
 
             # Check thresholds
             if degradation >= self.critical_threshold:
@@ -426,7 +437,7 @@ class ModelMonitoringService:
                     current_value=current_value,
                     baseline_value=baseline_value,
                     degradation_pct=degradation * 100,
-                    severity=AlertSeverity.CRITICAL
+                    severity=AlertSeverity.CRITICAL,
                 )
             elif degradation >= self.degradation_threshold:
                 self._create_alert(
@@ -435,7 +446,7 @@ class ModelMonitoringService:
                     current_value=current_value,
                     baseline_value=baseline_value,
                     degradation_pct=degradation * 100,
-                    severity=AlertSeverity.WARNING
+                    severity=AlertSeverity.WARNING,
                 )
 
     def _create_alert(
@@ -445,7 +456,7 @@ class ModelMonitoringService:
         current_value: float,
         baseline_value: float,
         degradation_pct: float,
-        severity: AlertSeverity
+        severity: AlertSeverity,
     ):
         """Create performance degradation alert"""
         message = (
@@ -476,7 +487,7 @@ class ModelMonitoringService:
             baseline_value=baseline_value,
             degradation_pct=degradation_pct,
             message=message,
-            recommendations=recommendations
+            recommendations=recommendations,
         )
 
         self.alerts.append(alert)
@@ -485,10 +496,7 @@ class ModelMonitoringService:
         logger.warning(message)
 
     def get_recent_metrics(
-        self,
-        sensor_id: str,
-        model_type: str,
-        limit: int = 10
+        self, sensor_id: str, model_type: str, limit: int = 10
     ) -> List[PerformanceMetrics]:
         """Get recent metrics for a model"""
         key = self._get_key(sensor_id, model_type)
@@ -504,7 +512,7 @@ class ModelMonitoringService:
         sensor_id: Optional[str] = None,
         model_type: Optional[str] = None,
         severity: Optional[AlertSeverity] = None,
-        days_back: int = 7
+        days_back: int = 7,
     ) -> List[PerformanceAlert]:
         """
         Get alerts filtered by criteria
@@ -534,11 +542,7 @@ class ModelMonitoringService:
         return filtered
 
     def get_metric_trend(
-        self,
-        sensor_id: str,
-        model_type: str,
-        metric_name: str,
-        days_back: int = 30
+        self, sensor_id: str, model_type: str, metric_name: str, days_back: int = 30
     ) -> Tuple[List[datetime], List[float]]:
         """
         Get trend for a specific metric
@@ -575,8 +579,12 @@ class ModelMonitoringService:
         """Get overall monitoring summary"""
         recent_alerts = self.get_alerts(days_back=7)
 
-        critical_alerts = [a for a in recent_alerts if a.severity == AlertSeverity.CRITICAL]
-        warning_alerts = [a for a in recent_alerts if a.severity == AlertSeverity.WARNING]
+        critical_alerts = [
+            a for a in recent_alerts if a.severity == AlertSeverity.CRITICAL
+        ]
+        warning_alerts = [
+            a for a in recent_alerts if a.severity == AlertSeverity.WARNING
+        ]
 
         # Count models being monitored
         monitored_models = len(self.recent_metrics)
@@ -585,12 +593,12 @@ class ModelMonitoringService:
         models_with_baselines = len(self.baselines)
 
         return {
-            'monitored_models': monitored_models,
-            'models_with_baselines': models_with_baselines,
-            'total_alerts_7d': len(recent_alerts),
-            'critical_alerts_7d': len(critical_alerts),
-            'warning_alerts_7d': len(warning_alerts),
-            'degradation_threshold': self.degradation_threshold * 100,
-            'critical_threshold': self.critical_threshold * 100,
-            'baseline_window_days': self.baseline_window_days
+            "monitored_models": monitored_models,
+            "models_with_baselines": models_with_baselines,
+            "total_alerts_7d": len(recent_alerts),
+            "critical_alerts_7d": len(critical_alerts),
+            "warning_alerts_7d": len(warning_alerts),
+            "degradation_threshold": self.degradation_threshold * 100,
+            "critical_threshold": self.critical_threshold * 100,
+            "baseline_window_days": self.baseline_window_days,
         }

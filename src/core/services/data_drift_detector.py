@@ -3,20 +3,22 @@ Data Drift Detection Module
 Detect distribution shifts and concept drift in sensor data
 """
 
+import logging
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Any, Optional, Tuple
-from datetime import datetime, timedelta
-from dataclasses import dataclass, field
-from enum import Enum
 from scipy import stats
-import logging
 
 logger = logging.getLogger(__name__)
 
 
 class DriftSeverity(Enum):
     """Drift severity levels"""
+
     NONE = "none"
     LOW = "low"
     MODERATE = "moderate"
@@ -26,6 +28,7 @@ class DriftSeverity(Enum):
 
 class DriftType(Enum):
     """Types of drift"""
+
     COVARIATE_SHIFT = "covariate_shift"  # P(X) changes
     CONCEPT_DRIFT = "concept_drift"  # P(Y|X) changes
     PRIOR_SHIFT = "prior_shift"  # P(Y) changes
@@ -34,6 +37,7 @@ class DriftType(Enum):
 @dataclass
 class DriftReport:
     """Drift detection report"""
+
     sensor_id: str
     drift_detected: bool
     severity: DriftSeverity
@@ -49,23 +53,30 @@ class DriftReport:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         return {
-            'sensor_id': self.sensor_id,
-            'drift_detected': self.drift_detected,
-            'severity': self.severity.value,
-            'drift_types': [dt.value for dt in self.drift_types],
-            'drift_score': self.drift_score,
-            'statistical_tests': self.statistical_tests,
-            'metrics': self.metrics,
-            'timestamp': self.timestamp.isoformat(),
-            'reference_period': [self.reference_period[0].isoformat(), self.reference_period[1].isoformat()],
-            'current_period': [self.current_period[0].isoformat(), self.current_period[1].isoformat()],
-            'recommendations': self.recommendations
+            "sensor_id": self.sensor_id,
+            "drift_detected": self.drift_detected,
+            "severity": self.severity.value,
+            "drift_types": [dt.value for dt in self.drift_types],
+            "drift_score": self.drift_score,
+            "statistical_tests": self.statistical_tests,
+            "metrics": self.metrics,
+            "timestamp": self.timestamp.isoformat(),
+            "reference_period": [
+                self.reference_period[0].isoformat(),
+                self.reference_period[1].isoformat(),
+            ],
+            "current_period": [
+                self.current_period[0].isoformat(),
+                self.current_period[1].isoformat(),
+            ],
+            "recommendations": self.recommendations,
         }
 
 
 @dataclass
 class DriftConfig:
     """Configuration for drift detection"""
+
     # Statistical test thresholds
     ks_test_threshold: float = 0.05  # Kolmogorov-Smirnov test p-value
     mw_test_threshold: float = 0.05  # Mann-Whitney U test p-value
@@ -111,7 +122,7 @@ class DataDriftDetector:
         self,
         data: np.ndarray,
         sensor_id: str,
-        timestamps: Optional[List[datetime]] = None
+        timestamps: Optional[List[datetime]] = None,
     ):
         """
         Fit reference distribution on baseline data
@@ -130,32 +141,34 @@ class DataDriftDetector:
 
         # Store reference statistics
         reference = {
-            'mean': float(np.mean(data)),
-            'std': float(np.std(data)),
-            'median': float(np.median(data)),
-            'q1': float(np.percentile(data, 25)),
-            'q3': float(np.percentile(data, 75)),
-            'min': float(np.min(data)),
-            'max': float(np.max(data)),
-            'n_samples': len(data),
-            'data': data.copy(),  # Store for statistical tests
-            'fitted_at': datetime.now()
+            "mean": float(np.mean(data)),
+            "std": float(np.std(data)),
+            "median": float(np.median(data)),
+            "q1": float(np.percentile(data, 25)),
+            "q3": float(np.percentile(data, 75)),
+            "min": float(np.min(data)),
+            "max": float(np.max(data)),
+            "n_samples": len(data),
+            "data": data.copy(),  # Store for statistical tests
+            "fitted_at": datetime.now(),
         }
 
         if timestamps:
-            reference['start_time'] = timestamps[0]
-            reference['end_time'] = timestamps[-1]
+            reference["start_time"] = timestamps[0]
+            reference["end_time"] = timestamps[-1]
 
         self.reference_distributions[sensor_id] = reference
 
-        logger.info(f"Fitted reference distribution for {sensor_id} ({len(data)} samples)")
+        logger.info(
+            f"Fitted reference distribution for {sensor_id} ({len(data)} samples)"
+        )
 
     def detect_drift(
         self,
         current_data: np.ndarray,
         sensor_id: str,
         current_timestamps: Optional[List[datetime]] = None,
-        reference_data: Optional[np.ndarray] = None
+        reference_data: Optional[np.ndarray] = None,
     ) -> DriftReport:
         """
         Detect drift between reference and current data
@@ -176,16 +189,18 @@ class DataDriftDetector:
                     f"No reference distribution for {sensor_id}. "
                     "Call fit_reference first or provide reference_data."
                 )
-            ref_data = self.reference_distributions[sensor_id]['data']
+            ref_data = self.reference_distributions[sensor_id]["data"]
             ref_period = (
-                self.reference_distributions[sensor_id].get('start_time', datetime.now() - timedelta(days=7)),
-                self.reference_distributions[sensor_id].get('end_time', datetime.now())
+                self.reference_distributions[sensor_id].get(
+                    "start_time", datetime.now() - timedelta(days=7)
+                ),
+                self.reference_distributions[sensor_id].get("end_time", datetime.now()),
             )
         else:
             ref_data = reference_data
             ref_period = (
                 datetime.now() - timedelta(hours=self.config.reference_window_hours),
-                datetime.now()
+                datetime.now(),
             )
 
         # Current period
@@ -194,7 +209,7 @@ class DataDriftDetector:
         else:
             cur_period = (
                 datetime.now() - timedelta(hours=self.config.current_window_hours),
-                datetime.now()
+                datetime.now(),
             )
 
         # Check minimum samples
@@ -234,7 +249,7 @@ class DataDriftDetector:
             timestamp=datetime.now(),
             reference_period=ref_period,
             current_period=cur_period,
-            recommendations=recommendations
+            recommendations=recommendations,
         )
 
         logger.info(
@@ -245,9 +260,7 @@ class DataDriftDetector:
         return report
 
     def _run_statistical_tests(
-        self,
-        reference: np.ndarray,
-        current: np.ndarray
+        self, reference: np.ndarray, current: np.ndarray
     ) -> Dict[str, Any]:
         """Run statistical hypothesis tests"""
         tests = {}
@@ -255,28 +268,28 @@ class DataDriftDetector:
         # Kolmogorov-Smirnov test (distribution similarity)
         try:
             ks_stat, ks_pvalue = stats.ks_2samp(reference, current)
-            tests['ks_test'] = {
-                'statistic': float(ks_stat),
-                'p_value': float(ks_pvalue),
-                'drift_detected': ks_pvalue < self.config.ks_test_threshold
+            tests["ks_test"] = {
+                "statistic": float(ks_stat),
+                "p_value": float(ks_pvalue),
+                "drift_detected": ks_pvalue < self.config.ks_test_threshold,
             }
         except Exception as e:
             logger.warning(f"KS test failed: {e}")
-            tests['ks_test'] = {'error': str(e)}
+            tests["ks_test"] = {"error": str(e)}
 
         # Mann-Whitney U test (median difference)
         try:
             mw_stat, mw_pvalue = stats.mannwhitneyu(
-                reference, current, alternative='two-sided'
+                reference, current, alternative="two-sided"
             )
-            tests['mann_whitney'] = {
-                'statistic': float(mw_stat),
-                'p_value': float(mw_pvalue),
-                'drift_detected': mw_pvalue < self.config.mw_test_threshold
+            tests["mann_whitney"] = {
+                "statistic": float(mw_stat),
+                "p_value": float(mw_pvalue),
+                "drift_detected": mw_pvalue < self.config.mw_test_threshold,
             }
         except Exception as e:
             logger.warning(f"Mann-Whitney test failed: {e}")
-            tests['mann_whitney'] = {'error': str(e)}
+            tests["mann_whitney"] = {"error": str(e)}
 
         # Chi-square test (binned distribution)
         try:
@@ -284,7 +297,7 @@ class DataDriftDetector:
             bins = np.linspace(
                 min(reference.min(), current.min()),
                 max(reference.max(), current.max()),
-                20
+                20,
             )
             ref_hist, _ = np.histogram(reference, bins=bins)
             cur_hist, _ = np.histogram(current, bins=bins)
@@ -294,21 +307,19 @@ class DataDriftDetector:
             cur_hist = cur_hist + 1
 
             chi2_stat, chi2_pvalue = stats.chisquare(cur_hist, ref_hist)
-            tests['chi_square'] = {
-                'statistic': float(chi2_stat),
-                'p_value': float(chi2_pvalue),
-                'drift_detected': chi2_pvalue < self.config.chi2_test_threshold
+            tests["chi_square"] = {
+                "statistic": float(chi2_stat),
+                "p_value": float(chi2_pvalue),
+                "drift_detected": chi2_pvalue < self.config.chi2_test_threshold,
             }
         except Exception as e:
             logger.warning(f"Chi-square test failed: {e}")
-            tests['chi_square'] = {'error': str(e)}
+            tests["chi_square"] = {"error": str(e)}
 
         return tests
 
     def _compute_drift_metrics(
-        self,
-        reference: np.ndarray,
-        current: np.ndarray
+        self, reference: np.ndarray, current: np.ndarray
     ) -> Dict[str, float]:
         """Compute drift metrics"""
         metrics = {}
@@ -322,7 +333,7 @@ class DataDriftDetector:
             mean_shift = abs(cur_mean - ref_mean) / ref_std
         else:
             mean_shift = 0.0
-        metrics['mean_shift_std'] = float(mean_shift)
+        metrics["mean_shift_std"] = float(mean_shift)
 
         # Standard deviation ratio
         cur_std = np.std(current)
@@ -330,33 +341,39 @@ class DataDriftDetector:
             std_ratio = cur_std / ref_std
         else:
             std_ratio = 1.0
-        metrics['std_ratio'] = float(std_ratio)
+        metrics["std_ratio"] = float(std_ratio)
 
         # Population Stability Index (PSI)
         psi = self._compute_psi(reference, current)
-        metrics['psi'] = float(psi)
+        metrics["psi"] = float(psi)
 
         # Jensen-Shannon divergence
         js_div = self._compute_jensen_shannon(reference, current)
-        metrics['jensen_shannon_divergence'] = float(js_div)
+        metrics["jensen_shannon_divergence"] = float(js_div)
 
         # Relative change in quantiles
         ref_q25, ref_q50, ref_q75 = np.percentile(reference, [25, 50, 75])
         cur_q25, cur_q50, cur_q75 = np.percentile(current, [25, 50, 75])
 
         if ref_q50 > 1e-10:
-            metrics['median_change_pct'] = abs(cur_q50 - ref_q50) / ref_q50 * 100
+            metrics["median_change_pct"] = abs(cur_q50 - ref_q50) / ref_q50 * 100
         else:
-            metrics['median_change_pct'] = 0.0
+            metrics["median_change_pct"] = 0.0
 
         if ref_q75 - ref_q25 > 1e-10:
-            metrics['iqr_change_pct'] = abs((cur_q75 - cur_q25) - (ref_q75 - ref_q25)) / (ref_q75 - ref_q25) * 100
+            metrics["iqr_change_pct"] = (
+                abs((cur_q75 - cur_q25) - (ref_q75 - ref_q25))
+                / (ref_q75 - ref_q25)
+                * 100
+            )
         else:
-            metrics['iqr_change_pct'] = 0.0
+            metrics["iqr_change_pct"] = 0.0
 
         return metrics
 
-    def _compute_psi(self, reference: np.ndarray, current: np.ndarray, bins: int = 10) -> float:
+    def _compute_psi(
+        self, reference: np.ndarray, current: np.ndarray, bins: int = 10
+    ) -> float:
         """
         Compute Population Stability Index (PSI)
 
@@ -387,10 +404,7 @@ class DataDriftDetector:
         return psi
 
     def _compute_jensen_shannon(
-        self,
-        reference: np.ndarray,
-        current: np.ndarray,
-        bins: int = 20
+        self, reference: np.ndarray, current: np.ndarray, bins: int = 20
     ) -> float:
         """
         Compute Jensen-Shannon divergence
@@ -401,7 +415,7 @@ class DataDriftDetector:
         bin_edges = np.linspace(
             min(reference.min(), current.min()),
             max(reference.max(), current.max()),
-            bins + 1
+            bins + 1,
         )
 
         # Compute distributions
@@ -419,16 +433,14 @@ class DataDriftDetector:
         # Jensen-Shannon divergence
         m = 0.5 * (ref_prob + cur_prob)
         js_div = 0.5 * (
-            np.sum(ref_prob * np.log(ref_prob / m)) +
-            np.sum(cur_prob * np.log(cur_prob / m))
+            np.sum(ref_prob * np.log(ref_prob / m))
+            + np.sum(cur_prob * np.log(cur_prob / m))
         )
 
         return js_div
 
     def _compute_drift_score(
-        self,
-        statistical_tests: Dict[str, Any],
-        metrics: Dict[str, float]
+        self, statistical_tests: Dict[str, Any], metrics: Dict[str, float]
     ) -> float:
         """
         Compute overall drift score (0-1)
@@ -438,34 +450,37 @@ class DataDriftDetector:
         scores = []
 
         # Statistical test signals
-        if 'ks_test' in statistical_tests and 'p_value' in statistical_tests['ks_test']:
+        if "ks_test" in statistical_tests and "p_value" in statistical_tests["ks_test"]:
             # Convert p-value to drift signal (lower p-value = higher drift)
-            ks_signal = 1.0 - statistical_tests['ks_test']['p_value']
+            ks_signal = 1.0 - statistical_tests["ks_test"]["p_value"]
             scores.append(ks_signal)
 
-        if 'mann_whitney' in statistical_tests and 'p_value' in statistical_tests['mann_whitney']:
-            mw_signal = 1.0 - statistical_tests['mann_whitney']['p_value']
+        if (
+            "mann_whitney" in statistical_tests
+            and "p_value" in statistical_tests["mann_whitney"]
+        ):
+            mw_signal = 1.0 - statistical_tests["mann_whitney"]["p_value"]
             scores.append(mw_signal)
 
         # Metric-based signals
-        if 'psi' in metrics:
+        if "psi" in metrics:
             # PSI: 0.2+ is significant
-            psi_signal = min(metrics['psi'] / 0.3, 1.0)
+            psi_signal = min(metrics["psi"] / 0.3, 1.0)
             scores.append(psi_signal)
 
-        if 'jensen_shannon_divergence' in metrics:
+        if "jensen_shannon_divergence" in metrics:
             # JS: 0.1+ is significant
-            js_signal = min(metrics['jensen_shannon_divergence'] / 0.2, 1.0)
+            js_signal = min(metrics["jensen_shannon_divergence"] / 0.2, 1.0)
             scores.append(js_signal)
 
-        if 'mean_shift_std' in metrics:
+        if "mean_shift_std" in metrics:
             # Mean shift: 2+ std is significant
-            mean_signal = min(metrics['mean_shift_std'] / 3.0, 1.0)
+            mean_signal = min(metrics["mean_shift_std"] / 3.0, 1.0)
             scores.append(mean_signal)
 
-        if 'std_ratio' in metrics:
+        if "std_ratio" in metrics:
             # Std ratio: 2x is significant
-            std_signal = min(abs(metrics['std_ratio'] - 1.0) / 1.0, 1.0)
+            std_signal = min(abs(metrics["std_ratio"] - 1.0) / 1.0, 1.0)
             scores.append(std_signal)
 
         # Average all signals
@@ -488,18 +503,19 @@ class DataDriftDetector:
             return DriftSeverity.CRITICAL
 
     def _identify_drift_types(
-        self,
-        statistical_tests: Dict[str, Any],
-        metrics: Dict[str, float]
+        self, statistical_tests: Dict[str, Any], metrics: Dict[str, float]
     ) -> List[DriftType]:
         """Identify types of drift present"""
         drift_types = []
 
         # Covariate shift (distribution of inputs changed)
-        if metrics.get('psi', 0) > self.config.psi_threshold:
+        if metrics.get("psi", 0) > self.config.psi_threshold:
             drift_types.append(DriftType.COVARIATE_SHIFT)
 
-        if metrics.get('jensen_shannon_divergence', 0) > self.config.jensen_shannon_threshold:
+        if (
+            metrics.get("jensen_shannon_divergence", 0)
+            > self.config.jensen_shannon_threshold
+        ):
             if DriftType.COVARIATE_SHIFT not in drift_types:
                 drift_types.append(DriftType.COVARIATE_SHIFT)
 
@@ -513,7 +529,7 @@ class DataDriftDetector:
         severity: DriftSeverity,
         drift_types: List[DriftType],
         statistical_tests: Dict[str, Any],
-        metrics: Dict[str, float]
+        metrics: Dict[str, float],
     ) -> List[str]:
         """Generate actionable recommendations"""
         recommendations = []
@@ -522,23 +538,37 @@ class DataDriftDetector:
             recommendations.append("No action required - data distribution is stable")
             return recommendations
 
-        if severity in [DriftSeverity.MODERATE, DriftSeverity.HIGH, DriftSeverity.CRITICAL]:
+        if severity in [
+            DriftSeverity.MODERATE,
+            DriftSeverity.HIGH,
+            DriftSeverity.CRITICAL,
+        ]:
             recommendations.append("⚠️ Consider retraining models with recent data")
 
         if severity in [DriftSeverity.HIGH, DriftSeverity.CRITICAL]:
-            recommendations.append("🔴 Urgent: Review sensor calibration and data pipeline")
+            recommendations.append(
+                "🔴 Urgent: Review sensor calibration and data pipeline"
+            )
 
         if DriftType.COVARIATE_SHIFT in drift_types:
-            recommendations.append("Data distribution has shifted - update preprocessing parameters")
+            recommendations.append(
+                "Data distribution has shifted - update preprocessing parameters"
+            )
 
-        if metrics.get('mean_shift_std', 0) > self.config.mean_shift_threshold:
-            recommendations.append("Significant mean shift detected - verify sensor readings")
+        if metrics.get("mean_shift_std", 0) > self.config.mean_shift_threshold:
+            recommendations.append(
+                "Significant mean shift detected - verify sensor readings"
+            )
 
-        if metrics.get('std_ratio', 1.0) > self.config.std_ratio_threshold:
-            recommendations.append("Variance has changed significantly - check for anomalies")
+        if metrics.get("std_ratio", 1.0) > self.config.std_ratio_threshold:
+            recommendations.append(
+                "Variance has changed significantly - check for anomalies"
+            )
 
-        if metrics.get('psi', 0) > 0.25:
-            recommendations.append("High PSI indicates substantial distributional change")
+        if metrics.get("psi", 0) > 0.25:
+            recommendations.append(
+                "High PSI indicates substantial distributional change"
+            )
 
         return recommendations
 

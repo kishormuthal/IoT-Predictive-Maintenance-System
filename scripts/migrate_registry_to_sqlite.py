@@ -4,20 +4,22 @@ Migration Script: JSON Model Registry to SQLite
 Migrates existing JSON-based model registry to SQLite backend
 """
 
-import sys
 import json
 import logging
-from pathlib import Path
+import sys
 from datetime import datetime
+from pathlib import Path
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.infrastructure.ml.model_registry_sqlite import ModelRegistrySQLite, ModelMetadata
+from src.infrastructure.ml.model_registry_sqlite import (
+    ModelMetadata,
+    ModelRegistrySQLite,
+)
 
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -37,7 +39,10 @@ class RegistryMigration:
         self.new_path = Path(new_registry_path)
 
         # Create backup
-        self.backup_path = self.old_path.parent / f"registry_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        self.backup_path = (
+            self.old_path.parent
+            / f"registry_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        )
 
     def backup_old_registry(self):
         """Create backup of old registry"""
@@ -67,12 +72,12 @@ class RegistryMigration:
             versions_index = {}
 
             if models_index_file.exists():
-                with open(models_index_file, 'r') as f:
+                with open(models_index_file, "r") as f:
                     models_index = json.load(f)
                 logger.info(f"Loaded {len(models_index)} models from JSON")
 
             if versions_index_file.exists():
-                with open(versions_index_file, 'r') as f:
+                with open(versions_index_file, "r") as f:
                     versions_index = json.load(f)
                 logger.info(f"Loaded {len(versions_index)} versions from JSON")
 
@@ -123,8 +128,8 @@ class RegistryMigration:
         for model_id, model_info in models_index.items():
             logger.info(f"\nMigrating model: {model_id}")
 
-            for version_info in model_info.get('versions', []):
-                version_id = version_info['version_id']
+            for version_info in model_info.get("versions", []):
+                version_id = version_info["version_id"]
 
                 try:
                     # Load version metadata
@@ -132,44 +137,63 @@ class RegistryMigration:
                         metadata_file = metadata_dir / f"{version_id}.json"
 
                         if metadata_file.exists():
-                            with open(metadata_file, 'r') as f:
+                            with open(metadata_file, "r") as f:
                                 metadata = json.load(f)
 
                             if dry_run:
-                                logger.info(f"  [DRY RUN] Would migrate version: {version_id}")
-                                logger.info(f"    - Sensor: {metadata.get('sensor_id')}")
+                                logger.info(
+                                    f"  [DRY RUN] Would migrate version: {version_id}"
+                                )
+                                logger.info(
+                                    f"    - Sensor: {metadata.get('sensor_id')}"
+                                )
                                 logger.info(f"    - Type: {metadata.get('model_type')}")
-                                logger.info(f"    - Score: {metadata.get('performance_score', 0):.4f}")
+                                logger.info(
+                                    f"    - Score: {metadata.get('performance_score', 0):.4f}"
+                                )
                                 migrated_count += 1
                             else:
                                 # Add validation_performed flag if missing
-                                validation_metrics = metadata.get('validation_metrics', {})
-                                if 'validation_performed' not in validation_metrics:
+                                validation_metrics = metadata.get(
+                                    "validation_metrics", {}
+                                )
+                                if "validation_performed" not in validation_metrics:
                                     logger.warning(
                                         f"    Adding 'validation_performed': False to {version_id} "
                                         f"(original metadata missing validation flag)"
                                     )
-                                    validation_metrics['validation_performed'] = False
+                                    validation_metrics["validation_performed"] = False
 
                                 # Register in SQLite
                                 sqlite_registry.register_model(
-                                    sensor_id=metadata['sensor_id'],
-                                    model_type=metadata['model_type'],
-                                    model_path=Path(metadata.get('model_path', f"data/models/{metadata['model_type']}/{metadata['sensor_id']}")),
-                                    training_config=metadata.get('training_config', {}),
-                                    training_metrics=metadata.get('training_metrics', {}),
+                                    sensor_id=metadata["sensor_id"],
+                                    model_type=metadata["model_type"],
+                                    model_path=Path(
+                                        metadata.get(
+                                            "model_path",
+                                            f"data/models/{metadata['model_type']}/{metadata['sensor_id']}",
+                                        )
+                                    ),
+                                    training_config=metadata.get("training_config", {}),
+                                    training_metrics=metadata.get(
+                                        "training_metrics", {}
+                                    ),
                                     validation_metrics=validation_metrics,
-                                    training_time_seconds=metadata.get('training_time_seconds', 0.0),
-                                    data_hash=metadata.get('data_hash', ''),
-                                    description=metadata.get('description', ''),
-                                    tags=metadata.get('tags', [])
+                                    training_time_seconds=metadata.get(
+                                        "training_time_seconds", 0.0
+                                    ),
+                                    data_hash=metadata.get("data_hash", ""),
+                                    description=metadata.get("description", ""),
+                                    tags=metadata.get("tags", []),
                                 )
 
                                 logger.info(f"  ✓ Migrated version: {version_id}")
                                 migrated_count += 1
 
                         else:
-                            logger.warning(f"  ✗ Metadata file not found: {metadata_file}")
+                            logger.warning(
+                                f"  ✗ Metadata file not found: {metadata_file}"
+                            )
                             failed_count += 1
 
                 except Exception as e:
@@ -200,23 +224,23 @@ def main():
     """Main migration script"""
     import argparse
 
-    parser = argparse.ArgumentParser(description='Migrate JSON model registry to SQLite')
-    parser.add_argument(
-        '--old-path',
-        type=str,
-        default='data/models/registry',
-        help='Path to old JSON registry (default: data/models/registry)'
+    parser = argparse.ArgumentParser(
+        description="Migrate JSON model registry to SQLite"
     )
     parser.add_argument(
-        '--new-path',
+        "--old-path",
         type=str,
-        default='data/models/registry_sqlite',
-        help='Path for new SQLite registry (default: data/models/registry_sqlite)'
+        default="data/models/registry",
+        help="Path to old JSON registry (default: data/models/registry)",
     )
     parser.add_argument(
-        '--dry-run',
-        action='store_true',
-        help='Perform dry run without making changes'
+        "--new-path",
+        type=str,
+        default="data/models/registry_sqlite",
+        help="Path for new SQLite registry (default: data/models/registry_sqlite)",
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Perform dry run without making changes"
     )
 
     args = parser.parse_args()
@@ -237,7 +261,9 @@ def main():
             logger.info("NEXT STEPS:")
             logger.info("=" * 80)
             logger.info("1. Verify the new SQLite registry works correctly")
-            logger.info("2. Update your services to use ModelRegistrySQLite instead of ModelRegistry")
+            logger.info(
+                "2. Update your services to use ModelRegistrySQLite instead of ModelRegistry"
+            )
             logger.info("3. Test thoroughly before deleting the backup")
             logger.info(f"4. Backup location: {migration.backup_path}")
         sys.exit(0)

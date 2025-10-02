@@ -3,16 +3,19 @@ Abstract interface for anomaly detectors
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple, Any, Optional
-import numpy as np
 from datetime import datetime
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
 
 
 class AnomalyDetectorInterface(ABC):
     """Abstract base class for all anomaly detectors"""
 
     @abstractmethod
-    def detect_anomalies(self, sensor_id: str, data: np.ndarray, timestamps: List[datetime]) -> Dict[str, Any]:
+    def detect_anomalies(
+        self, sensor_id: str, data: np.ndarray, timestamps: List[datetime]
+    ) -> Dict[str, Any]:
         """
         Detect anomalies in sensor data
 

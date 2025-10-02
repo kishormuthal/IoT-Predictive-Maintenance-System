@@ -3,35 +3,40 @@ Enhanced Performance Monitoring System
 Provides comprehensive performance monitoring for the IoT Predictive Maintenance System
 """
 
-import time
-import psutil
-import threading
-import tracemalloc
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Callable
-from dataclasses import dataclass, field
-from collections import deque, defaultdict
-import statistics
 import json
-from pathlib import Path
-import weakref
 import logging
 import os
+import statistics
+import threading
+import time
+import tracemalloc
+import weakref
+from collections import defaultdict, deque
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
 
-from .logger import get_logger, MetricsLogger
+import psutil
+
+from .logger import MetricsLogger, get_logger
+
 
 @dataclass
 class PerformanceMetric:
     """Performance metric data structure"""
+
     name: str
     value: float
     timestamp: datetime
     tags: Dict[str, str] = field(default_factory=dict)
     unit: str = ""
 
+
 @dataclass
 class SystemSnapshot:
     """System resource usage snapshot"""
+
     timestamp: datetime
     cpu_percent: float
     memory_percent: float
@@ -42,6 +47,7 @@ class SystemSnapshot:
     network_bytes_recv: int = 0
     process_count: int = 0
     thread_count: int = 0
+
 
 class PerformanceTracker:
     """Track performance of specific operations"""
@@ -84,10 +90,10 @@ class PerformanceTracker:
         # Get memory usage if tracking
         if tracemalloc.is_tracing():
             current, peak = tracemalloc.get_traced_memory()
-            self.metrics['memory_current_mb'] = current / 1024 / 1024
-            self.metrics['memory_peak_mb'] = peak / 1024 / 1024
+            self.metrics["memory_current_mb"] = current / 1024 / 1024
+            self.metrics["memory_peak_mb"] = peak / 1024 / 1024
 
-        self.metrics['elapsed_seconds'] = elapsed
+        self.metrics["elapsed_seconds"] = elapsed
         self.logger.info(f"Completed tracking: {self.name} - {elapsed:.3f}s")
 
         return elapsed
@@ -120,6 +126,7 @@ class PerformanceTracker:
         """Context manager exit"""
         self.stop()
 
+
 class SystemMonitor:
     """Monitor system-wide performance metrics"""
 
@@ -135,10 +142,10 @@ class SystemMonitor:
         self.snapshots = deque(maxlen=history_size)
         self.running = False
         self.thread = None
-        self.logger = get_logger('performance.system')
+        self.logger = get_logger("performance.system")
 
         try:
-            self.metrics_logger = MetricsLogger('system_metrics')
+            self.metrics_logger = MetricsLogger("system_metrics")
         except:
             # Fallback if MetricsLogger not available
             self.metrics_logger = None
@@ -187,7 +194,7 @@ class SystemMonitor:
         """
         # Get basic system stats
         memory = psutil.virtual_memory()
-        disk = psutil.disk_usage('/')
+        disk = psutil.disk_usage("/")
 
         # Get network stats with delta calculation
         net_sent_delta = 0
@@ -196,8 +203,12 @@ class SystemMonitor:
         if self._last_network_stats:
             try:
                 current_network = psutil.net_io_counters()
-                net_sent_delta = current_network.bytes_sent - self._last_network_stats.bytes_sent
-                net_recv_delta = current_network.bytes_recv - self._last_network_stats.bytes_recv
+                net_sent_delta = (
+                    current_network.bytes_sent - self._last_network_stats.bytes_sent
+                )
+                net_recv_delta = (
+                    current_network.bytes_recv - self._last_network_stats.bytes_recv
+                )
                 self._last_network_stats = current_network
             except:
                 pass
@@ -212,8 +223,8 @@ class SystemMonitor:
             disk_usage_percent=disk.percent,
             network_bytes_sent=net_sent_delta,
             network_bytes_recv=net_recv_delta,
-            process_count=len(psutil.pids()) if hasattr(psutil, 'pids') else 0,
-            thread_count=threading.active_count()
+            process_count=len(psutil.pids()) if hasattr(psutil, "pids") else 0,
+            thread_count=threading.active_count(),
         )
 
         return snapshot
@@ -228,14 +239,20 @@ class SystemMonitor:
             return
 
         try:
-            self.metrics_logger.log_gauge('cpu_percent', snapshot.cpu_percent)
-            self.metrics_logger.log_gauge('memory_percent', snapshot.memory_percent)
-            self.metrics_logger.log_gauge('memory_used_mb', snapshot.memory_used_mb)
-            self.metrics_logger.log_gauge('disk_usage_percent', snapshot.disk_usage_percent)
-            self.metrics_logger.log_counter('network_bytes_sent', snapshot.network_bytes_sent)
-            self.metrics_logger.log_counter('network_bytes_recv', snapshot.network_bytes_recv)
-            self.metrics_logger.log_gauge('process_count', snapshot.process_count)
-            self.metrics_logger.log_gauge('thread_count', snapshot.thread_count)
+            self.metrics_logger.log_gauge("cpu_percent", snapshot.cpu_percent)
+            self.metrics_logger.log_gauge("memory_percent", snapshot.memory_percent)
+            self.metrics_logger.log_gauge("memory_used_mb", snapshot.memory_used_mb)
+            self.metrics_logger.log_gauge(
+                "disk_usage_percent", snapshot.disk_usage_percent
+            )
+            self.metrics_logger.log_counter(
+                "network_bytes_sent", snapshot.network_bytes_sent
+            )
+            self.metrics_logger.log_counter(
+                "network_bytes_recv", snapshot.network_bytes_recv
+            )
+            self.metrics_logger.log_gauge("process_count", snapshot.process_count)
+            self.metrics_logger.log_gauge("thread_count", snapshot.thread_count)
         except Exception as e:
             self.logger.error(f"Error logging metrics: {e}")
 
@@ -266,12 +283,18 @@ class SystemMonitor:
             return None
 
         return {
-            'cpu_percent': statistics.mean(s.cpu_percent for s in recent_snapshots),
-            'memory_percent': statistics.mean(s.memory_percent for s in recent_snapshots),
-            'memory_used_mb': statistics.mean(s.memory_used_mb for s in recent_snapshots),
-            'disk_usage_percent': statistics.mean(s.disk_usage_percent for s in recent_snapshots),
-            'process_count': statistics.mean(s.process_count for s in recent_snapshots),
-            'thread_count': statistics.mean(s.thread_count for s in recent_snapshots)
+            "cpu_percent": statistics.mean(s.cpu_percent for s in recent_snapshots),
+            "memory_percent": statistics.mean(
+                s.memory_percent for s in recent_snapshots
+            ),
+            "memory_used_mb": statistics.mean(
+                s.memory_used_mb for s in recent_snapshots
+            ),
+            "disk_usage_percent": statistics.mean(
+                s.disk_usage_percent for s in recent_snapshots
+            ),
+            "process_count": statistics.mean(s.process_count for s in recent_snapshots),
+            "thread_count": statistics.mean(s.thread_count for s in recent_snapshots),
         }
 
     def get_system_health(self) -> Dict[str, Any]:
@@ -283,46 +306,51 @@ class SystemMonitor:
         current_stats = self.get_current_stats()
         avg_stats = self.get_average_stats(minutes=5)
 
-        health = {
-            'timestamp': datetime.now().isoformat(),
-            'status': 'healthy'
-        }
+        health = {"timestamp": datetime.now().isoformat(), "status": "healthy"}
 
         if current_stats:
-            health['current'] = {
-                'cpu_percent': current_stats.cpu_percent,
-                'memory_percent': current_stats.memory_percent,
-                'memory_used_mb': current_stats.memory_used_mb,
-                'disk_usage_percent': current_stats.disk_usage_percent,
-                'thread_count': current_stats.thread_count
+            health["current"] = {
+                "cpu_percent": current_stats.cpu_percent,
+                "memory_percent": current_stats.memory_percent,
+                "memory_used_mb": current_stats.memory_used_mb,
+                "disk_usage_percent": current_stats.disk_usage_percent,
+                "thread_count": current_stats.thread_count,
             }
 
             # Determine health status
-            if (current_stats.cpu_percent > 90 or
-                current_stats.memory_percent > 90 or
-                current_stats.disk_usage_percent > 95):
-                health['status'] = 'critical'
-            elif (current_stats.cpu_percent > 70 or
-                  current_stats.memory_percent > 80 or
-                  current_stats.disk_usage_percent > 85):
-                health['status'] = 'warning'
+            if (
+                current_stats.cpu_percent > 90
+                or current_stats.memory_percent > 90
+                or current_stats.disk_usage_percent > 95
+            ):
+                health["status"] = "critical"
+            elif (
+                current_stats.cpu_percent > 70
+                or current_stats.memory_percent > 80
+                or current_stats.disk_usage_percent > 85
+            ):
+                health["status"] = "warning"
 
         if avg_stats:
-            health['averages_5min'] = avg_stats
+            health["averages_5min"] = avg_stats
 
         return health
 
+
 # Global system monitor instance
 _system_monitor = SystemMonitor()
+
 
 # Convenience functions
 def start_monitoring():
     """Start system monitoring"""
     _system_monitor.start()
 
+
 def stop_monitoring():
     """Stop system monitoring"""
     _system_monitor.stop()
+
 
 def get_system_health() -> Dict[str, Any]:
     """Get system health information
@@ -331,6 +359,7 @@ def get_system_health() -> Dict[str, Any]:
         Dictionary with system health data
     """
     return _system_monitor.get_system_health()
+
 
 def create_tracker(name: str) -> PerformanceTracker:
     """Create a performance tracker
@@ -343,6 +372,7 @@ def create_tracker(name: str) -> PerformanceTracker:
     """
     return PerformanceTracker(name)
 
+
 def track_operation(name: str):
     """Decorator for tracking operation performance
 
@@ -352,19 +382,23 @@ def track_operation(name: str):
     Returns:
         Decorator function
     """
+
     def decorator(func: Callable):
         def wrapper(*args, **kwargs):
             with create_tracker(f"{name}.{func.__name__}") as tracker:
                 try:
                     result = func(*args, **kwargs)
-                    tracker.add_metric('success', 1)
+                    tracker.add_metric("success", 1)
                     return result
                 except Exception as e:
-                    tracker.add_metric('error', 1)
+                    tracker.add_metric("error", 1)
                     raise
             return result
+
         return wrapper
+
     return decorator
+
 
 # Auto-start monitoring on import
 _system_monitor.start()

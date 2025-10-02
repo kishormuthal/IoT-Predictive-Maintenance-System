@@ -3,15 +3,24 @@ Comprehensive Evaluation Metrics
 Complete suite of metrics for classification, regression, anomaly detection, and forecasting
 """
 
-import numpy as np
-from typing import Dict, List, Any, Optional, Tuple
-from dataclasses import dataclass
 import logging
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
 from sklearn.metrics import (
-    accuracy_score, precision_score, recall_score, f1_score,
-    confusion_matrix, classification_report,
-    mean_absolute_error, mean_squared_error, r2_score,
-    roc_curve, auc, precision_recall_curve
+    accuracy_score,
+    auc,
+    classification_report,
+    confusion_matrix,
+    f1_score,
+    mean_absolute_error,
+    mean_squared_error,
+    precision_recall_curve,
+    precision_score,
+    r2_score,
+    recall_score,
+    roc_curve,
 )
 
 logger = logging.getLogger(__name__)
@@ -20,6 +29,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ClassificationMetrics:
     """Complete classification metrics"""
+
     accuracy: float
     precision: float
     recall: float
@@ -46,23 +56,23 @@ class ClassificationMetrics:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         result = {
-            'accuracy': float(self.accuracy),
-            'precision': float(self.precision),
-            'recall': float(self.recall),
-            'f1_score': float(self.f1_score),
-            'true_positives': int(self.true_positives),
-            'true_negatives': int(self.true_negatives),
-            'false_positives': int(self.false_positives),
-            'false_negatives': int(self.false_negatives),
-            'confusion_matrix': self.confusion_matrix.tolist(),
-            'classification_report': self.classification_report
+            "accuracy": float(self.accuracy),
+            "precision": float(self.precision),
+            "recall": float(self.recall),
+            "f1_score": float(self.f1_score),
+            "true_positives": int(self.true_positives),
+            "true_negatives": int(self.true_negatives),
+            "false_positives": int(self.false_positives),
+            "false_negatives": int(self.false_negatives),
+            "confusion_matrix": self.confusion_matrix.tolist(),
+            "classification_report": self.classification_report,
         }
 
         if self.roc_auc is not None:
-            result['roc_auc'] = float(self.roc_auc)
+            result["roc_auc"] = float(self.roc_auc)
 
         if self.pr_auc is not None:
-            result['pr_auc'] = float(self.pr_auc)
+            result["pr_auc"] = float(self.pr_auc)
 
         return result
 
@@ -70,6 +80,7 @@ class ClassificationMetrics:
 @dataclass
 class RegressionMetrics:
     """Complete regression metrics"""
+
     mae: float  # Mean Absolute Error
     mse: float  # Mean Squared Error
     rmse: float  # Root Mean Squared Error
@@ -84,20 +95,21 @@ class RegressionMetrics:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         return {
-            'mae': float(self.mae),
-            'mse': float(self.mse),
-            'rmse': float(self.rmse),
-            'mape': float(self.mape),
-            'r2_score': float(self.r2_score),
-            'max_error': float(self.max_error),
-            'median_absolute_error': float(self.median_absolute_error),
-            'explained_variance': float(self.explained_variance)
+            "mae": float(self.mae),
+            "mse": float(self.mse),
+            "rmse": float(self.rmse),
+            "mape": float(self.mape),
+            "r2_score": float(self.r2_score),
+            "max_error": float(self.max_error),
+            "median_absolute_error": float(self.median_absolute_error),
+            "explained_variance": float(self.explained_variance),
         }
 
 
 @dataclass
 class AnomalyDetectionMetrics:
     """Metrics specific to anomaly detection"""
+
     # Classification metrics
     classification_metrics: ClassificationMetrics
 
@@ -115,15 +127,15 @@ class AnomalyDetectionMetrics:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         result = {
-            'classification_metrics': self.classification_metrics.to_dict(),
-            'num_anomalies_detected': int(self.num_anomalies_detected),
-            'anomaly_rate': float(self.anomaly_rate),
-            'mean_anomaly_score': float(self.mean_anomaly_score),
-            'max_anomaly_score': float(self.max_anomaly_score)
+            "classification_metrics": self.classification_metrics.to_dict(),
+            "num_anomalies_detected": int(self.num_anomalies_detected),
+            "anomaly_rate": float(self.anomaly_rate),
+            "mean_anomaly_score": float(self.mean_anomaly_score),
+            "max_anomaly_score": float(self.max_anomaly_score),
         }
 
         if self.detection_rate is not None:
-            result['detection_rate'] = float(self.detection_rate)
+            result["detection_rate"] = float(self.detection_rate)
 
         return result
 
@@ -131,6 +143,7 @@ class AnomalyDetectionMetrics:
 @dataclass
 class ForecastingMetrics:
     """Metrics specific to time series forecasting"""
+
     # Regression metrics
     regression_metrics: RegressionMetrics
 
@@ -146,15 +159,15 @@ class ForecastingMetrics:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         result = {
-            'regression_metrics': self.regression_metrics.to_dict(),
-            'forecast_horizon': int(self.forecast_horizon),
-            'mae_by_step': [float(x) for x in self.mae_by_step],
-            'rmse_by_step': [float(x) for x in self.rmse_by_step],
-            'mape_by_step': [float(x) for x in self.mape_by_step]
+            "regression_metrics": self.regression_metrics.to_dict(),
+            "forecast_horizon": int(self.forecast_horizon),
+            "mae_by_step": [float(x) for x in self.mae_by_step],
+            "rmse_by_step": [float(x) for x in self.rmse_by_step],
+            "mape_by_step": [float(x) for x in self.mape_by_step],
         }
 
         if self.directional_accuracy is not None:
-            result['directional_accuracy'] = float(self.directional_accuracy)
+            result["directional_accuracy"] = float(self.directional_accuracy)
 
         return result
 
@@ -175,7 +188,7 @@ class EvaluationMetricsCalculator:
         y_true: np.ndarray,
         y_pred: np.ndarray,
         y_prob: Optional[np.ndarray] = None,
-        average: str = 'binary'
+        average: str = "binary",
     ) -> ClassificationMetrics:
         """
         Compute comprehensive classification metrics
@@ -192,7 +205,9 @@ class EvaluationMetricsCalculator:
         try:
             # Basic metrics
             accuracy = accuracy_score(y_true, y_pred)
-            precision = precision_score(y_true, y_pred, average=average, zero_division=0)
+            precision = precision_score(
+                y_true, y_pred, average=average, zero_division=0
+            )
             recall = recall_score(y_true, y_pred, average=average, zero_division=0)
             f1 = f1_score(y_true, y_pred, average=average, zero_division=0)
 
@@ -225,7 +240,9 @@ class EvaluationMetricsCalculator:
                     roc_auc = auc(fpr, tpr)
 
                     # Precision-Recall curve
-                    precision_curve, recall_curve, pr_thresholds = precision_recall_curve(y_true, y_prob)
+                    precision_curve, recall_curve, pr_thresholds = (
+                        precision_recall_curve(y_true, y_prob)
+                    )
                     pr_auc = auc(recall_curve, precision_curve)
 
                 except Exception as e:
@@ -249,7 +266,7 @@ class EvaluationMetricsCalculator:
                 pr_auc=pr_auc,
                 precision_curve=precision_curve,
                 recall_curve=recall_curve,
-                pr_thresholds=pr_thresholds
+                pr_thresholds=pr_thresholds,
             )
 
         except Exception as e:
@@ -258,8 +275,7 @@ class EvaluationMetricsCalculator:
 
     @staticmethod
     def compute_regression_metrics(
-        y_true: np.ndarray,
-        y_pred: np.ndarray
+        y_true: np.ndarray, y_pred: np.ndarray
     ) -> RegressionMetrics:
         """
         Compute comprehensive regression metrics
@@ -288,7 +304,9 @@ class EvaluationMetricsCalculator:
             median_absolute_error = float(np.median(errors))
 
             # Explained variance
-            explained_variance = 1 - (np.var(y_true - y_pred) / (np.var(y_true) + epsilon))
+            explained_variance = 1 - (
+                np.var(y_true - y_pred) / (np.var(y_true) + epsilon)
+            )
 
             return RegressionMetrics(
                 mae=mae,
@@ -298,7 +316,7 @@ class EvaluationMetricsCalculator:
                 r2_score=r2,
                 max_error=max_error,
                 median_absolute_error=median_absolute_error,
-                explained_variance=explained_variance
+                explained_variance=explained_variance,
             )
 
         except Exception as e:
@@ -310,7 +328,7 @@ class EvaluationMetricsCalculator:
         y_true: np.ndarray,
         y_pred: np.ndarray,
         anomaly_scores: np.ndarray,
-        y_prob: Optional[np.ndarray] = None
+        y_prob: Optional[np.ndarray] = None,
     ) -> AnomalyDetectionMetrics:
         """
         Compute anomaly detection metrics
@@ -326,16 +344,18 @@ class EvaluationMetricsCalculator:
         """
         try:
             # Classification metrics
-            classification_metrics = EvaluationMetricsCalculator.compute_classification_metrics(
-                y_true=y_true,
-                y_pred=y_pred,
-                y_prob=y_prob
+            classification_metrics = (
+                EvaluationMetricsCalculator.compute_classification_metrics(
+                    y_true=y_true, y_pred=y_pred, y_prob=y_prob
+                )
             )
 
             # Anomaly-specific metrics
             num_anomalies_detected = int(np.sum(y_pred == 1))
             total_samples = len(y_pred)
-            anomaly_rate = num_anomalies_detected / total_samples if total_samples > 0 else 0
+            anomaly_rate = (
+                num_anomalies_detected / total_samples if total_samples > 0 else 0
+            )
 
             mean_anomaly_score = float(np.mean(anomaly_scores))
             max_anomaly_score = float(np.max(anomaly_scores))
@@ -343,7 +363,9 @@ class EvaluationMetricsCalculator:
             # For labeled data
             true_anomalies = int(np.sum(y_true == 1))
             detected_true_anomalies = int(np.sum((y_true == 1) & (y_pred == 1)))
-            detection_rate = detected_true_anomalies / true_anomalies if true_anomalies > 0 else 0
+            detection_rate = (
+                detected_true_anomalies / true_anomalies if true_anomalies > 0 else 0
+            )
 
             return AnomalyDetectionMetrics(
                 classification_metrics=classification_metrics,
@@ -353,7 +375,7 @@ class EvaluationMetricsCalculator:
                 max_anomaly_score=max_anomaly_score,
                 true_anomalies=true_anomalies,
                 detected_true_anomalies=detected_true_anomalies,
-                detection_rate=detection_rate
+                detection_rate=detection_rate,
             )
 
         except Exception as e:
@@ -362,9 +384,7 @@ class EvaluationMetricsCalculator:
 
     @staticmethod
     def compute_forecasting_metrics(
-        y_true: np.ndarray,
-        y_pred: np.ndarray,
-        forecast_horizon: int
+        y_true: np.ndarray, y_pred: np.ndarray, forecast_horizon: int
     ) -> ForecastingMetrics:
         """
         Compute time series forecasting metrics
@@ -384,8 +404,7 @@ class EvaluationMetricsCalculator:
 
             # Overall regression metrics
             regression_metrics = EvaluationMetricsCalculator.compute_regression_metrics(
-                y_true=y_true_flat,
-                y_pred=y_pred_flat
+                y_true=y_true_flat, y_pred=y_pred_flat
             )
 
             # Per-step metrics (if multi-step forecast)
@@ -402,9 +421,15 @@ class EvaluationMetricsCalculator:
                         step_rmse = np.sqrt(step_mse)
 
                         epsilon = 1e-10
-                        step_mape = np.mean(
-                            np.abs((y_true[:, step] - y_pred[:, step]) / (y_true[:, step] + epsilon))
-                        ) * 100
+                        step_mape = (
+                            np.mean(
+                                np.abs(
+                                    (y_true[:, step] - y_pred[:, step])
+                                    / (y_true[:, step] + epsilon)
+                                )
+                            )
+                            * 100
+                        )
 
                         mae_by_step.append(step_mae)
                         rmse_by_step.append(step_rmse)
@@ -428,7 +453,7 @@ class EvaluationMetricsCalculator:
                 mae_by_step=mae_by_step,
                 rmse_by_step=rmse_by_step,
                 mape_by_step=mape_by_step,
-                directional_accuracy=directional_accuracy
+                directional_accuracy=directional_accuracy,
             )
 
         except Exception as e:
@@ -437,8 +462,7 @@ class EvaluationMetricsCalculator:
 
     @staticmethod
     def plot_confusion_matrix(
-        cm: np.ndarray,
-        class_names: Optional[List[str]] = None
+        cm: np.ndarray, class_names: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Generate confusion matrix plot data
@@ -454,20 +478,18 @@ class EvaluationMetricsCalculator:
             class_names = [f"Class {i}" for i in range(cm.shape[0])]
 
         # Normalize confusion matrix
-        cm_normalized = cm.astype('float') / (cm.sum(axis=1)[:, np.newaxis] + 1e-10)
+        cm_normalized = cm.astype("float") / (cm.sum(axis=1)[:, np.newaxis] + 1e-10)
 
         return {
-            'matrix': cm.tolist(),
-            'matrix_normalized': cm_normalized.tolist(),
-            'class_names': class_names,
-            'total_samples': int(cm.sum())
+            "matrix": cm.tolist(),
+            "matrix_normalized": cm_normalized.tolist(),
+            "class_names": class_names,
+            "total_samples": int(cm.sum()),
         }
 
     @staticmethod
     def plot_roc_curve(
-        fpr: np.ndarray,
-        tpr: np.ndarray,
-        roc_auc: float
+        fpr: np.ndarray, tpr: np.ndarray, roc_auc: float
     ) -> Dict[str, Any]:
         """
         Generate ROC curve plot data
@@ -481,17 +503,15 @@ class EvaluationMetricsCalculator:
             Dictionary with plot data
         """
         return {
-            'fpr': fpr.tolist() if fpr is not None else [],
-            'tpr': tpr.tolist() if tpr is not None else [],
-            'auc': float(roc_auc) if roc_auc is not None else 0.0,
-            'diagonal': [[0, 1], [0, 1]]  # Random classifier line
+            "fpr": fpr.tolist() if fpr is not None else [],
+            "tpr": tpr.tolist() if tpr is not None else [],
+            "auc": float(roc_auc) if roc_auc is not None else 0.0,
+            "diagonal": [[0, 1], [0, 1]],  # Random classifier line
         }
 
     @staticmethod
     def plot_precision_recall_curve(
-        precision: np.ndarray,
-        recall: np.ndarray,
-        pr_auc: float
+        precision: np.ndarray, recall: np.ndarray, pr_auc: float
     ) -> Dict[str, Any]:
         """
         Generate Precision-Recall curve plot data
@@ -505,7 +525,7 @@ class EvaluationMetricsCalculator:
             Dictionary with plot data
         """
         return {
-            'precision': precision.tolist() if precision is not None else [],
-            'recall': recall.tolist() if recall is not None else [],
-            'auc': float(pr_auc) if pr_auc is not None else 0.0
+            "precision": precision.tolist() if precision is not None else [],
+            "recall": recall.tolist() if recall is not None else [],
+            "auc": float(pr_auc) if pr_auc is not None else 0.0,
         }

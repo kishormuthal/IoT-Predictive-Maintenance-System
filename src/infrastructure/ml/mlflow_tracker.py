@@ -3,28 +3,29 @@ MLflow Experiment Tracking Wrapper
 Comprehensive MLOps integration for model training, versioning, and lifecycle management
 """
 
+import json
+import logging
+from contextlib import contextmanager
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from enum import Enum
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
 import mlflow
 import mlflow.sklearn
 import mlflow.tensorflow
-from mlflow.tracking import MlflowClient
+import numpy as np
 from mlflow.entities import ViewType
 from mlflow.exceptions import MlflowException
-
-import numpy as np
-import json
-from typing import Dict, List, Any, Optional, Tuple
-from datetime import datetime
-from pathlib import Path
-import logging
-from contextlib import contextmanager
-from dataclasses import dataclass, asdict
-from enum import Enum
+from mlflow.tracking import MlflowClient
 
 logger = logging.getLogger(__name__)
 
 
 class ModelStage(Enum):
     """Model lifecycle stages"""
+
     NONE = "None"
     STAGING = "Staging"
     PRODUCTION = "Production"
@@ -34,6 +35,7 @@ class ModelStage(Enum):
 @dataclass
 class ExperimentConfig:
     """Configuration for MLflow experiments"""
+
     experiment_name: str
     tracking_uri: str = "file:./mlruns"
     artifact_location: Optional[str] = None
@@ -61,7 +63,7 @@ class MLflowTracker:
         experiment_name: str = "iot-predictive-maintenance",
         tracking_uri: str = "file:./mlruns",
         artifact_location: Optional[str] = None,
-        registry_uri: Optional[str] = None
+        registry_uri: Optional[str] = None,
     ):
         """
         Initialize MLflow tracker
@@ -103,8 +105,7 @@ class MLflowTracker:
             if experiment is None:
                 # Create new experiment
                 experiment_id = mlflow.create_experiment(
-                    name=self.experiment_name,
-                    artifact_location=self.artifact_location
+                    name=self.experiment_name, artifact_location=self.artifact_location
                 )
                 experiment = mlflow.get_experiment(experiment_id)
                 logger.info(f"Created new experiment: {self.experiment_name}")
@@ -122,7 +123,7 @@ class MLflowTracker:
         self,
         run_name: Optional[str] = None,
         tags: Optional[Dict[str, str]] = None,
-        nested: bool = False
+        nested: bool = False,
     ):
         """
         Context manager for MLflow runs
@@ -144,7 +145,7 @@ class MLflowTracker:
             experiment_id=self.experiment.experiment_id,
             run_name=run_name,
             tags=tags,
-            nested=nested
+            nested=nested,
         )
 
         try:
@@ -161,7 +162,7 @@ class MLflowTracker:
         artifacts: Optional[Dict[str, str]] = None,
         model: Optional[Any] = None,
         model_name: Optional[str] = None,
-        tags: Optional[Dict[str, str]] = None
+        tags: Optional[Dict[str, str]] = None,
     ) -> str:
         """
         Log a complete training run
@@ -179,13 +180,15 @@ class MLflowTracker:
         Returns:
             Run ID
         """
-        run_name = f"{model_type}_{sensor_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        run_name = (
+            f"{model_type}_{sensor_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        )
 
         # Prepare tags
         run_tags = {
             "sensor_id": sensor_id,
             "model_type": model_type,
-            "training_date": datetime.now().isoformat()
+            "training_date": datetime.now().isoformat(),
         }
         if tags:
             run_tags.update(tags)
@@ -222,9 +225,7 @@ class MLflowTracker:
             if model is not None and model_name is not None:
                 try:
                     self._log_model_to_registry(
-                        model=model,
-                        model_name=model_name,
-                        model_type=model_type
+                        model=model, model_name=model_name, model_type=model_type
                     )
                 except Exception as e:
                     logger.error(f"Could not log model to registry: {e}")
@@ -232,32 +233,25 @@ class MLflowTracker:
             logger.info(f"Logged training run: {run_name} (ID: {run.info.run_id})")
             return run.info.run_id
 
-    def _log_model_to_registry(
-        self,
-        model: Any,
-        model_name: str,
-        model_type: str
-    ):
+    def _log_model_to_registry(self, model: Any, model_name: str, model_type: str):
         """Log model to MLflow model registry"""
         try:
-            if model_type == "sklearn" or hasattr(model, 'predict'):
+            if model_type == "sklearn" or hasattr(model, "predict"):
                 mlflow.sklearn.log_model(
                     sk_model=model,
                     artifact_path="model",
-                    registered_model_name=model_name
+                    registered_model_name=model_name,
                 )
             elif model_type == "tensorflow":
                 mlflow.tensorflow.log_model(
-                    model=model,
-                    artifact_path="model",
-                    registered_model_name=model_name
+                    model=model, artifact_path="model", registered_model_name=model_name
                 )
             else:
                 # Generic Python model
                 mlflow.pyfunc.log_model(
                     artifact_path="model",
                     python_model=model,
-                    registered_model_name=model_name
+                    registered_model_name=model_name,
                 )
 
             logger.info(f"Logged model '{model_name}' to registry")
@@ -267,10 +261,7 @@ class MLflowTracker:
             raise
 
     def register_model(
-        self,
-        run_id: str,
-        model_name: str,
-        artifact_path: str = "model"
+        self, run_id: str, model_name: str, artifact_path: str = "model"
     ) -> str:
         """
         Register a model from a completed run
@@ -286,10 +277,7 @@ class MLflowTracker:
         try:
             model_uri = f"runs:/{run_id}/{artifact_path}"
 
-            result = mlflow.register_model(
-                model_uri=model_uri,
-                name=model_name
-            )
+            result = mlflow.register_model(model_uri=model_uri, name=model_name)
 
             logger.info(
                 f"Registered model '{model_name}' version {result.version} "
@@ -307,7 +295,7 @@ class MLflowTracker:
         model_name: str,
         version: str,
         stage: ModelStage,
-        archive_existing: bool = True
+        archive_existing: bool = True,
     ):
         """
         Transition model to a different stage
@@ -323,7 +311,7 @@ class MLflowTracker:
                 name=model_name,
                 version=version,
                 stage=stage.value,
-                archive_existing_versions=archive_existing
+                archive_existing_versions=archive_existing,
             )
 
             logger.info(
@@ -338,7 +326,7 @@ class MLflowTracker:
         self,
         model_name: str,
         version: Optional[str] = None,
-        stage: Optional[ModelStage] = None
+        stage: Optional[ModelStage] = None,
     ) -> Optional[Any]:
         """
         Get a specific model version
@@ -355,8 +343,7 @@ class MLflowTracker:
             if stage:
                 # Get latest version in stage
                 versions = self.client.get_latest_versions(
-                    name=model_name,
-                    stages=[stage.value]
+                    name=model_name, stages=[stage.value]
                 )
                 if versions:
                     return versions[0]
@@ -365,10 +352,7 @@ class MLflowTracker:
 
             elif version:
                 # Get specific version
-                return self.client.get_model_version(
-                    name=model_name,
-                    version=version
-                )
+                return self.client.get_model_version(name=model_name, version=version)
 
             else:
                 # Get latest version overall
@@ -388,7 +372,7 @@ class MLflowTracker:
         self,
         model_name: str,
         version: Optional[str] = None,
-        stage: Optional[ModelStage] = None
+        stage: Optional[ModelStage] = None,
     ) -> Any:
         """
         Load a model from registry
@@ -422,7 +406,7 @@ class MLflowTracker:
         self,
         filter_string: Optional[str] = None,
         max_results: int = 100,
-        order_by: Optional[List[str]] = None
+        order_by: Optional[List[str]] = None,
     ) -> List[mlflow.entities.Run]:
         """
         Search for runs in the experiment
@@ -440,7 +424,7 @@ class MLflowTracker:
                 experiment_ids=[self.experiment.experiment_id],
                 filter_string=filter_string,
                 max_results=max_results,
-                order_by=order_by
+                order_by=order_by,
             )
 
             return runs
@@ -453,7 +437,7 @@ class MLflowTracker:
         self,
         metric_name: str,
         maximize: bool = True,
-        filter_string: Optional[str] = None
+        filter_string: Optional[str] = None,
     ) -> Optional[mlflow.entities.Run]:
         """
         Get the best run based on a metric
@@ -470,17 +454,13 @@ class MLflowTracker:
         order_by = [f"metrics.{metric_name} {order_direction}"]
 
         runs = self.search_runs(
-            filter_string=filter_string,
-            max_results=1,
-            order_by=order_by
+            filter_string=filter_string, max_results=1, order_by=order_by
         )
 
         return runs[0] if runs else None
 
     def compare_runs(
-        self,
-        run_ids: List[str],
-        metrics: Optional[List[str]] = None
+        self, run_ids: List[str], metrics: Optional[List[str]] = None
     ) -> Dict[str, Dict[str, Any]]:
         """
         Compare metrics across multiple runs
@@ -500,18 +480,17 @@ class MLflowTracker:
 
                 if metrics:
                     run_metrics = {
-                        k: v for k, v in run.data.metrics.items()
-                        if k in metrics
+                        k: v for k, v in run.data.metrics.items() if k in metrics
                     }
                 else:
                     run_metrics = run.data.metrics
 
                 comparison[run_id] = {
-                    'metrics': run_metrics,
-                    'params': run.data.params,
-                    'tags': run.data.tags,
-                    'start_time': run.info.start_time,
-                    'end_time': run.info.end_time
+                    "metrics": run_metrics,
+                    "params": run.data.params,
+                    "tags": run.data.tags,
+                    "start_time": run.info.start_time,
+                    "end_time": run.info.end_time,
                 }
 
             except Exception as e:
@@ -519,11 +498,7 @@ class MLflowTracker:
 
         return comparison
 
-    def delete_runs(
-        self,
-        run_ids: List[str],
-        permanently: bool = False
-    ):
+    def delete_runs(self, run_ids: List[str], permanently: bool = False):
         """
         Delete runs
 
@@ -550,10 +525,7 @@ class MLflowTracker:
             runs = self.search_runs(max_results=1000)
 
             if not runs:
-                return {
-                    'experiment_name': self.experiment_name,
-                    'total_runs': 0
-                }
+                return {"experiment_name": self.experiment_name, "total_runs": 0}
 
             # Extract metrics
             all_metrics = {}
@@ -567,21 +539,21 @@ class MLflowTracker:
             metric_stats = {}
             for metric_name, values in all_metrics.items():
                 metric_stats[metric_name] = {
-                    'mean': float(np.mean(values)),
-                    'std': float(np.std(values)),
-                    'min': float(np.min(values)),
-                    'max': float(np.max(values)),
-                    'count': len(values)
+                    "mean": float(np.mean(values)),
+                    "std": float(np.std(values)),
+                    "min": float(np.min(values)),
+                    "max": float(np.max(values)),
+                    "count": len(values),
                 }
 
             return {
-                'experiment_name': self.experiment_name,
-                'total_runs': len(runs),
-                'metric_statistics': metric_stats,
-                'first_run': runs[-1].info.start_time if runs else None,
-                'last_run': runs[0].info.start_time if runs else None
+                "experiment_name": self.experiment_name,
+                "total_runs": len(runs),
+                "metric_statistics": metric_stats,
+                "first_run": runs[-1].info.start_time if runs else None,
+                "last_run": runs[0].info.start_time if runs else None,
             }
 
         except Exception as e:
             logger.error(f"Error generating experiment summary: {e}")
-            return {'error': str(e)}
+            return {"error": str(e)}

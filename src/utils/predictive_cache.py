@@ -3,23 +3,24 @@ Predictive Caching and Adaptive Optimization System
 ML-powered caching predictions for 80-sensor dashboard optimization
 """
 
-import numpy as np
-import logging
-import time
-import threading
-from typing import Dict, List, Optional, Any, Tuple, Set
-from datetime import datetime, timedelta
-from dataclasses import dataclass, field
-from collections import defaultdict, deque
-import json
+import asyncio
 import hashlib
+import json
+import logging
+import threading
+import time
+from collections import defaultdict, deque
+from dataclasses import dataclass, field
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Set, Tuple
+
+import joblib
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
-import joblib
-import asyncio
 
 # Import existing cache system
-from src.utils.advanced_cache import advanced_cache, DashboardCacheHelper
+from src.utils.advanced_cache import DashboardCacheHelper, advanced_cache
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CacheAccessPattern:
     """User cache access pattern"""
+
     cache_key: str
     access_time: datetime
     user_agent: str = ""
@@ -39,6 +41,7 @@ class CacheAccessPattern:
 @dataclass
 class PredictionMetrics:
     """Predictive caching metrics"""
+
     total_predictions: int = 0
     correct_predictions: int = 0
     cache_hits_from_predictions: int = 0
@@ -88,8 +91,13 @@ class PredictiveCacheManager:
 
         logger.info("Predictive Cache Manager initialized")
 
-    def record_cache_access(self, cache_key: str, user_agent: str = "",
-                          page_context: str = "", session_id: str = ""):
+    def record_cache_access(
+        self,
+        cache_key: str,
+        user_agent: str = "",
+        page_context: str = "",
+        session_id: str = "",
+    ):
         """Record cache access for pattern learning"""
         now = datetime.now()
 
@@ -100,7 +108,7 @@ class PredictiveCacheManager:
             page_context=page_context,
             time_of_day=now.hour,
             day_of_week=now.weekday(),
-            session_id=session_id
+            session_id=session_id,
         )
 
         with self.pattern_lock:
@@ -112,8 +120,9 @@ class PredictiveCacheManager:
         if len(self.access_patterns) % 100 == 0:
             self._analyze_patterns()
 
-    def predict_next_cache_keys(self, current_context: Dict[str, Any],
-                               num_predictions: int = 5) -> List[Tuple[str, float]]:
+    def predict_next_cache_keys(
+        self, current_context: Dict[str, Any], num_predictions: int = 5
+    ) -> List[Tuple[str, float]]:
         """
         Predict next likely cache keys based on current context
 
@@ -145,7 +154,8 @@ class PredictiveCacheManager:
 
             # Filter by confidence threshold
             confident_predictions = [
-                (key, conf) for key, conf in predictions[:num_predictions]
+                (key, conf)
+                for key, conf in predictions[:num_predictions]
                 if conf >= self.prediction_confidence_threshold
             ]
 
@@ -155,15 +165,19 @@ class PredictiveCacheManager:
             logger.error(f"Prediction error: {e}")
             return self._fallback_predictions(current_context, num_predictions)
 
-    def _fallback_predictions(self, context: Dict[str, Any], num_predictions: int) -> List[Tuple[str, float]]:
+    def _fallback_predictions(
+        self, context: Dict[str, Any], num_predictions: int
+    ) -> List[Tuple[str, float]]:
         """Fallback predictions based on simple patterns"""
         current_hour = datetime.now().hour
-        current_page = context.get('page_context', 'overview')
+        current_page = context.get("page_context", "overview")
 
         # Use time-based patterns
         with self.pattern_lock:
             if current_hour in self.time_based_patterns:
-                common_keys = list(self.time_based_patterns[current_hour])[:num_predictions]
+                common_keys = list(self.time_based_patterns[current_hour])[
+                    :num_predictions
+                ]
                 return [(key, 0.6) for key in common_keys]
 
             # Fallback to most common recent patterns
@@ -173,7 +187,9 @@ class PredictiveCacheManager:
                 for key in recent_keys:
                     key_counts[key] += 1
 
-                sorted_keys = sorted(key_counts.items(), key=lambda x: x[1], reverse=True)
+                sorted_keys = sorted(
+                    key_counts.items(), key=lambda x: x[1], reverse=True
+                )
                 return [(key, 0.5) for key, _ in sorted_keys[:num_predictions]]
 
         return []
@@ -248,7 +264,9 @@ class PredictiveCacheManager:
         # Group by session
         for session_id, session_patterns in self.user_sessions.items():
             if len(session_patterns) >= 3:
-                cache_keys = [p.cache_key for p in session_patterns[-10:]]  # Last 10 in session
+                cache_keys = [
+                    p.cache_key for p in session_patterns[-10:]
+                ]  # Last 10 in session
 
                 # Find common sequences
                 for i in range(len(cache_keys) - 1):
@@ -264,7 +282,9 @@ class PredictiveCacheManager:
                     key_counts[next_key] += 1
 
                 # Store most common next keys
-                sorted_next = sorted(key_counts.items(), key=lambda x: x[1], reverse=True)
+                sorted_next = sorted(
+                    key_counts.items(), key=lambda x: x[1], reverse=True
+                )
                 self.common_sequences[key] = [k for k, c in sorted_next[:5]]
 
     def _train_prediction_model(self):
@@ -278,10 +298,7 @@ class PredictiveCacheManager:
 
             # Train Random Forest model
             self.prediction_model = RandomForestClassifier(
-                n_estimators=50,
-                max_depth=10,
-                random_state=42,
-                n_jobs=-1
+                n_estimators=50, max_depth=10, random_state=42, n_jobs=-1
             )
 
             # Scale features
@@ -326,11 +343,11 @@ class PredictiveCacheManager:
             pattern.time_of_day,
             pattern.day_of_week,
             hash(pattern.page_context) % 1000,  # Simple hash of page context
-            hash(pattern.cache_key) % 1000,     # Simple hash of cache key
+            hash(pattern.cache_key) % 1000,  # Simple hash of cache key
             len(pattern.cache_key),
-            1.0 if 'sensor' in pattern.cache_key else 0.0,
-            1.0 if 'chart' in pattern.cache_key else 0.0,
-            1.0 if 'overview' in pattern.cache_key else 0.0
+            1.0 if "sensor" in pattern.cache_key else 0.0,
+            1.0 if "chart" in pattern.cache_key else 0.0,
+            1.0 if "overview" in pattern.cache_key else 0.0,
         ]
 
     def _extract_prediction_features(self, context: Dict[str, Any]) -> List[float]:
@@ -340,12 +357,12 @@ class PredictiveCacheManager:
         return [
             now.hour,
             now.weekday(),
-            hash(context.get('page_context', '')) % 1000,
-            hash(context.get('last_cache_key', '')) % 1000,
-            len(context.get('last_cache_key', '')),
-            1.0 if 'sensor' in str(context) else 0.0,
-            1.0 if 'chart' in str(context) else 0.0,
-            1.0 if 'overview' in str(context) else 0.0
+            hash(context.get("page_context", "")) % 1000,
+            hash(context.get("last_cache_key", "")) % 1000,
+            len(context.get("last_cache_key", "")),
+            1.0 if "sensor" in str(context) else 0.0,
+            1.0 if "chart" in str(context) else 0.0,
+            1.0 if "overview" in str(context) else 0.0,
         ]
 
     def start_adaptive_optimization(self):
@@ -358,15 +375,20 @@ class PredictiveCacheManager:
         self.preload_active = False
         logger.info("Adaptive optimization stopped")
 
-    def record_performance_feedback(self, cache_key: str, response_time: float,
-                                  cache_hit: bool, user_satisfaction: float = 0.5):
+    def record_performance_feedback(
+        self,
+        cache_key: str,
+        response_time: float,
+        cache_hit: bool,
+        user_satisfaction: float = 0.5,
+    ):
         """Record performance feedback for adaptive optimization"""
         feedback = {
-            'cache_key': cache_key,
-            'response_time': response_time,
-            'cache_hit': cache_hit,
-            'user_satisfaction': user_satisfaction,
-            'timestamp': datetime.now()
+            "cache_key": cache_key,
+            "response_time": response_time,
+            "cache_hit": cache_hit,
+            "user_satisfaction": user_satisfaction,
+            "timestamp": datetime.now(),
         }
 
         self.performance_feedback.append(feedback)
@@ -376,41 +398,41 @@ class PredictiveCacheManager:
 
     def _update_optimization_rules(self, feedback: Dict[str, Any]):
         """Update optimization rules based on feedback"""
-        cache_key = feedback['cache_key']
+        cache_key = feedback["cache_key"]
 
         if cache_key not in self.optimization_rules:
             self.optimization_rules[cache_key] = {
-                'avg_response_time': feedback['response_time'],
-                'cache_hit_rate': 1.0 if feedback['cache_hit'] else 0.0,
-                'access_count': 1,
-                'priority': 'medium'
+                "avg_response_time": feedback["response_time"],
+                "cache_hit_rate": 1.0 if feedback["cache_hit"] else 0.0,
+                "access_count": 1,
+                "priority": "medium",
             }
         else:
             rules = self.optimization_rules[cache_key]
-            rules['access_count'] += 1
+            rules["access_count"] += 1
 
             # Update average response time
             alpha = 0.1
-            rules['avg_response_time'] = (
-                alpha * feedback['response_time'] +
-                (1 - alpha) * rules['avg_response_time']
+            rules["avg_response_time"] = (
+                alpha * feedback["response_time"]
+                + (1 - alpha) * rules["avg_response_time"]
             )
 
             # Update cache hit rate
-            rules['cache_hit_rate'] = (
-                alpha * (1.0 if feedback['cache_hit'] else 0.0) +
-                (1 - alpha) * rules['cache_hit_rate']
+            rules["cache_hit_rate"] = (
+                alpha * (1.0 if feedback["cache_hit"] else 0.0)
+                + (1 - alpha) * rules["cache_hit_rate"]
             )
 
             # Adjust priority based on performance
-            if rules['avg_response_time'] > 500:  # > 500ms
-                rules['priority'] = 'high'
-            elif rules['cache_hit_rate'] < 0.5:
-                rules['priority'] = 'high'
-            elif rules['access_count'] > 100:
-                rules['priority'] = 'high'
+            if rules["avg_response_time"] > 500:  # > 500ms
+                rules["priority"] = "high"
+            elif rules["cache_hit_rate"] < 0.5:
+                rules["priority"] = "high"
+            elif rules["access_count"] > 100:
+                rules["priority"] = "high"
             else:
-                rules['priority'] = 'medium'
+                rules["priority"] = "medium"
 
     def get_optimization_recommendations(self) -> List[Dict[str, Any]]:
         """Get optimization recommendations based on learned patterns"""
@@ -418,46 +440,55 @@ class PredictiveCacheManager:
 
         # Analyze high-priority cache keys
         high_priority_keys = [
-            key for key, rules in self.optimization_rules.items()
-            if rules['priority'] == 'high'
+            key
+            for key, rules in self.optimization_rules.items()
+            if rules["priority"] == "high"
         ]
 
         for cache_key in high_priority_keys:
             rules = self.optimization_rules[cache_key]
-            recommendations.append({
-                'cache_key': cache_key,
-                'issue': 'Poor performance detected',
-                'avg_response_time': rules['avg_response_time'],
-                'cache_hit_rate': rules['cache_hit_rate'],
-                'recommendation': 'Increase cache TTL and implement preloading',
-                'priority': rules['priority']
-            })
+            recommendations.append(
+                {
+                    "cache_key": cache_key,
+                    "issue": "Poor performance detected",
+                    "avg_response_time": rules["avg_response_time"],
+                    "cache_hit_rate": rules["cache_hit_rate"],
+                    "recommendation": "Increase cache TTL and implement preloading",
+                    "priority": rules["priority"],
+                }
+            )
 
         # Recommend based on time patterns
         current_hour = datetime.now().hour
         if current_hour in self.time_based_patterns:
             common_keys = self.time_based_patterns[current_hour]
-            recommendations.append({
-                'type': 'time_based',
-                'recommendation': f'Preload {len(common_keys)} commonly accessed keys for hour {current_hour}',
-                'cache_keys': list(common_keys)[:10],
-                'priority': 'medium'
-            })
+            recommendations.append(
+                {
+                    "type": "time_based",
+                    "recommendation": f"Preload {len(common_keys)} commonly accessed keys for hour {current_hour}",
+                    "cache_keys": list(common_keys)[:10],
+                    "priority": "medium",
+                }
+            )
 
         return recommendations
 
     def get_predictive_metrics(self) -> Dict[str, Any]:
         """Get predictive caching metrics"""
         return {
-            'total_patterns': len(self.access_patterns),
-            'trained_model': self.is_model_trained,
-            'prediction_accuracy': self.metrics.accuracy,
-            'preload_operations': self.metrics.preload_operations,
-            'cache_hits_from_predictions': self.metrics.cache_hits_from_predictions,
-            'time_patterns': len(self.time_based_patterns),
-            'sequence_patterns': len(self.common_sequences),
-            'optimization_rules': len(self.optimization_rules),
-            'last_model_update': self.metrics.last_model_update.isoformat() if self.metrics.last_model_update else None
+            "total_patterns": len(self.access_patterns),
+            "trained_model": self.is_model_trained,
+            "prediction_accuracy": self.metrics.accuracy,
+            "preload_operations": self.metrics.preload_operations,
+            "cache_hits_from_predictions": self.metrics.cache_hits_from_predictions,
+            "time_patterns": len(self.time_based_patterns),
+            "sequence_patterns": len(self.common_sequences),
+            "optimization_rules": len(self.optimization_rules),
+            "last_model_update": (
+                self.metrics.last_model_update.isoformat()
+                if self.metrics.last_model_update
+                else None
+            ),
         }
 
     def export_model(self, filename: str = None):
@@ -470,11 +501,11 @@ class PredictiveCacheManager:
             filename = f"predictive_cache_model_{datetime.now().strftime('%Y%m%d_%H%M%S')}.joblib"
 
         model_data = {
-            'prediction_model': self.prediction_model,
-            'feature_scaler': self.feature_scaler,
-            'time_patterns': dict(self.time_based_patterns),
-            'sequence_patterns': self.common_sequences,
-            'optimization_rules': self.optimization_rules
+            "prediction_model": self.prediction_model,
+            "feature_scaler": self.feature_scaler,
+            "time_patterns": dict(self.time_based_patterns),
+            "sequence_patterns": self.common_sequences,
+            "optimization_rules": self.optimization_rules,
         }
 
         joblib.dump(model_data, filename)
@@ -485,11 +516,11 @@ class PredictiveCacheManager:
         try:
             model_data = joblib.load(filename)
 
-            self.prediction_model = model_data['prediction_model']
-            self.feature_scaler = model_data['feature_scaler']
-            self.time_based_patterns = defaultdict(set, model_data['time_patterns'])
-            self.common_sequences = model_data['sequence_patterns']
-            self.optimization_rules = model_data['optimization_rules']
+            self.prediction_model = model_data["prediction_model"]
+            self.feature_scaler = model_data["feature_scaler"]
+            self.time_based_patterns = defaultdict(set, model_data["time_patterns"])
+            self.common_sequences = model_data["sequence_patterns"]
+            self.optimization_rules = model_data["optimization_rules"]
 
             self.is_model_trained = True
             logger.info(f"Predictive cache model loaded from {filename}")
@@ -508,9 +539,9 @@ def record_cache_access(cache_key: str, context: Dict[str, Any] = None):
     context = context or {}
     predictive_cache.record_cache_access(
         cache_key,
-        user_agent=context.get('user_agent', ''),
-        page_context=context.get('page_context', ''),
-        session_id=context.get('session_id', '')
+        user_agent=context.get("user_agent", ""),
+        page_context=context.get("page_context", ""),
+        session_id=context.get("session_id", ""),
     )
 
 

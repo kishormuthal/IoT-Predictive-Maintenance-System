@@ -3,10 +3,11 @@ Data models for sensor data
 """
 
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
 from datetime import datetime
-import numpy as np
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+import numpy as np
 
 
 class SensorStatus(Enum):
@@ -26,6 +27,7 @@ class CriticalityLevel(Enum):
 @dataclass
 class SensorReading:
     """Single sensor reading"""
+
     sensor_id: str
     timestamp: datetime
     value: float
@@ -40,6 +42,7 @@ class SensorReading:
 @dataclass
 class SensorInfo:
     """Sensor metadata and configuration"""
+
     sensor_id: str
     name: str
     equipment_id: str
@@ -58,6 +61,7 @@ class SensorInfo:
 @dataclass
 class SensorDataBatch:
     """Batch of sensor data with metadata"""
+
     sensor_id: str
     timestamps: List[datetime]
     values: np.ndarray

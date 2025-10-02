@@ -3,16 +3,23 @@ NASA Data Loader
 Clean data loading service for SMAP/MSL datasets
 """
 
-import numpy as np
-import pandas as pd
-from typing import Dict, List, Optional, Tuple
+import logging
 from datetime import datetime, timedelta
 from pathlib import Path
-import logging
+from typing import Dict, List, Optional, Tuple
+
+import numpy as np
+import pandas as pd
+
+from config.equipment_config import EQUIPMENT_REGISTRY, get_equipment_by_id
 
 from ...core.interfaces.data_interface import DataSourceInterface
-from ...core.models.sensor_data import SensorDataBatch, SensorInfo, SensorReading, SensorStatus
-from config.equipment_config import EQUIPMENT_REGISTRY, get_equipment_by_id
+from ...core.models.sensor_data import (
+    SensorDataBatch,
+    SensorInfo,
+    SensorReading,
+    SensorStatus,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -58,10 +65,18 @@ class NASADataLoader(DataSourceInterface):
 
             # Load only required SMAP data
             if smap_channels:
-                smap_train_full = np.load(self.data_root / "smap" / "train.npy", allow_pickle=True)
-                smap_test_full = np.load(self.data_root / "smap" / "test.npy", allow_pickle=True)
-                smap_train_labels = np.load(self.data_root / "smap" / "train_labels.npy", allow_pickle=True)
-                smap_test_labels = np.load(self.data_root / "smap" / "test_labels.npy", allow_pickle=True)
+                smap_train_full = np.load(
+                    self.data_root / "smap" / "train.npy", allow_pickle=True
+                )
+                smap_test_full = np.load(
+                    self.data_root / "smap" / "test.npy", allow_pickle=True
+                )
+                smap_train_labels = np.load(
+                    self.data_root / "smap" / "train_labels.npy", allow_pickle=True
+                )
+                smap_test_labels = np.load(
+                    self.data_root / "smap" / "test_labels.npy", allow_pickle=True
+                )
 
                 # Extract only required channels
                 max_channel = max(smap_channels)
@@ -70,24 +85,46 @@ class NASADataLoader(DataSourceInterface):
                     smap_test = smap_test_full[:, smap_channels]
                 else:
                     # Fallback to available channels
-                    available_channels = min(len(smap_channels), smap_train_full.shape[1])
+                    available_channels = min(
+                        len(smap_channels), smap_train_full.shape[1]
+                    )
                     smap_train = smap_train_full[:, :available_channels]
                     smap_test = smap_test_full[:, :available_channels]
 
                 self.smap_data = {
-                    'data': np.vstack([smap_train, smap_test]) if smap_train.size > 0 and smap_test.size > 0 else smap_train,
-                    'labels': np.concatenate([smap_train_labels, smap_test_labels]) if smap_train_labels.size > 0 and smap_test_labels.size > 0 else smap_train_labels,
-                    'channels': smap_channels
+                    "data": (
+                        np.vstack([smap_train, smap_test])
+                        if smap_train.size > 0 and smap_test.size > 0
+                        else smap_train
+                    ),
+                    "labels": (
+                        np.concatenate([smap_train_labels, smap_test_labels])
+                        if smap_train_labels.size > 0 and smap_test_labels.size > 0
+                        else smap_train_labels
+                    ),
+                    "channels": smap_channels,
                 }
             else:
-                self.smap_data = {'data': np.array([]), 'labels': np.array([]), 'channels': []}
+                self.smap_data = {
+                    "data": np.array([]),
+                    "labels": np.array([]),
+                    "channels": [],
+                }
 
             # Load only required MSL data
             if msl_channels:
-                msl_train_full = np.load(self.data_root / "msl" / "train.npy", allow_pickle=True)
-                msl_test_full = np.load(self.data_root / "msl" / "test.npy", allow_pickle=True)
-                msl_train_labels = np.load(self.data_root / "msl" / "train_labels.npy", allow_pickle=True)
-                msl_test_labels = np.load(self.data_root / "msl" / "test_labels.npy", allow_pickle=True)
+                msl_train_full = np.load(
+                    self.data_root / "msl" / "train.npy", allow_pickle=True
+                )
+                msl_test_full = np.load(
+                    self.data_root / "msl" / "test.npy", allow_pickle=True
+                )
+                msl_train_labels = np.load(
+                    self.data_root / "msl" / "train_labels.npy", allow_pickle=True
+                )
+                msl_test_labels = np.load(
+                    self.data_root / "msl" / "test_labels.npy", allow_pickle=True
+                )
 
                 # Extract only required channels
                 max_channel = max(msl_channels)
@@ -101,12 +138,24 @@ class NASADataLoader(DataSourceInterface):
                     msl_test = msl_test_full[:, :available_channels]
 
                 self.msl_data = {
-                    'data': np.vstack([msl_train, msl_test]) if msl_train.size > 0 and msl_test.size > 0 else msl_train,
-                    'labels': np.concatenate([msl_train_labels, msl_test_labels]) if msl_train_labels.size > 0 and msl_test_labels.size > 0 else msl_train_labels,
-                    'channels': msl_channels
+                    "data": (
+                        np.vstack([msl_train, msl_test])
+                        if msl_train.size > 0 and msl_test.size > 0
+                        else msl_train
+                    ),
+                    "labels": (
+                        np.concatenate([msl_train_labels, msl_test_labels])
+                        if msl_train_labels.size > 0 and msl_test_labels.size > 0
+                        else msl_train_labels
+                    ),
+                    "channels": msl_channels,
                 }
             else:
-                self.msl_data = {'data': np.array([]), 'labels': np.array([]), 'channels': []}
+                self.msl_data = {
+                    "data": np.array([]),
+                    "labels": np.array([]),
+                    "channels": [],
+                }
 
             # Load labeled anomalies if available
             anomaly_file = self.data_root / "labeled_anomalies.csv"
@@ -118,8 +167,12 @@ class NASADataLoader(DataSourceInterface):
             self.is_loaded = True
 
             logger.info(f"NASA data loaded for 12 sensors:")
-            logger.info(f"  SMAP data shape: {self.smap_data['data'].shape} (channels: {len(smap_channels)})")
-            logger.info(f"  MSL data shape: {self.msl_data['data'].shape} (channels: {len(msl_channels)})")
+            logger.info(
+                f"  SMAP data shape: {self.smap_data['data'].shape} (channels: {len(smap_channels)})"
+            )
+            logger.info(
+                f"  MSL data shape: {self.msl_data['data'].shape} (channels: {len(msl_channels)})"
+            )
             logger.info(f"  Total memory footprint reduced significantly")
             logger.info(f"  Labeled anomalies: {len(self.labeled_anomalies)}")
 
@@ -127,8 +180,16 @@ class NASADataLoader(DataSourceInterface):
             logger.error(f"Error loading NASA data: {e}")
             self.is_loaded = False
             # Create empty datasets as fallback
-            self.smap_data = {'data': np.array([]), 'labels': np.array([]), 'channels': []}
-            self.msl_data = {'data': np.array([]), 'labels': np.array([]), 'channels': []}
+            self.smap_data = {
+                "data": np.array([]),
+                "labels": np.array([]),
+                "channels": [],
+            }
+            self.msl_data = {
+                "data": np.array([]),
+                "labels": np.array([]),
+                "channels": [],
+            }
             self.labeled_anomalies = pd.DataFrame()
 
     def get_sensor_data(self, sensor_id: str, hours_back: int = 744) -> Dict[str, any]:
@@ -150,13 +211,13 @@ class NASADataLoader(DataSourceInterface):
 
             # Get raw data based on data source
             if equipment.data_source == "smap":
-                raw_data = self.smap_data['data']
-                labels = self.smap_data['labels']
-                channels = self.smap_data['channels']
+                raw_data = self.smap_data["data"]
+                labels = self.smap_data["labels"]
+                channels = self.smap_data["channels"]
             elif equipment.data_source == "msl":
-                raw_data = self.msl_data['data']
-                labels = self.msl_data['labels']
-                channels = self.msl_data['channels']
+                raw_data = self.msl_data["data"]
+                labels = self.msl_data["labels"]
+                channels = self.msl_data["channels"]
             else:
                 raise ValueError(f"Unknown data source: {equipment.data_source}")
 
@@ -172,7 +233,9 @@ class NASADataLoader(DataSourceInterface):
                 # Channel not found, use first available or generate mock data
                 if raw_data.shape[1] > 0:
                     channel_data = raw_data[:, 0]
-                    logger.warning(f"Channel {equipment.channel_index} not found for {sensor_id}, using first available channel")
+                    logger.warning(
+                        f"Channel {equipment.channel_index} not found for {sensor_id}, using first available channel"
+                    )
                 else:
                     return self._generate_mock_data(equipment, hours_back)
 
@@ -183,7 +246,7 @@ class NASADataLoader(DataSourceInterface):
             # Create timestamps (assuming hourly data)
             end_time = datetime.now()
             timestamps = [
-                end_time - timedelta(hours=data_points-i-1)
+                end_time - timedelta(hours=data_points - i - 1)
                 for i in range(data_points)
             ]
 
@@ -192,25 +255,25 @@ class NASADataLoader(DataSourceInterface):
 
             # Create sensor info
             sensor_info = {
-                'sensor_id': sensor_id,
-                'name': equipment.name,
-                'type': equipment.sensor_type,
-                'unit': equipment.unit,
-                'equipment_type': equipment.equipment_type.value,
-                'criticality': equipment.criticality.value,
-                'location': equipment.location,
-                'description': equipment.description,
-                'normal_range': equipment.normal_range,
-                'data_source': equipment.data_source
+                "sensor_id": sensor_id,
+                "name": equipment.name,
+                "type": equipment.sensor_type,
+                "unit": equipment.unit,
+                "equipment_type": equipment.equipment_type.value,
+                "criticality": equipment.criticality.value,
+                "location": equipment.location,
+                "description": equipment.description,
+                "normal_range": equipment.normal_range,
+                "data_source": equipment.data_source,
             }
 
             return {
-                'sensor_id': sensor_id,
-                'timestamps': timestamps,
-                'values': values.tolist(),
-                'sensor_info': sensor_info,
-                'statistics': statistics,
-                'data_quality': 'real' if self.is_loaded else 'mock'
+                "sensor_id": sensor_id,
+                "timestamps": timestamps,
+                "values": values.tolist(),
+                "sensor_info": sensor_info,
+                "statistics": statistics,
+                "data_quality": "real" if self.is_loaded else "mock",
             }
 
         except Exception as e:
@@ -234,7 +297,7 @@ class NASADataLoader(DataSourceInterface):
             # Create timestamps
             end_time = datetime.now()
             timestamps = [
-                end_time - timedelta(hours=hours_back-i-1)
+                end_time - timedelta(hours=hours_back - i - 1)
                 for i in range(hours_back)
             ]
 
@@ -256,25 +319,25 @@ class NASADataLoader(DataSourceInterface):
 
             # Create sensor info
             sensor_info = {
-                'sensor_id': equipment.equipment_id,
-                'name': equipment.name,
-                'type': equipment.sensor_type,
-                'unit': equipment.unit,
-                'equipment_type': equipment.equipment_type.value,
-                'criticality': equipment.criticality.value,
-                'location': equipment.location,
-                'description': equipment.description,
-                'normal_range': equipment.normal_range,
-                'data_source': equipment.data_source
+                "sensor_id": equipment.equipment_id,
+                "name": equipment.name,
+                "type": equipment.sensor_type,
+                "unit": equipment.unit,
+                "equipment_type": equipment.equipment_type.value,
+                "criticality": equipment.criticality.value,
+                "location": equipment.location,
+                "description": equipment.description,
+                "normal_range": equipment.normal_range,
+                "data_source": equipment.data_source,
             }
 
             return {
-                'sensor_id': equipment.equipment_id,
-                'timestamps': timestamps,
-                'values': values,
-                'sensor_info': sensor_info,
-                'statistics': statistics,
-                'data_quality': 'mock'
+                "sensor_id": equipment.equipment_id,
+                "timestamps": timestamps,
+                "values": values,
+                "sensor_info": sensor_info,
+                "statistics": statistics,
+                "data_quality": "mock",
             }
 
         except Exception as e:
@@ -284,12 +347,12 @@ class NASADataLoader(DataSourceInterface):
     def _generate_empty_response(self, sensor_id: str) -> Dict[str, any]:
         """Generate empty response for error cases"""
         return {
-            'sensor_id': sensor_id,
-            'timestamps': [],
-            'values': [],
-            'sensor_info': {'sensor_id': sensor_id, 'name': 'Unknown'},
-            'statistics': {},
-            'data_quality': 'error'
+            "sensor_id": sensor_id,
+            "timestamps": [],
+            "values": [],
+            "sensor_info": {"sensor_id": sensor_id, "name": "Unknown"},
+            "statistics": {},
+            "data_quality": "error",
         }
 
     def _calculate_statistics(self, values: np.ndarray, equipment) -> Dict[str, any]:
@@ -309,30 +372,29 @@ class NASADataLoader(DataSourceInterface):
                 status = SensorStatus.CRITICAL.value
             elif current_value <= equipment.warning_threshold:
                 status = SensorStatus.WARNING.value
-            elif equipment.normal_range[0] <= current_value <= equipment.normal_range[1]:
+            elif (
+                equipment.normal_range[0] <= current_value <= equipment.normal_range[1]
+            ):
                 status = SensorStatus.NORMAL.value
             else:
                 status = SensorStatus.WARNING.value
 
             return {
-                'current_value': current_value,
-                'mean_value': mean_value,
-                'std_value': std_value,
-                'min_value': min_value,
-                'max_value': max_value,
-                'status': status,
-                'critical_threshold': equipment.critical_threshold,
-                'warning_threshold': equipment.warning_threshold,
-                'normal_range': equipment.normal_range,
-                'data_points': len(values)
+                "current_value": current_value,
+                "mean_value": mean_value,
+                "std_value": std_value,
+                "min_value": min_value,
+                "max_value": max_value,
+                "status": status,
+                "critical_threshold": equipment.critical_threshold,
+                "warning_threshold": equipment.warning_threshold,
+                "normal_range": equipment.normal_range,
+                "data_points": len(values),
             }
 
         except Exception as e:
             logger.error(f"Error calculating statistics: {e}")
-            return {
-                'current_value': 0.0,
-                'status': SensorStatus.UNKNOWN.value
-            }
+            return {"current_value": 0.0, "status": SensorStatus.UNKNOWN.value}
 
     def get_sensor_list(self) -> List[Dict[str, any]]:
         """Get list of available sensors from equipment registry"""
@@ -340,15 +402,15 @@ class NASADataLoader(DataSourceInterface):
             sensor_list = []
             for equipment in EQUIPMENT_REGISTRY.values():
                 sensor_info = {
-                    'sensor_id': equipment.equipment_id,
-                    'name': equipment.name,
-                    'equipment_type': equipment.equipment_type.value,
-                    'sensor_type': equipment.sensor_type,
-                    'unit': equipment.unit,
-                    'criticality': equipment.criticality.value,
-                    'location': equipment.location,
-                    'data_source': equipment.data_source,
-                    'channel_index': equipment.channel_index
+                    "sensor_id": equipment.equipment_id,
+                    "name": equipment.name,
+                    "equipment_type": equipment.equipment_type.value,
+                    "sensor_type": equipment.sensor_type,
+                    "unit": equipment.unit,
+                    "criticality": equipment.criticality.value,
+                    "location": equipment.location,
+                    "data_source": equipment.data_source,
+                    "channel_index": equipment.channel_index,
                 }
                 sensor_list.append(sensor_info)
 
@@ -363,55 +425,67 @@ class NASADataLoader(DataSourceInterface):
         """Get latest sensor reading"""
         try:
             data = self.get_sensor_data(sensor_id, hours_back=1)
-            if data['values']:
+            if data["values"]:
                 return {
-                    'sensor_id': sensor_id,
-                    'timestamp': data['timestamps'][-1],
-                    'value': data['values'][-1],
-                    'status': data['statistics'].get('status', 'UNKNOWN'),
-                    'unit': data['sensor_info'].get('unit', '')
+                    "sensor_id": sensor_id,
+                    "timestamp": data["timestamps"][-1],
+                    "value": data["values"][-1],
+                    "status": data["statistics"].get("status", "UNKNOWN"),
+                    "unit": data["sensor_info"].get("unit", ""),
                 }
             else:
                 return {
-                    'sensor_id': sensor_id,
-                    'timestamp': datetime.now(),
-                    'value': 0.0,
-                    'status': 'UNKNOWN',
-                    'unit': ''
+                    "sensor_id": sensor_id,
+                    "timestamp": datetime.now(),
+                    "value": 0.0,
+                    "status": "UNKNOWN",
+                    "unit": "",
                 }
 
         except Exception as e:
             logger.error(f"Error getting latest value for {sensor_id}: {e}")
             return {
-                'sensor_id': sensor_id,
-                'timestamp': datetime.now(),
-                'value': 0.0,
-                'status': 'ERROR',
-                'unit': ''
+                "sensor_id": sensor_id,
+                "timestamp": datetime.now(),
+                "value": 0.0,
+                "status": "ERROR",
+                "unit": "",
             }
 
     def get_data_quality_report(self) -> Dict[str, any]:
         """Get data quality report"""
         try:
             total_sensors = len(EQUIPMENT_REGISTRY)
-            smap_sensors = len([eq for eq in EQUIPMENT_REGISTRY.values() if eq.data_source == "smap"])
-            msl_sensors = len([eq for eq in EQUIPMENT_REGISTRY.values() if eq.data_source == "msl"])
+            smap_sensors = len(
+                [eq for eq in EQUIPMENT_REGISTRY.values() if eq.data_source == "smap"]
+            )
+            msl_sensors = len(
+                [eq for eq in EQUIPMENT_REGISTRY.values() if eq.data_source == "msl"]
+            )
 
             return {
-                'total_sensors': total_sensors,
-                'smap_sensors': smap_sensors,
-                'msl_sensors': msl_sensors,
-                'data_loaded': self.is_loaded,
-                'smap_data_shape': self.smap_data['data'].shape if self.smap_data['data'].size > 0 else (0, 0),
-                'msl_data_shape': self.msl_data['data'].shape if self.msl_data['data'].size > 0 else (0, 0),
-                'smap_channels_loaded': len(self.smap_data.get('channels', [])),
-                'msl_channels_loaded': len(self.msl_data.get('channels', [])),
-                'labeled_anomalies': len(self.labeled_anomalies),
-                'data_quality': 'real' if self.is_loaded else 'mock',
-                'memory_optimized': True,
-                'note': 'Only 12 required sensor channels loaded instead of full dataset'
+                "total_sensors": total_sensors,
+                "smap_sensors": smap_sensors,
+                "msl_sensors": msl_sensors,
+                "data_loaded": self.is_loaded,
+                "smap_data_shape": (
+                    self.smap_data["data"].shape
+                    if self.smap_data["data"].size > 0
+                    else (0, 0)
+                ),
+                "msl_data_shape": (
+                    self.msl_data["data"].shape
+                    if self.msl_data["data"].size > 0
+                    else (0, 0)
+                ),
+                "smap_channels_loaded": len(self.smap_data.get("channels", [])),
+                "msl_channels_loaded": len(self.msl_data.get("channels", [])),
+                "labeled_anomalies": len(self.labeled_anomalies),
+                "data_quality": "real" if self.is_loaded else "mock",
+                "memory_optimized": True,
+                "note": "Only 12 required sensor channels loaded instead of full dataset",
             }
 
         except Exception as e:
             logger.error(f"Error generating data quality report: {e}")
-            return {'error': str(e)}
+            return {"error": str(e)}

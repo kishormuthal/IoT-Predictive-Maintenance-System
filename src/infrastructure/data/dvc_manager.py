@@ -3,16 +3,17 @@ DVC Manager
 Data versioning and lineage tracking using DVC (Data Version Control)
 """
 
-import subprocess
 import hashlib
 import json
-import yaml
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Tuple
-from datetime import datetime
-from dataclasses import dataclass, asdict
 import logging
 import shutil
+import subprocess
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class DatasetVersion:
     """Dataset version metadata"""
+
     dataset_id: str
     version: str
     data_hash: str
@@ -37,14 +39,14 @@ class DatasetVersion:
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         data = asdict(self)
-        data['creation_date'] = self.creation_date.isoformat()
+        data["creation_date"] = self.creation_date.isoformat()
         return data
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'DatasetVersion':
+    def from_dict(cls, data: Dict[str, Any]) -> "DatasetVersion":
         """Create from dictionary"""
         data_copy = data.copy()
-        data_copy['creation_date'] = datetime.fromisoformat(data_copy['creation_date'])
+        data_copy["creation_date"] = datetime.fromisoformat(data_copy["creation_date"])
         return cls(**data_copy)
 
 
@@ -57,7 +59,7 @@ class DVCManager:
         self,
         repo_root: str = ".",
         data_dir: str = "data",
-        dvc_remote: Optional[str] = None
+        dvc_remote: Optional[str] = None,
     ):
         """
         Initialize DVC manager
@@ -89,10 +91,7 @@ class DVCManager:
         """Check if DVC is installed and initialized"""
         try:
             result = subprocess.run(
-                ['dvc', 'version'],
-                capture_output=True,
-                text=True,
-                timeout=5
+                ["dvc", "version"], capture_output=True, text=True, timeout=5
             )
             if result.returncode == 0:
                 logger.info(f"DVC is available: {result.stdout.strip()}")
@@ -124,11 +123,11 @@ class DVCManager:
 
             # Initialize DVC
             result = subprocess.run(
-                ['dvc', 'init'],
+                ["dvc", "init"],
                 cwd=self.repo_root,
                 capture_output=True,
                 text=True,
-                timeout=30
+                timeout=30,
             )
 
             if result.returncode == 0:
@@ -165,20 +164,20 @@ class DVCManager:
         try:
             # Add remote
             subprocess.run(
-                ['dvc', 'remote', 'add', '-f', remote_name, remote_url],
+                ["dvc", "remote", "add", "-f", remote_name, remote_url],
                 cwd=self.repo_root,
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
 
             # Set as default
             subprocess.run(
-                ['dvc', 'remote', 'default', remote_name],
+                ["dvc", "remote", "default", remote_name],
                 cwd=self.repo_root,
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
 
             logger.info(f"DVC remote '{remote_name}' configured: {remote_url}")
@@ -193,7 +192,7 @@ class DVCManager:
         """Load dataset version registry"""
         try:
             if self.registry_file.exists():
-                with open(self.registry_file, 'r') as f:
+                with open(self.registry_file, "r") as f:
                     registry_data = json.load(f)
                     for dataset_id, versions in registry_data.items():
                         self.versions[dataset_id] = [
@@ -210,7 +209,7 @@ class DVCManager:
                 dataset_id: [v.to_dict() for v in versions]
                 for dataset_id, versions in self.versions.items()
             }
-            with open(self.registry_file, 'w') as f:
+            with open(self.registry_file, "w") as f:
                 json.dump(registry_data, f, indent=2)
             logger.debug("Saved dataset registry")
         except Exception as e:
@@ -219,7 +218,7 @@ class DVCManager:
     def _compute_file_hash(self, file_path: Path) -> str:
         """Compute SHA256 hash of file"""
         sha256_hash = hashlib.sha256()
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             for byte_block in iter(lambda: f.read(4096), b""):
                 sha256_hash.update(byte_block)
         return sha256_hash.hexdigest()
@@ -232,7 +231,7 @@ class DVCManager:
         tags: Optional[List[str]] = None,
         sensor_ids: Optional[List[str]] = None,
         parent_version: Optional[str] = None,
-        push_to_remote: bool = False
+        push_to_remote: bool = False,
     ) -> Optional[DatasetVersion]:
         """
         Version a dataset file using DVC
@@ -260,9 +259,13 @@ class DVCManager:
 
             # Check if this exact version already exists
             if dataset_id in self.versions:
-                existing = [v for v in self.versions[dataset_id] if v.data_hash == data_hash]
+                existing = [
+                    v for v in self.versions[dataset_id] if v.data_hash == data_hash
+                ]
                 if existing:
-                    logger.info(f"Dataset {dataset_id} with hash {data_hash[:8]} already versioned")
+                    logger.info(
+                        f"Dataset {dataset_id} with hash {data_hash[:8]} already versioned"
+                    )
                     return existing[0]
 
             # Get file stats
@@ -294,7 +297,7 @@ class DVCManager:
                 tags=tags or [],
                 parent_version=parent_version,
                 dvc_tracked=dvc_tracked,
-                remote_url=self.dvc_remote if dvc_tracked else None
+                remote_url=self.dvc_remote if dvc_tracked else None,
             )
 
             # Add to registry
@@ -330,11 +333,11 @@ class DVCManager:
         try:
             # Add file to DVC
             result = subprocess.run(
-                ['dvc', 'add', str(file_path)],
+                ["dvc", "add", str(file_path)],
                 cwd=self.repo_root,
                 capture_output=True,
                 text=True,
-                timeout=60
+                timeout=60,
             )
 
             if result.returncode != 0:
@@ -346,11 +349,11 @@ class DVCManager:
             # Push to remote if requested
             if push_to_remote and self.dvc_remote:
                 push_result = subprocess.run(
-                    ['dvc', 'push', str(file_path) + '.dvc'],
+                    ["dvc", "push", str(file_path) + ".dvc"],
                     cwd=self.repo_root,
                     capture_output=True,
                     text=True,
-                    timeout=300
+                    timeout=300,
                 )
 
                 if push_result.returncode == 0:
@@ -369,11 +372,12 @@ class DVCManager:
         try:
             import numpy as np
 
-            if file_path.suffix == '.npy':
+            if file_path.suffix == ".npy":
                 data = np.load(file_path)
                 return len(data)
-            elif file_path.suffix == '.csv':
+            elif file_path.suffix == ".csv":
                 import pandas as pd
+
                 df = pd.read_csv(file_path)
                 return len(df)
             else:
@@ -391,15 +395,13 @@ class DVCManager:
         latest_version = self.versions[dataset_id][-1].version
         try:
             # Extract number from vN format
-            version_num = int(latest_version.replace('v', ''))
+            version_num = int(latest_version.replace("v", ""))
             return f"v{version_num + 1}"
         except ValueError:
             return f"v{len(self.versions[dataset_id]) + 1}"
 
     def get_dataset_version(
-        self,
-        dataset_id: str,
-        version: Optional[str] = None
+        self, dataset_id: str, version: Optional[str] = None
     ) -> Optional[DatasetVersion]:
         """
         Get specific dataset version (latest if version not specified)
@@ -425,7 +427,9 @@ class DVCManager:
 
         return None
 
-    def get_dataset_lineage(self, dataset_id: str, version: str) -> List[DatasetVersion]:
+    def get_dataset_lineage(
+        self, dataset_id: str, version: str
+    ) -> List[DatasetVersion]:
         """
         Get full lineage (ancestry chain) of a dataset version
 
@@ -474,7 +478,9 @@ class DVCManager:
             return False
 
         if not dataset_version.dvc_tracked:
-            logger.warning(f"Dataset {dataset_id} v{dataset_version.version} is not DVC tracked")
+            logger.warning(
+                f"Dataset {dataset_id} v{dataset_version.version} is not DVC tracked"
+            )
             return False
 
         if not self.dvc_available:
@@ -482,14 +488,14 @@ class DVCManager:
             return False
 
         try:
-            dvc_file = Path(dataset_version.file_path).with_suffix('.dvc')
+            dvc_file = Path(dataset_version.file_path).with_suffix(".dvc")
 
             result = subprocess.run(
-                ['dvc', 'pull', str(dvc_file)],
+                ["dvc", "pull", str(dvc_file)],
                 cwd=self.repo_root,
                 capture_output=True,
                 text=True,
-                timeout=300
+                timeout=300,
             )
 
             if result.returncode == 0:
@@ -504,11 +510,7 @@ class DVCManager:
             return False
 
     def link_dataset_to_model(
-        self,
-        dataset_id: str,
-        dataset_version: str,
-        model_id: str,
-        model_version: str
+        self, dataset_id: str, dataset_version: str, model_id: str, model_version: str
     ):
         """
         Create linkage between dataset version and model version
@@ -523,14 +525,14 @@ class DVCManager:
         linkage_file = self.metadata_dir / f"linkage_{model_id}_{model_version}.json"
 
         linkage = {
-            'model_id': model_id,
-            'model_version': model_version,
-            'dataset_id': dataset_id,
-            'dataset_version': dataset_version,
-            'created_at': datetime.now().isoformat()
+            "model_id": model_id,
+            "model_version": model_version,
+            "dataset_id": dataset_id,
+            "dataset_version": dataset_version,
+            "created_at": datetime.now().isoformat(),
         }
 
-        with open(linkage_file, 'w') as f:
+        with open(linkage_file, "w") as f:
             json.dump(linkage, f, indent=2)
 
         logger.info(

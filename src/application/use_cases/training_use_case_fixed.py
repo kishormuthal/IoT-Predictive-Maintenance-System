@@ -3,17 +3,26 @@ Training Use Cases - FIXED VERSION
 Application layer for training operations with all 12 critical fixes applied
 """
 
-import logging
 import hashlib
-import numpy as np
-from typing import Dict, List, Any, Optional, Tuple
+import logging
 from datetime import datetime
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
+import numpy as np
+
+from config.equipment_config import get_equipment_by_id, get_equipment_list
 from src.infrastructure.ml.model_registry_sqlite import ModelRegistrySQLite
-from src.infrastructure.ml.telemanom_wrapper import NASATelemanom, Telemanom_Config, ModelNotTrainedError, InsufficientDataError
-from src.infrastructure.ml.transformer_wrapper import TransformerForecaster, TransformerConfig
-from config.equipment_config import get_equipment_list, get_equipment_by_id
+from src.infrastructure.ml.telemanom_wrapper import (
+    InsufficientDataError,
+    ModelNotTrainedError,
+    NASATelemanom,
+    Telemanom_Config,
+)
+from src.infrastructure.ml.transformer_wrapper import (
+    TransformerConfig,
+    TransformerForecaster,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +38,7 @@ class TrainingUseCase:
         config_path: str = None,
         registry_path: str = None,
         model_base_path: str = None,
-        data_loader=None
+        data_loader=None,
     ):
         """
         Initialize training use case
@@ -64,7 +73,7 @@ class TrainingUseCase:
     def _load_training_data(
         self,
         sensor_id: str,
-        split_ratio: Tuple[float, float, float] = (0.7, 0.15, 0.15)
+        split_ratio: Tuple[float, float, float] = (0.7, 0.15, 0.15),
     ) -> Dict[str, Any]:
         """
         Load and split training data for a sensor
@@ -97,22 +106,22 @@ class TrainingUseCase:
             val_size = int(len(data) * split_ratio[1])
 
             train_data = data[:train_size]
-            val_data = data[train_size:train_size + val_size]
-            test_data = data[train_size + val_size:]
+            val_data = data[train_size : train_size + val_size]
+            test_data = data[train_size + val_size :]
 
             return {
-                'train_data': train_data,
-                'val_data': val_data,
-                'test_data': test_data,
-                'data_hash': data_hash,
-                'metadata': {
-                    'total_samples': len(data),
-                    'train_samples': len(train_data),
-                    'val_samples': len(val_data),
-                    'test_samples': len(test_data),
-                    'data_start': self.data_loader.get_data_start_date(sensor_id),
-                    'data_end': self.data_loader.get_data_end_date(sensor_id)
-                }
+                "train_data": train_data,
+                "val_data": val_data,
+                "test_data": test_data,
+                "data_hash": data_hash,
+                "metadata": {
+                    "total_samples": len(data),
+                    "train_samples": len(train_data),
+                    "val_samples": len(val_data),
+                    "test_samples": len(test_data),
+                    "data_start": self.data_loader.get_data_start_date(sensor_id),
+                    "data_end": self.data_loader.get_data_end_date(sensor_id),
+                },
             }
 
         except FileNotFoundError as e:
@@ -125,10 +134,7 @@ class TrainingUseCase:
             raise
 
     def _validate_model(
-        self,
-        model: Any,
-        val_data: np.ndarray,
-        model_type: str
+        self, model: Any, val_data: np.ndarray, model_type: str
     ) -> Dict[str, Any]:
         """
         Validate model on held-out validation set
@@ -145,11 +151,11 @@ class TrainingUseCase:
             Validation metrics with validation_performed flag
         """
         try:
-            validation_metrics = {'validation_performed': True}
+            validation_metrics = {"validation_performed": True}
 
-            if model_type == 'telemanom':
+            if model_type == "telemanom":
                 # Create sequences for validation
-                if hasattr(model, '_create_sequences'):
+                if hasattr(model, "_create_sequences"):
                     X_val, y_val = model._create_sequences(
                         model.scaler.transform(val_data.reshape(-1, 1))
                     )
@@ -162,23 +168,31 @@ class TrainingUseCase:
                         val_errors = model._calculate_prediction_errors(y_val, y_pred)
 
                         # Calculate metrics
-                        validation_metrics.update({
-                            'mean_error': float(np.mean(val_errors)),
-                            'std_error': float(np.std(val_errors)),
-                            'max_error': float(np.max(val_errors)),
-                            'anomaly_rate': float(np.sum(val_errors > model.error_threshold) / len(val_errors))
-                        })
+                        validation_metrics.update(
+                            {
+                                "mean_error": float(np.mean(val_errors)),
+                                "std_error": float(np.std(val_errors)),
+                                "max_error": float(np.max(val_errors)),
+                                "anomaly_rate": float(
+                                    np.sum(val_errors > model.error_threshold)
+                                    / len(val_errors)
+                                ),
+                            }
+                        )
 
-            elif model_type == 'transformer':
+            elif model_type == "transformer":
                 # Forecast validation
                 if len(val_data) >= model.config.sequence_length:
                     # Use part of validation data for input
-                    input_data = val_data[:model.config.sequence_length]
-                    actual_future = val_data[model.config.sequence_length:model.config.sequence_length + model.config.forecast_horizon]
+                    input_data = val_data[: model.config.sequence_length]
+                    actual_future = val_data[
+                        model.config.sequence_length : model.config.sequence_length
+                        + model.config.forecast_horizon
+                    ]
 
                     # Generate forecast
                     forecast_result = model.predict(input_data)
-                    forecast_values = np.array(forecast_result['forecast_values'])
+                    forecast_values = np.array(forecast_result["forecast_values"])
 
                     # Calculate metrics if we have actual future values
                     if len(actual_future) > 0:
@@ -198,30 +212,35 @@ class TrainingUseCase:
 
                         # MAPE
                         epsilon = 1e-10
-                        mape = np.mean(np.abs((actual_future - forecast_values) / (actual_future + epsilon))) * 100
+                        mape = (
+                            np.mean(
+                                np.abs(
+                                    (actual_future - forecast_values)
+                                    / (actual_future + epsilon)
+                                )
+                            )
+                            * 100
+                        )
 
-                        validation_metrics.update({
-                            'mae': float(mae),
-                            'mse': float(mse),
-                            'rmse': float(rmse),
-                            'r2_score': float(r2),
-                            'mape': float(mape)
-                        })
+                        validation_metrics.update(
+                            {
+                                "mae": float(mae),
+                                "mse": float(mse),
+                                "rmse": float(rmse),
+                                "r2_score": float(r2),
+                                "mape": float(mape),
+                            }
+                        )
 
             return validation_metrics
 
         except Exception as e:
             logger.error(f"Error during validation: {e}")
             # Return minimal valid metrics on error
-            return {
-                'validation_performed': False,
-                'error': str(e)
-            }
+            return {"validation_performed": False, "error": str(e)}
 
     def train_sensor_anomaly_detection(
-        self,
-        sensor_id: str,
-        config: Telemanom_Config = None
+        self, sensor_id: str, config: Telemanom_Config = None
     ) -> Dict[str, Any]:
         """
         Train anomaly detection model for a sensor
@@ -243,10 +262,7 @@ class TrainingUseCase:
             # Validate sensor
             equipment = get_equipment_by_id(sensor_id)
             if not equipment:
-                return {
-                    'success': False,
-                    'error': f'Invalid sensor ID: {sensor_id}'
-                }
+                return {"success": False, "error": f"Invalid sensor ID: {sensor_id}"}
 
             # Load training data
             # FIX 4: TrainingUseCase loads data, passes to wrappers
@@ -257,17 +273,15 @@ class TrainingUseCase:
             model = NASATelemanom(sensor_id, model_config)
 
             # Train model
-            training_result = model.train(data_split['train_data'])
+            training_result = model.train(data_split["train_data"])
 
             # FIX 6: Perform proper validation on held-out data
             validation_metrics = self._validate_model(
-                model,
-                data_split['val_data'],
-                'telemanom'
+                model, data_split["val_data"], "telemanom"
             )
 
             # FIX 5: Correct model_path retrieval from save operation
-            model_path = self.model_base_path / 'telemanom' / sensor_id
+            model_path = self.model_base_path / "telemanom" / sensor_id
             model_path.mkdir(parents=True, exist_ok=True)
             model.save_model(model_path.parent)
 
@@ -276,72 +290,76 @@ class TrainingUseCase:
             # FIX 12: Pass data_hash from training data
             version_id = self.model_registry.register_model(
                 sensor_id=sensor_id,
-                model_type='telemanom',
+                model_type="telemanom",
                 model_path=model_path,
                 training_config=model_config.__dict__,
                 training_metrics=training_result,
                 validation_metrics=validation_metrics,
                 training_time_seconds=training_time,
-                data_hash=data_split['data_hash'],
-                data_source=self.data_loader.get_data_source() if self.data_loader else None,
-                data_start_date=data_split['metadata'].get('data_start'),
-                data_end_date=data_split['metadata'].get('data_end'),
-                num_samples=data_split['metadata']['train_samples'],
+                data_hash=data_split["data_hash"],
+                data_source=(
+                    self.data_loader.get_data_source() if self.data_loader else None
+                ),
+                data_start_date=data_split["metadata"].get("data_start"),
+                data_end_date=data_split["metadata"].get("data_end"),
+                num_samples=data_split["metadata"]["train_samples"],
                 description=f"Telemanom anomaly detection model for {equipment.equipment_type.value}",
-                tags=['anomaly_detection', equipment.equipment_type.value, equipment.criticality.value]
+                tags=[
+                    "anomaly_detection",
+                    equipment.equipment_type.value,
+                    equipment.criticality.value,
+                ],
             )
 
             result = {
-                'success': True,
-                'sensor_id': sensor_id,
-                'training_result': training_result,
-                'validation_metrics': validation_metrics,
-                'training_time_seconds': training_time,
-                'data_metadata': data_split['metadata'],
-                'registry': {
-                    'version_id': version_id,
-                    'model_registered': True,
-                    'model_path': str(model_path)
-                }
+                "success": True,
+                "sensor_id": sensor_id,
+                "training_result": training_result,
+                "validation_metrics": validation_metrics,
+                "training_time_seconds": training_time,
+                "data_metadata": data_split["metadata"],
+                "registry": {
+                    "version_id": version_id,
+                    "model_registered": True,
+                    "model_path": str(model_path),
+                },
             }
 
-            logger.info(f"Anomaly detection training completed for {sensor_id}, version: {version_id}")
+            logger.info(
+                f"Anomaly detection training completed for {sensor_id}, version: {version_id}"
+            )
             return result
 
         except FileNotFoundError as e:
             # FIX 7: Specific exception handling
             logger.error(f"Data file not found for sensor {sensor_id}: {e}")
             return {
-                'success': False,
-                'error': f'Data file not found: {str(e)}',
-                'sensor_id': sensor_id
+                "success": False,
+                "error": f"Data file not found: {str(e)}",
+                "sensor_id": sensor_id,
             }
         except InsufficientDataError as e:
             logger.error(f"Insufficient data for sensor {sensor_id}: {e}")
             return {
-                'success': False,
-                'error': f'Insufficient data: {str(e)}',
-                'sensor_id': sensor_id
+                "success": False,
+                "error": f"Insufficient data: {str(e)}",
+                "sensor_id": sensor_id,
             }
         except ValueError as e:
             logger.error(f"Validation error for sensor {sensor_id}: {e}")
             return {
-                'success': False,
-                'error': f'Validation error: {str(e)}',
-                'sensor_id': sensor_id
+                "success": False,
+                "error": f"Validation error: {str(e)}",
+                "sensor_id": sensor_id,
             }
         except Exception as e:
-            logger.error(f"Unexpected error training anomaly detection for {sensor_id}: {e}")
-            return {
-                'success': False,
-                'error': str(e),
-                'sensor_id': sensor_id
-            }
+            logger.error(
+                f"Unexpected error training anomaly detection for {sensor_id}: {e}"
+            )
+            return {"success": False, "error": str(e), "sensor_id": sensor_id}
 
     def train_sensor_forecasting(
-        self,
-        sensor_id: str,
-        config: TransformerConfig = None
+        self, sensor_id: str, config: TransformerConfig = None
     ) -> Dict[str, Any]:
         """
         Train forecasting model for a sensor
@@ -363,10 +381,7 @@ class TrainingUseCase:
             # Validate sensor
             equipment = get_equipment_by_id(sensor_id)
             if not equipment:
-                return {
-                    'success': False,
-                    'error': f'Invalid sensor ID: {sensor_id}'
-                }
+                return {"success": False, "error": f"Invalid sensor ID: {sensor_id}"}
 
             # Load training data
             data_split = self._load_training_data(sensor_id)
@@ -376,17 +391,15 @@ class TrainingUseCase:
             model = TransformerForecaster(sensor_id, model_config)
 
             # Train model
-            training_result = model.train(data_split['train_data'])
+            training_result = model.train(data_split["train_data"])
 
             # FIX 6: Perform proper validation
             validation_metrics = self._validate_model(
-                model,
-                data_split['val_data'],
-                'transformer'
+                model, data_split["val_data"], "transformer"
             )
 
             # FIX 5: Correct model_path retrieval
-            model_path = self.model_base_path / 'transformer' / sensor_id
+            model_path = self.model_base_path / "transformer" / sensor_id
             model_path.mkdir(parents=True, exist_ok=True)
             model.save_model(model_path.parent)
 
@@ -395,66 +408,70 @@ class TrainingUseCase:
             # FIX 12: Pass data_hash from training data
             version_id = self.model_registry.register_model(
                 sensor_id=sensor_id,
-                model_type='transformer',
+                model_type="transformer",
                 model_path=model_path,
                 training_config=model_config.__dict__,
                 training_metrics=training_result,
                 validation_metrics=validation_metrics,
                 training_time_seconds=training_time,
-                data_hash=data_split['data_hash'],
-                data_source=self.data_loader.get_data_source() if self.data_loader else None,
-                data_start_date=data_split['metadata'].get('data_start'),
-                data_end_date=data_split['metadata'].get('data_end'),
-                num_samples=data_split['metadata']['train_samples'],
+                data_hash=data_split["data_hash"],
+                data_source=(
+                    self.data_loader.get_data_source() if self.data_loader else None
+                ),
+                data_start_date=data_split["metadata"].get("data_start"),
+                data_end_date=data_split["metadata"].get("data_end"),
+                num_samples=data_split["metadata"]["train_samples"],
                 description=f"Transformer forecasting model for {equipment.equipment_type.value}",
-                tags=['forecasting', equipment.equipment_type.value, equipment.criticality.value]
+                tags=[
+                    "forecasting",
+                    equipment.equipment_type.value,
+                    equipment.criticality.value,
+                ],
             )
 
             result = {
-                'success': True,
-                'sensor_id': sensor_id,
-                'training_result': training_result,
-                'validation_metrics': validation_metrics,
-                'training_time_seconds': training_time,
-                'data_metadata': data_split['metadata'],
-                'registry': {
-                    'version_id': version_id,
-                    'model_registered': True,
-                    'model_path': str(model_path)
-                }
+                "success": True,
+                "sensor_id": sensor_id,
+                "training_result": training_result,
+                "validation_metrics": validation_metrics,
+                "training_time_seconds": training_time,
+                "data_metadata": data_split["metadata"],
+                "registry": {
+                    "version_id": version_id,
+                    "model_registered": True,
+                    "model_path": str(model_path),
+                },
             }
 
-            logger.info(f"Forecasting training completed for {sensor_id}, version: {version_id}")
+            logger.info(
+                f"Forecasting training completed for {sensor_id}, version: {version_id}"
+            )
             return result
 
         except FileNotFoundError as e:
             logger.error(f"Data file not found for sensor {sensor_id}: {e}")
             return {
-                'success': False,
-                'error': f'Data file not found: {str(e)}',
-                'sensor_id': sensor_id
+                "success": False,
+                "error": f"Data file not found: {str(e)}",
+                "sensor_id": sensor_id,
             }
         except InsufficientDataError as e:
             logger.error(f"Insufficient data for sensor {sensor_id}: {e}")
             return {
-                'success': False,
-                'error': f'Insufficient data: {str(e)}',
-                'sensor_id': sensor_id
+                "success": False,
+                "error": f"Insufficient data: {str(e)}",
+                "sensor_id": sensor_id,
             }
         except ValueError as e:
             logger.error(f"Validation error for sensor {sensor_id}: {e}")
             return {
-                'success': False,
-                'error': f'Validation error: {str(e)}',
-                'sensor_id': sensor_id
+                "success": False,
+                "error": f"Validation error: {str(e)}",
+                "sensor_id": sensor_id,
             }
         except Exception as e:
             logger.error(f"Unexpected error training forecasting for {sensor_id}: {e}")
-            return {
-                'success': False,
-                'error': str(e),
-                'sensor_id': sensor_id
-            }
+            return {"success": False, "error": str(e), "sensor_id": sensor_id}
 
     def train_all_sensors(self, model_types: List[str] = None) -> Dict[str, Any]:
         """
@@ -470,16 +487,16 @@ class TrainingUseCase:
         """
         try:
             if model_types is None:
-                model_types = ['telemanom', 'transformer']
+                model_types = ["telemanom", "transformer"]
 
             logger.info(f"Training all sensors for model types: {model_types}")
 
             results = {
-                'batch_training': True,
-                'model_types': model_types,
-                'start_time': datetime.now().isoformat(),
-                'results': {},
-                'summary': {}
+                "batch_training": True,
+                "model_types": model_types,
+                "start_time": datetime.now().isoformat(),
+                "results": {},
+                "summary": {},
             }
 
             equipment_list = get_equipment_list()
@@ -488,86 +505,88 @@ class TrainingUseCase:
             # This allows proper per-sensor pipeline creation and error handling
 
             # Train Telemanom models
-            if 'telemanom' in model_types:
+            if "telemanom" in model_types:
                 logger.info("Training Telemanom models for all sensors")
 
                 telemanom_results = {
-                    'individual_results': {},
-                    'sensors_successful': 0,
-                    'sensors_failed': 0,
-                    'models_registered': 0
+                    "individual_results": {},
+                    "sensors_successful": 0,
+                    "sensors_failed": 0,
+                    "models_registered": 0,
                 }
 
                 for equipment in equipment_list:
                     sensor_id = equipment.equipment_id
                     result = self.train_sensor_anomaly_detection(sensor_id)
 
-                    telemanom_results['individual_results'][sensor_id] = result
+                    telemanom_results["individual_results"][sensor_id] = result
 
-                    if result.get('success', False):
-                        telemanom_results['sensors_successful'] += 1
-                        if result.get('registry', {}).get('model_registered', False):
-                            telemanom_results['models_registered'] += 1
+                    if result.get("success", False):
+                        telemanom_results["sensors_successful"] += 1
+                        if result.get("registry", {}).get("model_registered", False):
+                            telemanom_results["models_registered"] += 1
                     else:
-                        telemanom_results['sensors_failed'] += 1
+                        telemanom_results["sensors_failed"] += 1
 
-                results['results']['telemanom'] = telemanom_results
+                results["results"]["telemanom"] = telemanom_results
 
             # Train Transformer models
-            if 'transformer' in model_types:
+            if "transformer" in model_types:
                 logger.info("Training Transformer models for all sensors")
 
                 transformer_results = {
-                    'individual_results': {},
-                    'sensors_successful': 0,
-                    'sensors_failed': 0,
-                    'models_registered': 0
+                    "individual_results": {},
+                    "sensors_successful": 0,
+                    "sensors_failed": 0,
+                    "models_registered": 0,
                 }
 
                 for equipment in equipment_list:
                     sensor_id = equipment.equipment_id
                     result = self.train_sensor_forecasting(sensor_id)
 
-                    transformer_results['individual_results'][sensor_id] = result
+                    transformer_results["individual_results"][sensor_id] = result
 
-                    if result.get('success', False):
-                        transformer_results['sensors_successful'] += 1
-                        if result.get('registry', {}).get('model_registered', False):
-                            transformer_results['models_registered'] += 1
+                    if result.get("success", False):
+                        transformer_results["sensors_successful"] += 1
+                        if result.get("registry", {}).get("model_registered", False):
+                            transformer_results["models_registered"] += 1
                     else:
-                        transformer_results['sensors_failed'] += 1
+                        transformer_results["sensors_failed"] += 1
 
-                results['results']['transformer'] = transformer_results
+                results["results"]["transformer"] = transformer_results
 
             # Calculate summary
             total_successful = 0
             total_failed = 0
             total_registered = 0
 
-            for model_type, model_results in results['results'].items():
-                total_successful += model_results.get('sensors_successful', 0)
-                total_failed += model_results.get('sensors_failed', 0)
-                total_registered += model_results.get('models_registered', 0)
+            for model_type, model_results in results["results"].items():
+                total_successful += model_results.get("sensors_successful", 0)
+                total_failed += model_results.get("sensors_failed", 0)
+                total_registered += model_results.get("models_registered", 0)
 
-            results['summary'] = {
-                'total_successful': total_successful,
-                'total_failed': total_failed,
-                'total_registered': total_registered,
-                'success_rate': total_successful / (total_successful + total_failed) if (total_successful + total_failed) > 0 else 0
+            results["summary"] = {
+                "total_successful": total_successful,
+                "total_failed": total_failed,
+                "total_registered": total_registered,
+                "success_rate": (
+                    total_successful / (total_successful + total_failed)
+                    if (total_successful + total_failed) > 0
+                    else 0
+                ),
             }
 
-            results['end_time'] = datetime.now().isoformat()
+            results["end_time"] = datetime.now().isoformat()
 
-            logger.info(f"Batch training completed: {total_successful} successful, {total_registered} registered")
+            logger.info(
+                f"Batch training completed: {total_successful} successful, {total_registered} registered"
+            )
             return results
 
         except Exception as e:
             logger.error(f"Error in batch training: {e}")
-            return {
-                'batch_training': True,
-                'success': False,
-                'error': str(e)
-            }
+            return {"batch_training": True, "success": False, "error": str(e)}
 
     def get_training_status(self) -> Dict[str, Any]:
         """
@@ -583,10 +602,10 @@ class TrainingUseCase:
             registry_stats = self.model_registry.get_registry_stats()
 
             status = {
-                'total_equipment': len(equipment_list),
-                'registry_stats': registry_stats,
-                'equipment_status': {},
-                'generated_at': datetime.now().isoformat()
+                "total_equipment": len(equipment_list),
+                "registry_stats": registry_stats,
+                "equipment_status": {},
+                "generated_at": datetime.now().isoformat(),
             }
 
             # Check status for each equipment
@@ -594,43 +613,66 @@ class TrainingUseCase:
                 sensor_id = equipment.equipment_id
 
                 # FIX 9: Defensive metadata access with None handling
-                telemanom_version = self.model_registry.get_active_model_version(sensor_id, 'telemanom')
+                telemanom_version = self.model_registry.get_active_model_version(
+                    sensor_id, "telemanom"
+                )
                 telemanom_metadata = None
                 if telemanom_version:
-                    telemanom_metadata = self.model_registry.get_model_metadata(telemanom_version)
+                    telemanom_metadata = self.model_registry.get_model_metadata(
+                        telemanom_version
+                    )
 
-                transformer_version = self.model_registry.get_active_model_version(sensor_id, 'transformer')
+                transformer_version = self.model_registry.get_active_model_version(
+                    sensor_id, "transformer"
+                )
                 transformer_metadata = None
                 if transformer_version:
-                    transformer_metadata = self.model_registry.get_model_metadata(transformer_version)
+                    transformer_metadata = self.model_registry.get_model_metadata(
+                        transformer_version
+                    )
 
-                status['equipment_status'][sensor_id] = {
-                    'equipment_type': equipment.equipment_type.value,
-                    'criticality': equipment.criticality.value,
-                    'anomaly_detection': {
-                        'trained': telemanom_version is not None,
-                        'version': telemanom_version,
-                        'performance_score': telemanom_metadata.performance_score if telemanom_metadata else 0.0,
-                        'last_trained': telemanom_metadata.created_at if telemanom_metadata else None
+                status["equipment_status"][sensor_id] = {
+                    "equipment_type": equipment.equipment_type.value,
+                    "criticality": equipment.criticality.value,
+                    "anomaly_detection": {
+                        "trained": telemanom_version is not None,
+                        "version": telemanom_version,
+                        "performance_score": (
+                            telemanom_metadata.performance_score
+                            if telemanom_metadata
+                            else 0.0
+                        ),
+                        "last_trained": (
+                            telemanom_metadata.created_at
+                            if telemanom_metadata
+                            else None
+                        ),
                     },
-                    'forecasting': {
-                        'trained': transformer_version is not None,
-                        'version': transformer_version,
-                        'performance_score': transformer_metadata.performance_score if transformer_metadata else 0.0,
-                        'last_trained': transformer_metadata.created_at if transformer_metadata else None
-                    }
+                    "forecasting": {
+                        "trained": transformer_version is not None,
+                        "version": transformer_version,
+                        "performance_score": (
+                            transformer_metadata.performance_score
+                            if transformer_metadata
+                            else 0.0
+                        ),
+                        "last_trained": (
+                            transformer_metadata.created_at
+                            if transformer_metadata
+                            else None
+                        ),
+                    },
                 }
 
             return status
 
         except Exception as e:
             logger.error(f"Error getting training status: {e}")
-            return {
-                'error': str(e),
-                'generated_at': datetime.now().isoformat()
-            }
+            return {"error": str(e), "generated_at": datetime.now().isoformat()}
 
-    def validate_models_batch(self, sensor_ids: List[str] = None, model_type: str = None) -> Dict[str, Any]:
+    def validate_models_batch(
+        self, sensor_ids: List[str] = None, model_type: str = None
+    ) -> Dict[str, Any]:
         """
         Batch validate trained models
 
@@ -650,14 +692,16 @@ class TrainingUseCase:
 
             if sensor_ids:
                 # Filter to specific sensors
-                equipment_list = [eq for eq in equipment_list if eq.equipment_id in sensor_ids]
+                equipment_list = [
+                    eq for eq in equipment_list if eq.equipment_id in sensor_ids
+                ]
 
             validation_results = {
-                'batch_validation': True,
-                'sensors_validated': 0,
-                'sensors_failed': 0,
-                'results': {},
-                'validated_at': datetime.now().isoformat()
+                "batch_validation": True,
+                "sensors_validated": 0,
+                "sensors_failed": 0,
+                "results": {},
+                "validated_at": datetime.now().isoformat(),
             }
 
             for equipment in equipment_list:
@@ -669,62 +713,66 @@ class TrainingUseCase:
                     data_split = self._load_training_data(sensor_id)
 
                     # Validate Telemanom if requested
-                    if model_type is None or model_type == 'telemanom':
-                        version_id = self.model_registry.get_active_model_version(sensor_id, 'telemanom')
+                    if model_type is None or model_type == "telemanom":
+                        version_id = self.model_registry.get_active_model_version(
+                            sensor_id, "telemanom"
+                        )
                         if version_id:
                             # Create model and load
                             model = NASATelemanom(sensor_id)
-                            metadata = self.model_registry.get_model_metadata(version_id)
+                            metadata = self.model_registry.get_model_metadata(
+                                version_id
+                            )
 
                             if metadata and Path(metadata.model_path).exists():
                                 model.load_model(Path(metadata.model_path).parent)
 
                                 val_metrics = self._validate_model(
-                                    model,
-                                    data_split['val_data'],
-                                    'telemanom'
+                                    model, data_split["val_data"], "telemanom"
                                 )
-                                sensor_results['telemanom'] = val_metrics
+                                sensor_results["telemanom"] = val_metrics
 
                     # Validate Transformer if requested
-                    if model_type is None or model_type == 'transformer':
-                        version_id = self.model_registry.get_active_model_version(sensor_id, 'transformer')
+                    if model_type is None or model_type == "transformer":
+                        version_id = self.model_registry.get_active_model_version(
+                            sensor_id, "transformer"
+                        )
                         if version_id:
                             model = TransformerForecaster(sensor_id)
-                            metadata = self.model_registry.get_model_metadata(version_id)
+                            metadata = self.model_registry.get_model_metadata(
+                                version_id
+                            )
 
                             if metadata and Path(metadata.model_path).exists():
                                 model.load_model(Path(metadata.model_path).parent)
 
                                 val_metrics = self._validate_model(
-                                    model,
-                                    data_split['val_data'],
-                                    'transformer'
+                                    model, data_split["val_data"], "transformer"
                                 )
-                                sensor_results['transformer'] = val_metrics
+                                sensor_results["transformer"] = val_metrics
 
-                    validation_results['results'][sensor_id] = {
-                        'success': True,
-                        'validation_results': sensor_results
+                    validation_results["results"][sensor_id] = {
+                        "success": True,
+                        "validation_results": sensor_results,
                     }
-                    validation_results['sensors_validated'] += 1
+                    validation_results["sensors_validated"] += 1
 
                 except Exception as e:
                     logger.error(f"Error validating sensor {sensor_id}: {e}")
-                    validation_results['results'][sensor_id] = {
-                        'success': False,
-                        'error': str(e)
+                    validation_results["results"][sensor_id] = {
+                        "success": False,
+                        "error": str(e),
                     }
-                    validation_results['sensors_failed'] += 1
+                    validation_results["sensors_failed"] += 1
 
             return validation_results
 
         except Exception as e:
             logger.error(f"Error in batch validation: {e}")
             return {
-                'batch_validation': True,
-                'error': str(e),
-                'validated_at': datetime.now().isoformat()
+                "batch_validation": True,
+                "error": str(e),
+                "validated_at": datetime.now().isoformat(),
             }
 
     def manage_model_versions(self, action: str, **kwargs) -> Dict[str, Any]:
@@ -739,70 +787,59 @@ class TrainingUseCase:
             Action results
         """
         try:
-            if action == 'list':
-                sensor_id = kwargs.get('sensor_id')
-                model_type = kwargs.get('model_type')
+            if action == "list":
+                sensor_id = kwargs.get("sensor_id")
+                model_type = kwargs.get("model_type")
 
                 if sensor_id and model_type:
                     versions = self.model_registry.list_versions(sensor_id, model_type)
                     return {
-                        'action': 'list',
-                        'sensor_id': sensor_id,
-                        'model_type': model_type,
-                        'versions': versions
+                        "action": "list",
+                        "sensor_id": sensor_id,
+                        "model_type": model_type,
+                        "versions": versions,
                     }
                 else:
                     models = self.model_registry.list_models(model_type)
-                    return {
-                        'action': 'list',
-                        'models': models
-                    }
+                    return {"action": "list", "models": models}
 
-            elif action == 'promote':
-                version_id = kwargs.get('version_id')
+            elif action == "promote":
+                version_id = kwargs.get("version_id")
                 if not version_id:
-                    return {'error': 'version_id required for promote action'}
+                    return {"error": "version_id required for promote action"}
 
                 success = self.model_registry.promote_version(version_id)
                 return {
-                    'action': 'promote',
-                    'version_id': version_id,
-                    'success': success
+                    "action": "promote",
+                    "version_id": version_id,
+                    "success": success,
                 }
 
-            elif action == 'delete':
-                version_id = kwargs.get('version_id')
-                force = kwargs.get('force', False)
-                delete_artifacts = kwargs.get('delete_artifacts', True)
+            elif action == "delete":
+                version_id = kwargs.get("version_id")
+                force = kwargs.get("force", False)
+                delete_artifacts = kwargs.get("delete_artifacts", True)
 
                 if not version_id:
-                    return {'error': 'version_id required for delete action'}
+                    return {"error": "version_id required for delete action"}
 
                 success = self.model_registry.delete_version(
-                    version_id,
-                    force=force,
-                    delete_artifacts=delete_artifacts
+                    version_id, force=force, delete_artifacts=delete_artifacts
                 )
                 return {
-                    'action': 'delete',
-                    'version_id': version_id,
-                    'success': success
+                    "action": "delete",
+                    "version_id": version_id,
+                    "success": success,
                 }
 
-            elif action == 'cleanup':
-                keep_last_n = kwargs.get('keep_last_n', 3)
+            elif action == "cleanup":
+                keep_last_n = kwargs.get("keep_last_n", 3)
                 cleaned = self.model_registry.cleanup_old_versions(keep_last_n)
-                return {
-                    'action': 'cleanup',
-                    'versions_cleaned': cleaned
-                }
+                return {"action": "cleanup", "versions_cleaned": cleaned}
 
             else:
-                return {'error': f'Unknown action: {action}'}
+                return {"error": f"Unknown action: {action}"}
 
         except Exception as e:
             logger.error(f"Error managing model versions: {e}")
-            return {
-                'error': str(e),
-                'action': action
-            }
+            return {"error": str(e), "action": action}

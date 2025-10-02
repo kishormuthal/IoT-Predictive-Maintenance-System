@@ -11,15 +11,15 @@ Usage:
     python train_anomaly_models.py --quick  # Fast training for testing
 """
 
-import sys
-import os
 import argparse
-import logging
-from pathlib import Path
-from datetime import datetime
-from typing import List, Dict, Any, Optional
 import json
+import logging
+import os
+import sys
 import time
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional
 
 # Add project root to path
 project_root = Path(__file__).parent
@@ -28,20 +28,21 @@ sys.path.insert(0, str(project_root))
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler('train_anomaly_models.log')
-    ]
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(), logging.FileHandler("train_anomaly_models.log")],
 )
 logger = logging.getLogger(__name__)
 
 # Imports after path setup
 from config.equipment_config import EQUIPMENT_REGISTRY, get_equipment_by_id
-from src.infrastructure.data.nasa_data_loader import NASADataLoader
-from src.infrastructure.ml.telemanom_wrapper import NASATelemanom, Telemanom_Config, _load_tensorflow
-from src.infrastructure.ml.model_registry import ModelRegistry
 from src.core.services.anomaly_service import AnomalyDetectionService
+from src.infrastructure.data.nasa_data_loader import NASADataLoader
+from src.infrastructure.ml.model_registry import ModelRegistry
+from src.infrastructure.ml.telemanom_wrapper import (
+    NASATelemanom,
+    Telemanom_Config,
+    _load_tensorflow,
+)
 
 
 class AnomalyModelTrainer:
@@ -79,7 +80,7 @@ class AnomalyModelTrainer:
                 lstm_units=[40, 40],  # Smaller model
                 epochs=5,  # Fast training
                 batch_size=32,
-                validation_split=0.1
+                validation_split=0.1,
             )
         else:
             return Telemanom_Config(
@@ -87,7 +88,7 @@ class AnomalyModelTrainer:
                 lstm_units=[80, 80],  # NASA standard
                 epochs=35,  # NASA standard
                 batch_size=70,
-                validation_split=0.2
+                validation_split=0.2,
             )
 
     def prepare_training_data(self, sensor_id: str) -> Optional[Dict[str, Any]]:
@@ -110,15 +111,18 @@ class AnomalyModelTrainer:
                 return None
 
             # Get sensor data (extended history for training)
-            sensor_data = self.data_loader.get_sensor_data(sensor_id, hours_back=8760)  # 1 year
+            sensor_data = self.data_loader.get_sensor_data(
+                sensor_id, hours_back=8760
+            )  # 1 year
 
-            if not sensor_data['values'] or len(sensor_data['values']) < 100:
+            if not sensor_data["values"] or len(sensor_data["values"]) < 100:
                 logger.warning(f"Insufficient data for {sensor_id}, using mock data")
                 return None
 
             # Convert to numpy array
             import numpy as np
-            values = np.array(sensor_data['values']).reshape(-1, 1)
+
+            values = np.array(sensor_data["values"]).reshape(-1, 1)
 
             # Split data: 80% train, 20% validation
             split_point = int(len(values) * 0.8)
@@ -131,19 +135,21 @@ class AnomalyModelTrainer:
             logger.info(f"  Data quality: {sensor_data['data_quality']}")
 
             return {
-                'sensor_id': sensor_id,
-                'equipment': equipment,
-                'train_data': train_data,
-                'validation_data': validation_data,
-                'sensor_info': sensor_data['sensor_info'],
-                'data_quality': sensor_data['data_quality']
+                "sensor_id": sensor_id,
+                "equipment": equipment,
+                "train_data": train_data,
+                "validation_data": validation_data,
+                "sensor_info": sensor_data["sensor_info"],
+                "data_quality": sensor_data["data_quality"],
             }
 
         except Exception as e:
             logger.error(f"Error preparing training data for {sensor_id}: {e}")
             return None
 
-    def train_sensor_model(self, sensor_id: str, config: Telemanom_Config) -> Optional[Dict[str, Any]]:
+    def train_sensor_model(
+        self, sensor_id: str, config: Telemanom_Config
+    ) -> Optional[Dict[str, Any]]:
         """
         Train Telemanom model for specific sensor
 
@@ -167,10 +173,12 @@ class AnomalyModelTrainer:
             telemanom = NASATelemanom(sensor_id, config)
 
             # Train model
-            training_metrics = telemanom.train(data_prep['train_data'])
+            training_metrics = telemanom.train(data_prep["train_data"])
 
             # Validate model
-            validation_metrics = self.validate_model(telemanom, data_prep['validation_data'])
+            validation_metrics = self.validate_model(
+                telemanom, data_prep["validation_data"]
+            )
 
             # Calculate training time
             training_time = time.time() - start_time
@@ -189,30 +197,40 @@ class AnomalyModelTrainer:
                 validation_metrics=validation_metrics,
                 training_time_seconds=training_time,
                 description=f"NASA Telemanom LSTM for {data_prep['equipment'].name}",
-                tags=["nasa", "telemanom", "lstm", "anomaly_detection", data_prep['equipment'].equipment_type.value.lower()]
+                tags=[
+                    "nasa",
+                    "telemanom",
+                    "lstm",
+                    "anomaly_detection",
+                    data_prep["equipment"].equipment_type.value.lower(),
+                ],
             )
 
             result = {
-                'sensor_id': sensor_id,
-                'version_id': version_id,
-                'training_time_seconds': training_time,
-                'training_metrics': training_metrics,
-                'validation_metrics': validation_metrics,
-                'model_path': str(model_path),
-                'data_quality': data_prep['data_quality'],
-                'equipment_info': {
-                    'name': data_prep['equipment'].name,
-                    'type': data_prep['equipment'].equipment_type.value,
-                    'criticality': data_prep['equipment'].criticality.value,
-                    'data_source': data_prep['equipment'].data_source
-                }
+                "sensor_id": sensor_id,
+                "version_id": version_id,
+                "training_time_seconds": training_time,
+                "training_metrics": training_metrics,
+                "validation_metrics": validation_metrics,
+                "model_path": str(model_path),
+                "data_quality": data_prep["data_quality"],
+                "equipment_info": {
+                    "name": data_prep["equipment"].name,
+                    "type": data_prep["equipment"].equipment_type.value,
+                    "criticality": data_prep["equipment"].criticality.value,
+                    "data_source": data_prep["equipment"].data_source,
+                },
             }
 
             logger.info(f"Training completed for {sensor_id}:")
             logger.info(f"  Version ID: {version_id}")
             logger.info(f"  Training time: {training_time:.1f}s")
-            logger.info(f"  Error threshold: {training_metrics.get('error_threshold', 'N/A')}")
-            logger.info(f"  Model parameters: {training_metrics.get('model_parameters', 'N/A')}")
+            logger.info(
+                f"  Error threshold: {training_metrics.get('error_threshold', 'N/A')}"
+            )
+            logger.info(
+                f"  Model parameters: {training_metrics.get('model_parameters', 'N/A')}"
+            )
 
             return result
 
@@ -220,34 +238,41 @@ class AnomalyModelTrainer:
             logger.error(f"Error training model for {sensor_id}: {e}")
             return None
 
-    def validate_model(self, model: NASATelemanom, validation_data: Any) -> Dict[str, Any]:
+    def validate_model(
+        self, model: NASATelemanom, validation_data: Any
+    ) -> Dict[str, Any]:
         """Validate trained model"""
         try:
             # Run anomaly detection on validation data
             results = model.detect_anomalies(validation_data)
 
             # Calculate validation metrics
-            anomaly_rate = results['anomaly_count'] / results['total_points'] if results['total_points'] > 0 else 0
+            anomaly_rate = (
+                results["anomaly_count"] / results["total_points"]
+                if results["total_points"] > 0
+                else 0
+            )
 
             validation_metrics = {
-                'validation_performed': True,
-                'validation_samples': results['total_points'],
-                'anomalies_detected': results['anomaly_count'],
-                'anomaly_rate': anomaly_rate,
-                'error_threshold': results['threshold'],
-                'validation_quality': 'good' if 0.01 <= anomaly_rate <= 0.1 else 'needs_review'
+                "validation_performed": True,
+                "validation_samples": results["total_points"],
+                "anomalies_detected": results["anomaly_count"],
+                "anomaly_rate": anomaly_rate,
+                "error_threshold": results["threshold"],
+                "validation_quality": (
+                    "good" if 0.01 <= anomaly_rate <= 0.1 else "needs_review"
+                ),
             }
 
             return validation_metrics
 
         except Exception as e:
             logger.error(f"Error during validation: {e}")
-            return {
-                'validation_performed': False,
-                'error': str(e)
-            }
+            return {"validation_performed": False, "error": str(e)}
 
-    def train_all_sensors(self, sensor_list: List[str], config: Telemanom_Config) -> Dict[str, Any]:
+    def train_all_sensors(
+        self, sensor_list: List[str], config: Telemanom_Config
+    ) -> Dict[str, Any]:
         """
         Train models for all specified sensors
 
@@ -280,30 +305,34 @@ class AnomalyModelTrainer:
             else:
                 failed_trains += 1
                 self.training_results[sensor_id] = {
-                    'sensor_id': sensor_id,
-                    'status': 'failed',
-                    'error': 'Training failed'
+                    "sensor_id": sensor_id,
+                    "status": "failed",
+                    "error": "Training failed",
                 }
 
         total_time = time.time() - total_start_time
 
         # Create training summary
         summary = {
-            'session_id': self.session_id,
-            'timestamp': datetime.now().isoformat(),
-            'total_sensors': len(sensor_list),
-            'successful_trains': successful_trains,
-            'failed_trains': failed_trains,
-            'total_time_seconds': total_time,
-            'average_time_per_sensor': total_time / len(sensor_list) if sensor_list else 0,
-            'tensorflow_available': tf_available,
-            'configuration': config.__dict__,
-            'results': self.training_results
+            "session_id": self.session_id,
+            "timestamp": datetime.now().isoformat(),
+            "total_sensors": len(sensor_list),
+            "successful_trains": successful_trains,
+            "failed_trains": failed_trains,
+            "total_time_seconds": total_time,
+            "average_time_per_sensor": (
+                total_time / len(sensor_list) if sensor_list else 0
+            ),
+            "tensorflow_available": tf_available,
+            "configuration": config.__dict__,
+            "results": self.training_results,
         }
 
         # Save training summary
-        summary_file = self.models_dir / f"anomaly_training_summary_{self.session_id}.json"
-        with open(summary_file, 'w') as f:
+        summary_file = (
+            self.models_dir / f"anomaly_training_summary_{self.session_id}.json"
+        )
+        with open(summary_file, "w") as f:
             json.dump(summary, f, indent=2, default=str)
 
         logger.info(f"Batch training completed:")
@@ -317,11 +346,21 @@ class AnomalyModelTrainer:
 
 def main():
     """Main training script"""
-    parser = argparse.ArgumentParser(description='Train NASA Telemanom Anomaly Detection Models')
-    parser.add_argument('--sensors', nargs='+', help='Specific sensors to train (default: all)')
-    parser.add_argument('--quick', action='store_true', help='Quick training mode (faster, less accurate)')
-    parser.add_argument('--data-root', default='data/raw', help='Data root directory')
-    parser.add_argument('--models-dir', default='data/models', help='Models output directory')
+    parser = argparse.ArgumentParser(
+        description="Train NASA Telemanom Anomaly Detection Models"
+    )
+    parser.add_argument(
+        "--sensors", nargs="+", help="Specific sensors to train (default: all)"
+    )
+    parser.add_argument(
+        "--quick",
+        action="store_true",
+        help="Quick training mode (faster, less accurate)",
+    )
+    parser.add_argument("--data-root", default="data/raw", help="Data root directory")
+    parser.add_argument(
+        "--models-dir", default="data/models", help="Models output directory"
+    )
 
     args = parser.parse_args()
 
@@ -377,10 +416,12 @@ def main():
         print()
 
         # Print individual results
-        for sensor_id, result in summary['results'].items():
-            if 'version_id' in result:
-                print(f"✓ {sensor_id}: Version {result['version_id']} "
-                      f"({result['training_time_seconds']:.1f}s)")
+        for sensor_id, result in summary["results"].items():
+            if "version_id" in result:
+                print(
+                    f"✓ {sensor_id}: Version {result['version_id']} "
+                    f"({result['training_time_seconds']:.1f}s)"
+                )
             else:
                 print(f"✗ {sensor_id}: {result.get('error', 'Failed')}")
 
@@ -389,7 +430,7 @@ def main():
         print("Run dashboard to see anomaly detection in action!")
         print("=" * 70)
 
-        return 0 if summary['failed_trains'] == 0 else 1
+        return 0 if summary["failed_trains"] == 0 else 1
 
     except KeyboardInterrupt:
         print("\nTraining interrupted by user")

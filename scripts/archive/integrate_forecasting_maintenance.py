@@ -4,26 +4,30 @@ Phase 4: Forecasting & Maintenance Integration
 Integrates Transformer forecasting with trained NASA Telemanom models for predictive maintenance
 """
 
+import json
+import logging
+import sys
+from datetime import datetime, timedelta
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
-import sys
-import logging
-from datetime import datetime, timedelta
-import json
 import tensorflow as tf
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parent))
 
-from src.forecasting.transformer_forecaster import TransformerForecaster
-from src.maintenance.work_order_manager import WorkOrderManager, WorkOrderPriority
 from src.anomaly_detection.nasa_telemanom import NASATelemanom
 from src.data_ingestion.nasa_data_service import NASADataService
+from src.forecasting.transformer_forecaster import TransformerForecaster
+from src.maintenance.work_order_manager import WorkOrderManager, WorkOrderPriority
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
+
 
 class NASA_PredictiveMaintenanceEngine:
     """
@@ -58,7 +62,7 @@ class NASA_PredictiveMaintenanceEngine:
             num_heads=8,
             num_encoder_layers=4,
             dff=512,
-            dropout_rate=0.1
+            dropout_rate=0.1,
         )
 
         # Initialize work order manager
@@ -95,7 +99,9 @@ class NASA_PredictiveMaintenanceEngine:
         logger.info(f"Successfully loaded {loaded_count} NASA Telemanom models")
         return loaded_count
 
-    def generate_nasa_equipment_forecasts(self, equipment_types=['POWER', 'MOBILITY', 'COMMUNICATION', 'SCIENCE']):
+    def generate_nasa_equipment_forecasts(
+        self, equipment_types=["POWER", "MOBILITY", "COMMUNICATION", "SCIENCE"]
+    ):
         """Generate forecasts for critical NASA equipment"""
         logger.info("Generating NASA equipment forecasts...")
 
@@ -127,12 +133,16 @@ class NASA_PredictiveMaintenanceEngine:
                         forecast_std = forecast.std(axis=0)
 
                         equipment_forecasts[sensor_id] = {
-                            'forecast_mean': forecast_mean.tolist(),
-                            'forecast_std': forecast_std.tolist(),
-                            'confidence_lower': (forecast_mean - 1.96 * forecast_std).tolist(),
-                            'confidence_upper': (forecast_mean + 1.96 * forecast_std).tolist(),
-                            'equipment_type': equipment_type,
-                            'timestamp': datetime.now().isoformat()
+                            "forecast_mean": forecast_mean.tolist(),
+                            "forecast_std": forecast_std.tolist(),
+                            "confidence_lower": (
+                                forecast_mean - 1.96 * forecast_std
+                            ).tolist(),
+                            "confidence_upper": (
+                                forecast_mean + 1.96 * forecast_std
+                            ).tolist(),
+                            "equipment_type": equipment_type,
+                            "timestamp": datetime.now().isoformat(),
                         }
 
                     except Exception as e:
@@ -145,14 +155,16 @@ class NASA_PredictiveMaintenanceEngine:
     def _get_equipment_sensors(self, equipment_type):
         """Get sensor IDs for specific equipment type"""
         equipment_mapping = {
-            'POWER': [f'SMAP_{i:02d}' for i in range(0, 5)] + [f'MSL_{i:02d}' for i in range(25, 33)],
-            'MOBILITY': [f'MSL_{i:02d}' for i in range(33, 51)],
-            'COMMUNICATION': [f'SMAP_{i:02d}' for i in range(5, 10)] + [f'MSL_{i:02d}' for i in range(73, 79)],
-            'SCIENCE': [f'MSL_{i:02d}' for i in range(63, 73)],
-            'THERMAL': [f'SMAP_{i:02d}' for i in range(15, 20)],
-            'ATTITUDE': [f'SMAP_{i:02d}' for i in range(10, 15)],
-            'PAYLOAD': [f'SMAP_{i:02d}' for i in range(20, 25)],
-            'ENVIRONMENTAL': [f'MSL_{i:02d}' for i in range(51, 63)]
+            "POWER": [f"SMAP_{i:02d}" for i in range(0, 5)]
+            + [f"MSL_{i:02d}" for i in range(25, 33)],
+            "MOBILITY": [f"MSL_{i:02d}" for i in range(33, 51)],
+            "COMMUNICATION": [f"SMAP_{i:02d}" for i in range(5, 10)]
+            + [f"MSL_{i:02d}" for i in range(73, 79)],
+            "SCIENCE": [f"MSL_{i:02d}" for i in range(63, 73)],
+            "THERMAL": [f"SMAP_{i:02d}" for i in range(15, 20)],
+            "ATTITUDE": [f"SMAP_{i:02d}" for i in range(10, 15)],
+            "PAYLOAD": [f"SMAP_{i:02d}" for i in range(20, 25)],
+            "ENVIRONMENTAL": [f"MSL_{i:02d}" for i in range(51, 63)],
         }
         return equipment_mapping.get(equipment_type, [])
 
@@ -174,10 +186,12 @@ class NASA_PredictiveMaintenanceEngine:
 
                     if is_anomaly:
                         anomalies_detected[sensor_id] = {
-                            'anomaly_score': float(anomaly_score),
-                            'threshold': float(model.error_threshold),
-                            'severity': self._calculate_severity(anomaly_score, model.error_threshold),
-                            'timestamp': datetime.now().isoformat()
+                            "anomaly_score": float(anomaly_score),
+                            "threshold": float(model.error_threshold),
+                            "severity": self._calculate_severity(
+                                anomaly_score, model.error_threshold
+                            ),
+                            "timestamp": datetime.now().isoformat(),
                         }
 
                     # Predict future failures using forecasts
@@ -212,19 +226,21 @@ class NASA_PredictiveMaintenanceEngine:
 
     def _predict_failures_from_forecast(self, forecast_data, threshold):
         """Predict potential failures from forecast data"""
-        forecast_mean = np.array(forecast_data['forecast_mean'])
-        forecast_upper = np.array(forecast_data['confidence_upper'])
+        forecast_mean = np.array(forecast_data["forecast_mean"])
+        forecast_upper = np.array(forecast_data["confidence_upper"])
 
         # Check if forecast exceeds threshold
         failure_points = np.where(forecast_upper > threshold * 1.2)[0]  # 20% margin
 
         if len(failure_points) > 0:
             return {
-                'failure_likely': True,
-                'failure_timeframes': failure_points.tolist(),
-                'max_predicted_value': float(forecast_upper.max()),
-                'threshold': float(threshold),
-                'confidence': 'HIGH' if forecast_upper.max() > threshold * 1.5 else 'MEDIUM'
+                "failure_likely": True,
+                "failure_timeframes": failure_points.tolist(),
+                "max_predicted_value": float(forecast_upper.max()),
+                "threshold": float(threshold),
+                "confidence": (
+                    "HIGH" if forecast_upper.max() > threshold * 1.5 else "MEDIUM"
+                ),
             }
 
         return None
@@ -237,7 +253,7 @@ class NASA_PredictiveMaintenanceEngine:
 
         # Process current anomalies
         for sensor_id, anomaly_data in anomalies.items():
-            severity = anomaly_data['severity']
+            severity = anomaly_data["severity"]
 
             # Determine priority
             if severity == "CRITICAL":
@@ -251,13 +267,13 @@ class NASA_PredictiveMaintenanceEngine:
             work_order = self.work_order_manager.create_work_order(
                 title=f"Anomaly Detected - {sensor_id}",
                 description=f"Anomaly detected on sensor {sensor_id}. "
-                           f"Anomaly score: {anomaly_data['anomaly_score']:.3f}, "
-                           f"Threshold: {anomaly_data['threshold']:.3f}, "
-                           f"Severity: {severity}",
+                f"Anomaly score: {anomaly_data['anomaly_score']:.3f}, "
+                f"Threshold: {anomaly_data['threshold']:.3f}, "
+                f"Severity: {severity}",
                 priority=priority,
                 equipment_id=sensor_id,
                 estimated_duration=self._estimate_repair_duration(severity),
-                required_skills=self._get_required_skills(sensor_id)
+                required_skills=self._get_required_skills(sensor_id),
             )
 
             work_orders_created.append(work_order)
@@ -267,13 +283,13 @@ class NASA_PredictiveMaintenanceEngine:
             work_order = self.work_order_manager.create_work_order(
                 title=f"Preventive Maintenance - {sensor_id}",
                 description=f"Predictive maintenance required for sensor {sensor_id}. "
-                           f"Failure predicted with {prediction_data['confidence']} confidence. "
-                           f"Predicted max value: {prediction_data['max_predicted_value']:.3f}",
+                f"Failure predicted with {prediction_data['confidence']} confidence. "
+                f"Predicted max value: {prediction_data['max_predicted_value']:.3f}",
                 priority=WorkOrderPriority.MEDIUM,
                 equipment_id=sensor_id,
                 estimated_duration=self._estimate_maintenance_duration(sensor_id),
                 required_skills=self._get_required_skills(sensor_id),
-                due_date=datetime.now() + timedelta(days=7)  # Preventive - not urgent
+                due_date=datetime.now() + timedelta(days=7),  # Preventive - not urgent
             )
 
             work_orders_created.append(work_order)
@@ -285,9 +301,9 @@ class NASA_PredictiveMaintenanceEngine:
         """Estimate repair duration based on severity"""
         duration_map = {
             "CRITICAL": 4.0,  # 4 hours
-            "HIGH": 2.0,      # 2 hours
-            "MEDIUM": 1.0,    # 1 hour
-            "LOW": 0.5        # 30 minutes
+            "HIGH": 2.0,  # 2 hours
+            "MEDIUM": 1.0,  # 1 hour
+            "LOW": 0.5,  # 30 minutes
         }
         return duration_map.get(severity, 1.0)
 
@@ -313,7 +329,9 @@ class NASA_PredictiveMaintenanceEngine:
 
     def run_comprehensive_analysis(self):
         """Run complete predictive maintenance analysis"""
-        logger.info("=== Starting Comprehensive NASA Predictive Maintenance Analysis ===")
+        logger.info(
+            "=== Starting Comprehensive NASA Predictive Maintenance Analysis ==="
+        )
 
         # Generate forecasts
         forecasts = self.generate_nasa_equipment_forecasts()
@@ -326,26 +344,27 @@ class NASA_PredictiveMaintenanceEngine:
 
         # Create summary report
         summary = {
-            'analysis_timestamp': datetime.now().isoformat(),
-            'total_sensors_analyzed': len(self.telemanom_models),
-            'forecasts_generated': len(forecasts),
-            'current_anomalies': len(anomalies),
-            'failure_predictions': len(predictions),
-            'work_orders_created': len(work_orders),
-            'forecasts': forecasts,
-            'anomalies': anomalies,
-            'predictions': predictions,
-            'work_orders': [wo.to_dict() for wo in work_orders]
+            "analysis_timestamp": datetime.now().isoformat(),
+            "total_sensors_analyzed": len(self.telemanom_models),
+            "forecasts_generated": len(forecasts),
+            "current_anomalies": len(anomalies),
+            "failure_predictions": len(predictions),
+            "work_orders_created": len(work_orders),
+            "forecasts": forecasts,
+            "anomalies": anomalies,
+            "predictions": predictions,
+            "work_orders": [wo.to_dict() for wo in work_orders],
         }
 
         # Save summary
         summary_path = Path("data/maintenance_analysis_summary.json")
-        with open(summary_path, 'w') as f:
+        with open(summary_path, "w") as f:
             json.dump(summary, f, indent=2, default=str)
 
         logger.info(f"Comprehensive analysis complete. Summary saved to {summary_path}")
 
         return summary
+
 
 def main():
     """Main function to run Phase 4 integration"""
@@ -372,6 +391,7 @@ def main():
     print(f"Work orders created: {summary['work_orders_created']}")
     print("=" * 70)
     print("Phase 4 integration complete!")
+
 
 if __name__ == "__main__":
     main()

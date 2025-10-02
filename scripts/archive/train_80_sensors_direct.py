@@ -4,14 +4,15 @@ Direct NASA Data Training for 80 Sensors
 Trains all 80 sensors using real NASA SMAP/MSL data efficiently
 """
 
+import json
+import logging
+import os
+import sys
+from datetime import datetime
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
-import sys
-import logging
-from datetime import datetime
-import json
-import os
 
 # Add project root to path
 sys.path.append(str(Path(__file__).parent))
@@ -20,33 +21,41 @@ from src.anomaly_detection.nasa_telemanom import NASATelemanom, Telemanom_Config
 from src.data_ingestion.equipment_mapper import IoTEquipmentMapper
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 logger = logging.getLogger(__name__)
+
 
 def load_nasa_raw_data():
     """Load NASA raw datasets directly"""
     try:
         # Load SMAP data
-        smap_train = np.load('data/raw/smap/train.npy')
-        smap_test = np.load('data/raw/smap/test.npy')
+        smap_train = np.load("data/raw/smap/train.npy")
+        smap_test = np.load("data/raw/smap/test.npy")
 
         # Load MSL data
-        msl_train = np.load('data/raw/msl/train.npy')
-        msl_test = np.load('data/raw/msl/test.npy')
+        msl_train = np.load("data/raw/msl/train.npy")
+        msl_test = np.load("data/raw/msl/test.npy")
 
-        logger.info(f"Loaded NASA data - SMAP: {smap_train.shape}, MSL: {msl_train.shape}")
+        logger.info(
+            f"Loaded NASA data - SMAP: {smap_train.shape}, MSL: {msl_train.shape}"
+        )
 
         return {
-            'smap_train': smap_train,
-            'smap_test': smap_test,
-            'msl_train': msl_train,
-            'msl_test': msl_test
+            "smap_train": smap_train,
+            "smap_test": smap_test,
+            "msl_train": msl_train,
+            "msl_test": msl_test,
         }
     except Exception as e:
         logger.error(f"Failed to load NASA data: {e}")
         return None
 
-def train_sensor_model(sensor_id: str, data: np.ndarray, models_dir: Path, quick_mode=True):
+
+def train_sensor_model(
+    sensor_id: str, data: np.ndarray, models_dir: Path, quick_mode=True
+):
     """Train a single sensor model with NASA Telemanom"""
     try:
         # Ensure we have enough data
@@ -64,7 +73,7 @@ def train_sensor_model(sensor_id: str, data: np.ndarray, models_dir: Path, quick
             dropout_rate=0.2,
             prediction_length=10,
             sequence_length=100,
-            smoothing_window=30
+            smoothing_window=30,
         )
 
         # Initialize and train model
@@ -75,23 +84,22 @@ def train_sensor_model(sensor_id: str, data: np.ndarray, models_dir: Path, quick
         model_path = models_dir / f"{sensor_id}.pkl"
         model.save_model(str(model_path))
 
-        logger.info(f"Successfully trained {sensor_id} - threshold: {model.error_threshold:.4f}")
+        logger.info(
+            f"Successfully trained {sensor_id} - threshold: {model.error_threshold:.4f}"
+        )
 
         return {
-            'sensor_id': sensor_id,
-            'model_path': str(model_path),
-            'threshold': model.error_threshold,
-            'data_samples': len(data),
-            'status': 'success'
+            "sensor_id": sensor_id,
+            "model_path": str(model_path),
+            "threshold": model.error_threshold,
+            "data_samples": len(data),
+            "status": "success",
         }
 
     except Exception as e:
         logger.error(f"Failed to train {sensor_id}: {e}")
-        return {
-            'sensor_id': sensor_id,
-            'status': 'failed',
-            'error': str(e)
-        }
+        return {"sensor_id": sensor_id, "status": "failed", "error": str(e)}
+
 
 def train_all_80_sensors():
     """Train all 80 NASA sensors with real data"""
@@ -117,7 +125,7 @@ def train_all_80_sensors():
 
     # Train SMAP sensors (0-24)
     logger.info("Training SMAP sensors (0-24)")
-    smap_data = nasa_data['smap_train']
+    smap_data = nasa_data["smap_train"]
 
     for i in range(25):
         if i >= smap_data.shape[1]:
@@ -130,7 +138,7 @@ def train_all_80_sensors():
         result = train_sensor_model(sensor_id, sensor_data, models_dir, quick_mode=True)
         results.append(result)
 
-        if result and result['status'] == 'success':
+        if result and result["status"] == "success":
             successful += 1
         else:
             failed += 1
@@ -139,7 +147,7 @@ def train_all_80_sensors():
 
     # Train MSL sensors (25-79)
     logger.info("Training MSL sensors (25-79)")
-    msl_data = nasa_data['msl_train']
+    msl_data = nasa_data["msl_train"]
 
     for i in range(55):
         if i >= msl_data.shape[1]:
@@ -152,7 +160,7 @@ def train_all_80_sensors():
         result = train_sensor_model(sensor_id, sensor_data, models_dir, quick_mode=True)
         results.append(result)
 
-        if result and result['status'] == 'success':
+        if result and result["status"] == "success":
             successful += 1
         else:
             failed += 1
@@ -161,22 +169,28 @@ def train_all_80_sensors():
 
     # Save training summary
     summary = {
-        'timestamp': datetime.now().isoformat(),
-        'total_sensors': 80,
-        'successful': successful,
-        'failed': failed,
-        'success_rate': successful / 80 * 100,
-        'results': results
+        "timestamp": datetime.now().isoformat(),
+        "total_sensors": 80,
+        "successful": successful,
+        "failed": failed,
+        "success_rate": successful / 80 * 100,
+        "results": results,
     }
 
-    summary_path = models_dir / f"comprehensive_training_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    with open(summary_path, 'w') as f:
+    summary_path = (
+        models_dir
+        / f"comprehensive_training_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    )
+    with open(summary_path, "w") as f:
         json.dump(summary, f, indent=2)
 
-    logger.info(f"Training completed: {successful}/{80} successful ({successful/80*100:.1f}%)")
+    logger.info(
+        f"Training completed: {successful}/{80} successful ({successful/80*100:.1f}%)"
+    )
     logger.info(f"Summary saved to: {summary_path}")
 
     return summary
+
 
 if __name__ == "__main__":
     print("=== NASA 80-Sensor Training Pipeline ===")
