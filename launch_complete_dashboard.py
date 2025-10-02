@@ -61,6 +61,12 @@ if __name__ == "__main__":
             title="IoT Predictive Maintenance - Complete Dashboard"
         )
 
+        # Add health check endpoints for Docker/Kubernetes
+        from src.presentation.dashboard.health_check import add_health_check, add_metrics_endpoint
+        add_health_check(app)
+        add_metrics_endpoint(app)
+        print("✓ Health check endpoints enabled")
+
         print("Initializing services...")
 
         # Import NASA data loader

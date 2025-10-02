@@ -84,4 +84,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8050/health || exit 1
 
 # Default command (can be overridden)
-CMD ["python", "run_full_dashboard.py"]
+CMD ["python", "launch_complete_dashboard.py"]

@@ -131,13 +131,13 @@ class NASADataLoader(DataSourceInterface):
             self.msl_data = {'data': np.array([]), 'labels': np.array([]), 'channels': []}
             self.labeled_anomalies = pd.DataFrame()
 
-    def get_sensor_data(self, sensor_id: str, hours_back: int = 24) -> Dict[str, any]:
+    def get_sensor_data(self, sensor_id: str, hours_back: int = 744) -> Dict[str, any]:
         """
         Get sensor data for specified equipment
 
         Args:
             sensor_id: Equipment ID from EQUIPMENT_REGISTRY
-            hours_back: Hours of historical data to retrieve
+            hours_back: Hours of historical data to retrieve (default: 744 = 1 month)
 
         Returns:
             Dictionary containing sensor data and metadata

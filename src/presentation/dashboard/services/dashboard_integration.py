@@ -87,13 +87,13 @@ class DashboardIntegrationService:
     # SENSOR DATA METHODS (for all tabs using NASA data)
     # ========================================================================
 
-    def get_sensor_data(self, sensor_id: str, hours: int = 24) -> pd.DataFrame:
+    def get_sensor_data(self, sensor_id: str, hours: int = 168) -> pd.DataFrame:
         """
         Get real NASA sensor data (not mock data!)
 
         Args:
             sensor_id: Sensor identifier
-            hours: Hours of historical data
+            hours: Hours of historical data (default: 168 = 1 week)
 
         Returns:
             DataFrame with timestamp and value columns
