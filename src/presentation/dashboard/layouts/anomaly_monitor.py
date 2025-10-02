@@ -19,6 +19,14 @@ import json
 from scipy import signal
 from scipy.stats import zscore
 
+# FIXED: Import integration service for real data
+try:
+    from src.presentation.dashboard.services.dashboard_integration import get_integration_service
+    INTEGRATION_AVAILABLE = True
+except ImportError:
+    INTEGRATION_AVAILABLE = False
+
+
 # Import Clean Architecture services
 from src.infrastructure.data.nasa_data_loader import NASADataLoader
 from src.core.services.anomaly_service import AnomalyDetectionService

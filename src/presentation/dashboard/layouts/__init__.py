@@ -3,14 +3,15 @@ Dashboard Layout Components
 Main layout functions for the IoT dashboard
 """
 
+# DO NOT import layouts here - causes circular import issues with components
+# Layouts are loaded dynamically by SafeLayoutLoader in unified_dashboard.py
 from dash import html, dcc
 import dash_bootstrap_components as dbc
-# Import the standalone layout functions
-from .overview import create_layout as create_overview_layout
-from .anomaly_monitor import create_layout as create_anomaly_layout
-from .forecast_view import create_layout as create_forecast_layout
-from .maintenance_scheduler import create_layout as create_maintenance_layout
-from .work_orders import create_layout as create_work_orders_layout
+# from .overview import create_layout as create_overview_layout
+# from .anomaly_monitor import create_layout as create_anomaly_layout
+# from .forecast_view import create_layout as create_forecast_layout
+# from .maintenance_scheduler import create_layout as create_maintenance_layout
+# from .work_orders import create_layout as create_work_orders_layout
 
 
 def create_main_layout():

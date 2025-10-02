@@ -1,0 +1,120 @@
+# Persistent Volume Claims for stateful data
+
+---
+# PostgreSQL PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: iot-system
+  labels:
+    app: postgres
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: standard
+
+---
+# Redis PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+  namespace: iot-system
+  labels:
+    app: redis
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
+
+---
+# Kafka PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kafka-pvc
+  namespace: iot-system
+  labels:
+    app: kafka
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: standard
+
+---
+# MLflow Artifacts PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mlflow-artifacts-pvc
+  namespace: iot-system
+  labels:
+    app: mlflow
+spec:
+  accessModes:
+    - ReadWriteMany  # MLflow may need multiple pod access
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: standard
+
+---
+# Application Models PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: iot-models-pvc
+  namespace: iot-system
+  labels:
+    app: iot-predictive-maintenance
+spec:
+  accessModes:
+    - ReadWriteMany  # Multiple pods may access models
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: standard
+
+---
+# Application Data PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: iot-data-pvc
+  namespace: iot-system
+  labels:
+    app: iot-predictive-maintenance
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: standard
+
+---
+# Logs PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: iot-logs-pvc
+  namespace: iot-system
+  labels:
+    app: iot-predictive-maintenance
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: standard

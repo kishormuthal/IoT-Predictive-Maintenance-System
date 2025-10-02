@@ -1,0 +1,34 @@
+# Development Dockerfile with hot reload
+FROM python:3.10-slim
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    ENVIRONMENT=development
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create working directory
+WORKDIR /app
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir debugpy ipython
+
+# Create necessary directories
+RUN mkdir -p data logs cache models
+
+# Expose ports
+EXPOSE 8050 5678
+
+# Default command
+CMD ["python", "run_full_dashboard.py"]

@@ -21,6 +21,14 @@ import uuid
 from dataclasses import dataclass, asdict
 import pulp
 
+# FIXED: Import integration service for real data
+try:
+    from src.presentation.dashboard.services.dashboard_integration import get_integration_service
+    INTEGRATION_AVAILABLE = True
+except ImportError:
+    INTEGRATION_AVAILABLE = False
+
+
 # Setup logging
 logger = logging.getLogger(__name__)
 
@@ -777,7 +785,7 @@ class EnhancedMaintenanceScheduler:
 
                     week_cols.append(dbc.Col(day_cell, width=True))
 
-            weeks.append(dbc.Row(week_cols, className="calendar-week-row", no_gutters=True))
+            weeks.append(dbc.Row(week_cols, className="calendar-week-row g-0"))
 
         return html.Div([header] + weeks, className="enhanced-calendar-container")
 
@@ -1233,3 +1241,9 @@ def create_enhanced_layout():
     """Create enhanced maintenance scheduler page layout"""
     scheduler = EnhancedMaintenanceScheduler()
     return scheduler.create_enhanced_layout()
+
+
+# Standalone create_layout function for unified_dashboard.py
+def create_layout():
+    """Create maintenance scheduler layout for dashboard routing"""
+    return create_enhanced_layout()

@@ -1,0 +1,186 @@
+# Production Environment Configuration
+# Overrides base config.yaml settings for production deployment
+
+environment: production
+
+system:
+  debug: false
+  log_level: "WARNING"
+
+# Production paths
+paths:
+  data_root: "/var/lib/iot-system/data"
+  logs: "/var/log/iot-system"
+  cache: "/var/cache/iot-system"
+  models: "/var/lib/iot-system/models"
+
+# Production database (PostgreSQL with TimescaleDB)
+data_ingestion:
+  database:
+    enabled: true
+    type: "postgresql"
+    postgresql:
+      host: "${DB_HOST}"  # From environment variable
+      port: 5432
+      database: "iot_telemetry_prod"
+      username: "${DB_USER}"
+      password: "${DB_PASSWORD}"
+      pool_size: 20
+      max_overflow: 40
+
+    timescale:
+      enabled: true
+      chunk_time_interval: "1 day"
+      compression_after: "7 days"
+      retention_period: "90 days"
+
+  redis:
+    enabled: true
+    host: "${REDIS_HOST}"
+    port: 6379
+    password: "${REDIS_PASSWORD}"
+    max_connections: 100
+    ttl: 3600
+
+  kafka:
+    enabled: true
+    bootstrap_servers: "${KAFKA_BOOTSTRAP_SERVERS}"
+    producer:
+      acks: "all"
+      retries: 5
+      compression_type: "snappy"
+    consumer:
+      group_id: "iot-anomaly-detector-prod"
+      auto_offset_reset: "latest"
+
+# Production dashboard settings
+dashboard:
+  server:
+    host: "0.0.0.0"  # Listen on all interfaces
+    port: 8050
+    debug: false
+    auto_reload: false
+
+  ui:
+    theme: "dark"
+    refresh_interval: 30000  # 30 seconds
+
+  performance:
+    cache:
+      enabled: true
+      forecast_cache_ttl: 3600
+      risk_cache_ttl: 600
+      scenario_cache_ttl: 7200
+
+    limits:
+      max_data_points: 50000
+      max_forecast_horizon: 168
+      max_historical_data: 8760
+
+    resources:
+      max_concurrent_forecasts: 10
+      max_scenario_simulations: 5
+      memory_limit_mb: 8192
+
+# Production MLflow settings
+mlflow:
+  enabled: true
+  tracking_uri: "${MLFLOW_TRACKING_URI}"
+  connection_timeout: 10.0
+  retry_attempts: 5
+  retry_delay: 5.0
+  background_sync: true
+  health_check_interval: 60
+
+# Production model training (full epochs)
+anomaly_detection:
+  lstm_predictor:
+    training:
+      epochs: 50
+      batch_size: 128
+      early_stopping_patience: 15
+
+  lstm_autoencoder:
+    training:
+      epochs: 50
+      batch_size: 128
+
+  lstm_vae:
+    training:
+      epochs: 50
+      batch_size: 128
+
+forecasting:
+  transformer:
+    training:
+      epochs: 100
+      batch_size: 64
+      warmup_steps: 4000
+
+  lstm:
+    training:
+      epochs: 50
+      batch_size: 128
+
+# Production monitoring
+logging:
+  console:
+    enabled: false  # Use file logging only
+
+  file:
+    enabled: true
+    path: "/var/log/iot-system/production.log"
+    max_bytes: 52428800  # 50MB
+    backup_count: 10
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s"
+
+# Production settings
+production:
+  mock_data: false
+  skip_model_training: false  # Train models
+  use_cached_models: true
+  profile_code: false
+  debug_mode: false
+
+# Production alerts enabled
+alerts:
+  email:
+    enabled: true
+    smtp_server: "${SMTP_SERVER}"
+    smtp_port: 587
+    sender_email: "${ALERT_SENDER_EMAIL}"
+    sender_password: "${ALERT_SENDER_PASSWORD}"
+
+  rules:
+    anomaly_threshold: 0.9  # Higher threshold for production
+    consecutive_anomalies: 5
+    cooldown_period: 7200  # 2 hours
+
+  notifications:
+    batch_alerts: false  # Immediate alerts in production
+    priority_override:
+      critical: "immediate"
+      high: "immediate"
+
+# Performance optimization for production
+performance:
+  memory:
+    max_cache_size: 4096  # 4GB
+    gc_threshold: 0.85
+
+  cpu:
+    n_jobs: -1  # Use all cores
+    thread_pool_size: 8
+
+  batch:
+    enable_batching: true
+    batch_timeout: 500
+    max_batch_size: 5000
+
+# Security settings (production only)
+security:
+  enable_authentication: true
+  enable_https: true
+  session_timeout: 3600
+  max_login_attempts: 3
+  password_min_length: 12

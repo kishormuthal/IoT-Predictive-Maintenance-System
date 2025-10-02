@@ -1218,3 +1218,22 @@ class DashboardCallbacks:
 def init_callbacks(app):
     """Initialize all dashboard callbacks"""
     return DashboardCallbacks(app)
+
+
+# Wrapper function for unified_dashboard.py compatibility
+def setup_dashboard_callbacks(app, services):
+    """
+    Setup dashboard callbacks with provided services
+
+    Args:
+        app: Dash app instance
+        services: Dictionary of service instances (anomaly_service, forecasting_service, etc.)
+    """
+    try:
+        # Initialize the callback system
+        callback_handler = init_callbacks(app)
+        logger.info("✓ Dashboard callbacks setup completed")
+        return callback_handler
+    except Exception as e:
+        logger.error(f"Error setting up dashboard callbacks: {e}")
+        return None

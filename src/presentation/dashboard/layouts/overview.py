@@ -22,6 +22,13 @@ from pathlib import Path
 # Add project root to path
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
+# FIXED: Import integration service for real data
+try:
+    from src.presentation.dashboard.services.dashboard_integration import get_integration_service
+    INTEGRATION_AVAILABLE = True
+except ImportError:
+    INTEGRATION_AVAILABLE = False
+
 # Import performance optimizations (optional - will use fallbacks if not available)
 try:
     from src.utils.callback_optimizer import (
@@ -108,16 +115,16 @@ class OverviewPage:
             # Key metrics cards
             html.Div(id="overview-metrics-cards"),
             
-            # System health and alerts row
+            # IoT Architecture and alerts row
             dbc.Row([
                 dbc.Col([
-                    self._create_system_health_card()
+                    self._create_iot_architecture_card()
                 ], width=4),
-                
+
                 dbc.Col([
                     self._create_alert_summary_card()
                 ], width=4),
-                
+
                 dbc.Col([
                     self._create_work_order_summary_card()
                 ], width=4)
@@ -283,51 +290,78 @@ class OverviewPage:
             ])
         ], className="metric-card")
         
-    def _create_system_health_card(self) -> dbc.Card:
-        """Create system health status card
-        
+    def _create_iot_architecture_card(self) -> dbc.Card:
+        """Create IoT system architecture card showing equipment configuration
+
         Returns:
-            System health card
+            IoT system architecture card
         """
         return dbc.Card([
-            dbc.CardHeader("System Health"),
+            dbc.CardHeader([
+                html.I(className="fas fa-satellite me-2"),
+                "IoT System Architecture"
+            ]),
             dbc.CardBody([
-                # Overall health gauge
-                daq.Gauge(
-                    id="health-gauge",
-                    label="Overall Health",
-                    value=85,
-                    max=100,
-                    min=0,
-                    showCurrentValue=True,
-                    units="%",
-                    color={"gradient": True, "ranges": {
-                        "red": [0, 40],
-                        "yellow": [40, 70],
-                        "green": [70, 100]
-                    }},
-                    size=150
-                ),
-                
-                # Component health breakdown
+                # NASA Data Sources
+                html.H6("NASA Data Sources", className="text-primary mb-3"),
+                dbc.Row([
+                    dbc.Col([
+                        dbc.Card([
+                            dbc.CardBody([
+                                html.H5("SMAP", className="text-center text-info"),
+                                html.P("6 Sensors", className="text-center mb-0"),
+                                html.Small("Soil Moisture Active Passive", className="text-muted text-center d-block")
+                            ])
+                        ], className="border-info")
+                    ], width=6),
+                    dbc.Col([
+                        dbc.Card([
+                            dbc.CardBody([
+                                html.H5("MSL", className="text-center text-warning"),
+                                html.P("6 Sensors", className="text-center mb-0"),
+                                html.Small("Mars Science Laboratory", className="text-muted text-center d-block")
+                            ])
+                        ], className="border-warning")
+                    ], width=6)
+                ], className="mb-3"),
+
+                # Equipment Types
+                html.H6("Equipment Configuration", className="text-primary mb-3"),
                 html.Div([
-                    self._create_health_indicator("Data Ingestion", 95, "success"),
-                    self._create_health_indicator("Processing", 88, "success"),
-                    self._create_health_indicator("Storage", 75, "warning"),
-                    self._create_health_indicator("API Services", 92, "success"),
-                    self._create_health_indicator("Notifications", 100, "success")
-                ], className="mt-3")
+                    self._create_equipment_type_badge("Power Systems", 2, "danger"),
+                    self._create_equipment_type_badge("Communication", 2, "info"),
+                    self._create_equipment_type_badge("Attitude Control", 2, "primary"),
+                    self._create_equipment_type_badge("Thermal Mgmt", 2, "warning"),
+                    self._create_equipment_type_badge("Payload/Science", 2, "success"),
+                    self._create_equipment_type_badge("Mobility/Nav", 2, "secondary")
+                ], className="d-flex flex-wrap gap-2")
             ])
         ])
         
+    def _create_equipment_type_badge(self, name: str, count: int, color: str) -> html.Div:
+        """Create equipment type badge
+
+        Args:
+            name: Equipment type name
+            count: Number of equipment
+            color: Badge color
+
+        Returns:
+            Equipment type badge
+        """
+        return html.Div([
+            html.Span(name, className="me-1"),
+            dbc.Badge(str(count), color=color, pill=True)
+        ], className=f"border border-{color} rounded px-2 py-1")
+
     def _create_health_indicator(self, label: str, value: int, status: str) -> html.Div:
         """Create health indicator component
-        
+
         Args:
             label: Component label
             value: Health value
             status: Status color
-            
+
         Returns:
             Health indicator
         """

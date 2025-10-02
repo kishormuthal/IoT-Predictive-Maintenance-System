@@ -1,0 +1,148 @@
+# Staging Environment Configuration
+# Mirrors production but with reduced resources and test data
+
+environment: staging
+
+system:
+  debug: false
+  log_level: "INFO"
+
+# Staging paths
+paths:
+  data_root: "/var/lib/iot-system-staging/data"
+  logs: "/var/log/iot-system-staging"
+  cache: "/var/cache/iot-system-staging"
+  models: "/var/lib/iot-system-staging/models"
+
+# Staging database (PostgreSQL)
+data_ingestion:
+  database:
+    enabled: true
+    type: "postgresql"
+    postgresql:
+      host: "${DB_HOST}"
+      port: 5432
+      database: "iot_telemetry_staging"
+      username: "${DB_USER}"
+      password: "${DB_PASSWORD}"
+      pool_size: 10
+      max_overflow: 20
+
+    timescale:
+      enabled: true
+      chunk_time_interval: "1 day"
+      compression_after: "3 days"
+      retention_period: "30 days"
+
+  redis:
+    enabled: true
+    host: "${REDIS_HOST}"
+    port: 6379
+    password: "${REDIS_PASSWORD}"
+    max_connections: 50
+
+  kafka:
+    enabled: true
+    bootstrap_servers: "${KAFKA_BOOTSTRAP_SERVERS}"
+    consumer:
+      group_id: "iot-anomaly-detector-staging"
+
+# Staging dashboard settings
+dashboard:
+  server:
+    host: "0.0.0.0"
+    port: 8050
+    debug: false
+    auto_reload: false
+
+  ui:
+    refresh_interval: 10000  # 10 seconds
+
+  performance:
+    cache:
+      enabled: true
+      forecast_cache_ttl: 1800
+      risk_cache_ttl: 300
+
+    limits:
+      max_data_points: 20000
+      max_forecast_horizon: 168
+
+    resources:
+      max_concurrent_forecasts: 5
+      max_scenario_simulations: 3
+      memory_limit_mb: 4096
+
+# Staging MLflow
+mlflow:
+  enabled: true
+  tracking_uri: "${MLFLOW_TRACKING_URI}"
+  connection_timeout: 5.0
+  retry_attempts: 3
+
+# Moderate training for staging
+anomaly_detection:
+  lstm_predictor:
+    training:
+      epochs: 20
+      batch_size: 64
+
+  lstm_autoencoder:
+    training:
+      epochs: 20
+      batch_size: 64
+
+  lstm_vae:
+    training:
+      epochs: 20
+      batch_size: 64
+
+forecasting:
+  transformer:
+    training:
+      epochs: 30
+      batch_size: 32
+
+  lstm:
+    training:
+      epochs: 20
+      batch_size: 64
+
+# Staging logging
+logging:
+  console:
+    enabled: true
+
+  file:
+    enabled: true
+    path: "/var/log/iot-system-staging/staging.log"
+    max_bytes: 20971520  # 20MB
+    backup_count: 5
+
+# Staging alerts (reduced frequency)
+alerts:
+  email:
+    enabled: true
+    smtp_server: "${SMTP_SERVER}"
+    sender_email: "${ALERT_SENDER_EMAIL}"
+    sender_password: "${ALERT_SENDER_PASSWORD}"
+
+  rules:
+    anomaly_threshold: 0.85
+    consecutive_anomalies: 3
+    cooldown_period: 3600
+
+  notifications:
+    batch_alerts: true
+    batch_interval: 600
+
+# Staging performance
+performance:
+  memory:
+    max_cache_size: 2048  # 2GB
+
+  cpu:
+    thread_pool_size: 4
+
+  batch:
+    max_batch_size: 2000

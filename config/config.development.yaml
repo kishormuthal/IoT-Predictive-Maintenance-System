@@ -1,0 +1,109 @@
+# Development Environment Configuration
+# Overrides base config.yaml settings for local development
+
+environment: development
+
+system:
+  debug: true
+  log_level: "DEBUG"
+
+# Development paths (local filesystem)
+paths:
+  data_root: "./data"
+  logs: "./logs"
+  cache: "./cache"
+  models: "./models"
+
+# Development database (SQLite)
+data_ingestion:
+  database:
+    enabled: true
+    type: "sqlite"
+    sqlite:
+      path: "./data/dev_iot_telemetry.db"
+
+  redis:
+    enabled: false  # Disable Redis in development
+
+  kafka:
+    enabled: false  # Disable Kafka in development
+
+# Development dashboard settings
+dashboard:
+  server:
+    host: "127.0.0.1"
+    port: 8050
+    debug: true
+    auto_reload: true
+
+  ui:
+    theme: "dark"
+    refresh_interval: 5000  # Fast refresh for development
+
+  performance:
+    cache:
+      enabled: false  # Disable caching for fresh data
+    limits:
+      max_data_points: 1000  # Smaller limit for faster loading
+
+# Development MLflow settings
+mlflow:
+  enabled: false  # Optional in development
+  tracking_uri: "http://localhost:5000"
+  connection_timeout: 2.0
+  retry_attempts: 1
+
+# Fast training for development
+anomaly_detection:
+  lstm_predictor:
+    training:
+      epochs: 2  # Quick training
+      batch_size: 64
+      early_stopping_patience: 3
+
+  lstm_autoencoder:
+    training:
+      epochs: 2
+      batch_size: 64
+
+  lstm_vae:
+    training:
+      epochs: 2
+      batch_size: 64
+
+forecasting:
+  transformer:
+    training:
+      epochs: 3
+      batch_size: 32
+      warmup_steps: 100
+
+  lstm:
+    training:
+      epochs: 2
+      batch_size: 64
+
+# Development monitoring
+logging:
+  console:
+    enabled: true
+    colored: true
+
+  file:
+    enabled: true
+    path: "./logs/dev_iot_system.log"
+
+# Mock data for testing
+development:
+  mock_data: false
+  skip_model_training: false
+  use_cached_models: true
+  profile_code: true  # Enable profiling in dev
+  debug_mode: true
+
+# Alerts disabled in development
+alerts:
+  email:
+    enabled: false
+  notifications:
+    batch_alerts: true

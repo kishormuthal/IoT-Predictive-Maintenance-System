@@ -16,6 +16,14 @@ from datetime import datetime, timedelta
 import logging
 import json
 
+# FIXED: Import integration service for real data
+try:
+    from src.presentation.dashboard.services.dashboard_integration import get_integration_service
+    INTEGRATION_AVAILABLE = True
+except ImportError:
+    INTEGRATION_AVAILABLE = False
+
+
 # Import project modules
 import sys
 from pathlib import Path
@@ -48,6 +56,10 @@ class EnhancedForecastingDashboard:
         self.data_manager = data_manager
         self.config = get_config()
 
+        # Load equipment configuration
+        self.equipment_list = get_equipment_list()
+        self.sensor_ids = [eq.equipment_id for eq in self.equipment_list]
+
         # Initialize forecasting components
         self.enhanced_forecaster = None
         self.failure_estimator = None
@@ -55,7 +67,7 @@ class EnhancedForecastingDashboard:
         self.risk_matrix_system = None
 
         # Dashboard state
-        self.current_equipment = "SMAP"
+        self.current_equipment = self.sensor_ids[0] if self.sensor_ids else "SMAP-PWR-001"
         self.current_component = "power_system"
         self.forecast_horizon = 24
         self.confidence_levels = [0.8, 0.9, 0.95]
@@ -92,10 +104,15 @@ class EnhancedForecastingDashboard:
                             dcc.Dropdown(
                                 id="enhanced-forecast-equipment-dropdown",
                                 options=[
+                                    {"label": eq.name if hasattr(eq, 'name') else eq.equipment_id,
+                                     "value": eq.equipment_id}
+                                    for eq in self.equipment_list
+                                ] if self.equipment_list else [
                                     {"label": "SMAP Satellite", "value": "SMAP"},
                                     {"label": "MSL Mars Rover", "value": "MSL"}
                                 ],
-                                value="SMAP",
+                                value=self.sensor_ids[0] if self.sensor_ids else "SMAP",
+                                clearable=False,
                                 className="mb-2"
                             )
                         ], width=3),
@@ -615,6 +632,13 @@ class EnhancedForecastingDashboard:
 def create_enhanced_forecasting_dashboard(data_manager=None):
     """Create enhanced forecasting dashboard instance"""
     return EnhancedForecastingDashboard(data_manager)
+
+
+# Standalone create_layout function for unified_dashboard.py
+def create_layout():
+    """Create forecasting dashboard layout for dashboard routing"""
+    dashboard = create_enhanced_forecasting_dashboard()
+    return dashboard.create_layout()
 
 
 if __name__ == "__main__":

@@ -1,0 +1,114 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Documentation
+*.md
+docs/
+examples/
+SESSIONS_*.md
+SESSION_*.md
+PROGRESS_*.md
+DASHBOARD_*.md
+COMPREHENSIVE_*.md
+FINAL_*.md
+SQLITE_*.md
+
+# Data files (too large, mount as volumes instead)
+data/raw/*
+data/processed/*
+*.npy
+*.h5
+*.hdf5
+*.csv
+*.parquet
+
+# Logs
+logs/
+*.log
+
+# Cache
+cache/
+__pycache__/
+.cache/
+
+# Models (mount as volumes or download separately)
+models/*.h5
+models/*.pkl
+models/*.pt
+models/*.onnx
+
+# Environment files (secrets)
+.env
+.env.*
+*.key
+*.pem
+credentials.json
+
+# Test files
+tests/
+test_*.py
+pytest.ini
+
+# CI/CD (not needed in container)
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Development
+quick_start.py
+launch_dashboard_simple.py
+launch_dashboard_full_features.py
+launch_unified_dashboard.py
+test_all_tabs.py
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+.DS_Store
+Thumbs.db
+
+# IoT Predictive Maintenance System Analysis
+IoT Predictive Maintenance System Analysis and Bug Resolution/

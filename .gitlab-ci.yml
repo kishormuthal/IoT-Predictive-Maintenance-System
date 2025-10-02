@@ -1,0 +1,205 @@
+# GitLab CI/CD Pipeline for IoT Predictive Maintenance System
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  REGISTRY_IMAGE: $CI_REGISTRY_IMAGE
+  PYTHON_VERSION: "3.10"
+
+stages:
+  - lint
+  - test
+  - security
+  - build
+  - deploy-staging
+  - deploy-production
+
+# Cache configuration
+.python-cache:
+  cache:
+    key:
+      files:
+        - requirements.txt
+    paths:
+      - .cache/pip
+      - venv/
+
+# Lint stage
+lint:code:
+  stage: lint
+  image: python:${PYTHON_VERSION}-slim
+  extends: .python-cache
+  before_script:
+    - pip install flake8 black isort mypy
+  script:
+    - black --check --diff .
+    - isort --check-only --diff .
+    - flake8 src/ --max-line-length=120 --extend-ignore=E203,W503
+    - mypy src/ --ignore-missing-imports || true
+  only:
+    - merge_requests
+    - main
+    - develop
+
+# Test stage
+test:unit:
+  stage: test
+  image: python:${PYTHON_VERSION}-slim
+  extends: .python-cache
+  services:
+    - name: postgres:14-alpine
+      alias: postgres
+    - name: redis:7-alpine
+      alias: redis
+  variables:
+    POSTGRES_DB: test_db
+    POSTGRES_USER: test_user
+    POSTGRES_PASSWORD: test_password
+    DATABASE_URI: postgresql://test_user:test_password@postgres:5432/test_db
+    REDIS_HOST: redis
+  before_script:
+    - pip install -r requirements.txt
+    - pip install pytest pytest-cov
+  script:
+    - pytest tests/ --cov=src --cov-report=xml --cov-report=html --cov-report=term
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - htmlcov/
+    expire_in: 30 days
+  only:
+    - merge_requests
+    - main
+    - develop
+
+# Security scanning
+security:dependencies:
+  stage: security
+  image: python:${PYTHON_VERSION}-slim
+  before_script:
+    - pip install safety
+  script:
+    - safety check --json || true
+  allow_failure: true
+  only:
+    - merge_requests
+    - main
+
+security:sast:
+  stage: security
+  image: python:${PYTHON_VERSION}-slim
+  before_script:
+    - pip install bandit
+  script:
+    - bandit -r src/ -f json -o bandit-report.json || true
+  artifacts:
+    paths:
+      - bandit-report.json
+    expire_in: 30 days
+  allow_failure: true
+  only:
+    - merge_requests
+    - main
+
+# Container scanning
+security:container:
+  stage: security
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - apk add --no-cache curl
+    - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE:test .
+    - trivy image --exit-code 0 --severity HIGH,CRITICAL $CI_REGISTRY_IMAGE:test
+  only:
+    - main
+    - tags
+
+# Build Docker image
+build:docker:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        tag="latest"
+      else
+        tag=$CI_COMMIT_REF_SLUG
+      fi
+    - docker build --pull -t "$CI_REGISTRY_IMAGE:$tag" .
+    - docker push "$CI_REGISTRY_IMAGE:$tag"
+    - |
+      if [[ "$CI_COMMIT_TAG" ]]; then
+        docker tag "$CI_REGISTRY_IMAGE:$tag" "$CI_REGISTRY_IMAGE:$CI_COMMIT_TAG"
+        docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_TAG"
+      fi
+  only:
+    - main
+    - tags
+
+# Deploy to staging
+deploy:staging:
+  stage: deploy-staging
+  image: bitnami/kubectl:latest
+  before_script:
+    - mkdir -p $HOME/.kube
+    - echo "$KUBE_CONFIG_STAGING" | base64 -d > $HOME/.kube/config
+  script:
+    - kubectl set image deployment/iot-dashboard dashboard=$CI_REGISTRY_IMAGE:latest -n iot-system-staging
+    - kubectl rollout status deployment/iot-dashboard -n iot-system-staging --timeout=5m
+    - echo "Staging deployment completed"
+  environment:
+    name: staging
+    url: https://staging.iot-dashboard.example.com
+  only:
+    - main
+
+# Deploy to production
+deploy:production:
+  stage: deploy-production
+  image: bitnami/kubectl:latest
+  before_script:
+    - mkdir -p $HOME/.kube
+    - echo "$KUBE_CONFIG_PRODUCTION" | base64 -d > $HOME/.kube/config
+  script:
+    - kubectl get deployment iot-dashboard -n iot-system -o yaml > deployment-backup.yaml
+    - kubectl set image deployment/iot-dashboard dashboard=$CI_REGISTRY_IMAGE:$CI_COMMIT_TAG -n iot-system
+    - kubectl rollout status deployment/iot-dashboard -n iot-system --timeout=10m
+    - echo "Production deployment completed"
+  environment:
+    name: production
+    url: https://iot-dashboard.example.com
+  when: manual
+  only:
+    - tags
+  artifacts:
+    paths:
+      - deployment-backup.yaml
+    expire_in: 7 days
+
+# Rollback production
+rollback:production:
+  stage: deploy-production
+  image: bitnami/kubectl:latest
+  before_script:
+    - mkdir -p $HOME/.kube
+    - echo "$KUBE_CONFIG_PRODUCTION" | base64 -d > $HOME/.kube/config
+  script:
+    - kubectl rollout undo deployment/iot-dashboard -n iot-system
+    - kubectl rollout status deployment/iot-dashboard -n iot-system --timeout=5m
+  environment:
+    name: production
+    action: rollback
+  when: manual
+  only:
+    - tags

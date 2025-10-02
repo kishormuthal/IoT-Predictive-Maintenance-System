@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow
+  namespace: iot-system
+  labels:
+    app: mlflow
+    component: tracking
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mlflow
+  template:
+    metadata:
+      labels:
+        app: mlflow
+        component: tracking
+    spec:
+      containers:
+      - name: mlflow
+        image: ghcr.io/mlflow/mlflow:v2.8.0
+        ports:
+        - containerPort: 5000
+          name: http
+        command:
+        - mlflow
+        - server
+        - --backend-store-uri
+        - postgresql://$(DB_USER):$(DB_PASSWORD)@postgres-service:5432/mlflow
+        - --default-artifact-root
+        - /mlflow/artifacts
+        - --host
+        - 0.0.0.0
+        - --port
+        - "5000"
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: iot-secrets
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: iot-secrets
+              key: DB_PASSWORD
+        volumeMounts:
+        - name: mlflow-artifacts
+          mountPath: /mlflow/artifacts
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: mlflow-artifacts
+        persistentVolumeClaim:
+          claimName: mlflow-artifacts-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mlflow-service
+  namespace: iot-system
+  labels:
+    app: mlflow
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5000
+    targetPort: 5000
+    protocol: TCP
+    name: http
+  selector:
+    app: mlflow

@@ -13,7 +13,7 @@ from ..interfaces.forecaster_interface import ForecasterInterface
 from ..models.forecast import ForecastResult, ForecastSummary, ForecastPoint, ForecastConfidence, RiskLevel
 from ..models.sensor_data import SensorDataBatch
 from ...infrastructure.ml.model_registry import ModelRegistry
-from ...infrastructure.ml.transformer_wrapper import TransformerForecaster
+from ...infrastructure.ml.transformer_wrapper import TransformerForecaster, ModelNotTrainedError
 
 logger = logging.getLogger(__name__)
 
@@ -23,95 +23,166 @@ class ForecastingService(ForecasterInterface):
     Service for time series forecasting using Transformer models
     """
 
-    def __init__(self, model_path: str = "data/models"):
+    def __init__(
+        self,
+        registry_path: str = "data/models/registry",
+        forecast_history_size: int = 100,
+        risk_confidence_threshold_low: float = 0.2,
+        risk_confidence_threshold_high: float = 0.5
+    ):
         """
         Initialize forecasting service
 
         Args:
-            model_path: Path to trained models registry
+            registry_path: Path to model registry (single source of truth)
+            forecast_history_size: Maximum number of recent forecasts to keep per sensor
+            risk_confidence_threshold_low: Threshold for high confidence (< this value)
+            risk_confidence_threshold_high: Threshold for low confidence (> this value)
         """
-        self.model_path = Path(model_path)
-        self.model_path.mkdir(parents=True, exist_ok=True)
-
         # Initialize model registry
-        self.model_registry = ModelRegistry(str(self.model_path / "registry"))
+        self.model_registry = ModelRegistry(registry_path)
 
         # Cache for loaded Transformer models
         self._models: Dict[str, TransformerForecaster] = {}
 
         # Forecast history for summary generation
         self._forecast_history: Dict[str, List[ForecastResult]] = {}
+        self.forecast_history_size = forecast_history_size
 
-        logger.info("Forecasting Service initialized with model registry")
+        # Configurable thresholds
+        self.risk_confidence_threshold_low = risk_confidence_threshold_low
+        self.risk_confidence_threshold_high = risk_confidence_threshold_high
+
+        logger.info(
+            f"Forecasting Service initialized with registry at {registry_path}, "
+            f"history size: {forecast_history_size}"
+        )
 
     def _get_model(self, sensor_id: str) -> Optional[TransformerForecaster]:
-        """Get or load Transformer forecasting model from registry"""
+        """Get or load Transformer forecasting model from registry
+
+        Uses ModelRegistry metadata for model paths (single source of truth).
+
+        Args:
+            sensor_id: Unique sensor identifier
+
+        Returns:
+            TransformerForecaster model instance or None if not available
+        """
         if sensor_id not in self._models:
             try:
                 # Get active Transformer model version from registry
                 active_version = self.model_registry.get_active_model_version(sensor_id, "transformer")
 
                 if active_version:
-                    # Load Transformer model from registry
-                    transformer = TransformerForecaster(sensor_id)
-                    model_path = self.model_path / "transformer"
+                    metadata = self.model_registry.get_model_metadata(active_version)
 
-                    if transformer.load_model(model_path):
-                        self._models[sensor_id] = transformer
-                        logger.info(f"Loaded Transformer model from registry: {sensor_id} v{active_version}")
+                    if metadata:
+                        # Use registry metadata for model path
+                        registry_model_path = Path(metadata.model_path) if hasattr(metadata, 'model_path') else None
+
+                        if registry_model_path and registry_model_path.exists():
+                            transformer = TransformerForecaster(sensor_id)
+
+                            if transformer.load_model(registry_model_path.parent):
+                                self._models[sensor_id] = transformer
+                                logger.info(
+                                    f"Loaded Transformer model {active_version} for sensor {sensor_id} "
+                                    f"from {registry_model_path}"
+                                )
+                            else:
+                                logger.warning(f"Failed to load Transformer model for {sensor_id}")
+                                self._models[sensor_id] = None
+                        else:
+                            logger.warning(
+                                f"Model path not found in metadata for version {active_version}, "
+                                f"sensor {sensor_id}"
+                            )
+                            self._models[sensor_id] = None
                     else:
-                        logger.warning(f"Failed to load Transformer model for {sensor_id}")
+                        logger.warning(f"Model metadata not found for version {active_version}")
                         self._models[sensor_id] = None
                 else:
-                    logger.warning(f"No active Transformer model found in registry for sensor {sensor_id}")
+                    logger.info(f"No active Transformer model found in registry for sensor {sensor_id}")
                     self._models[sensor_id] = None
 
+            except FileNotFoundError as e:
+                logger.error(f"File not found while loading Transformer model for {sensor_id}: {e}")
+                self._models[sensor_id] = None
+            except KeyError as e:
+                logger.error(f"Missing metadata key for Transformer model {sensor_id}: {e}")
+                self._models[sensor_id] = None
             except Exception as e:
-                logger.error(f"Error loading Transformer model for {sensor_id}: {e}")
+                logger.error(f"Unexpected error loading Transformer model for {sensor_id}: {e}")
                 self._models[sensor_id] = None
 
         return self._models[sensor_id]
 
     def _calculate_risk_level(self, predicted_value: float, confidence_interval: tuple,
                             normal_range: tuple = None) -> RiskLevel:
-        """Calculate risk level based on prediction and confidence"""
+        """Calculate risk level based on prediction and confidence
+
+        Args:
+            predicted_value: Forecasted value
+            confidence_interval: Tuple of (lower, upper) confidence bounds
+            normal_range: Optional tuple of (lower, upper) normal operating range
+
+        Returns:
+            RiskLevel: Assessed risk level
+        """
         try:
             confidence_width = abs(confidence_interval[1] - confidence_interval[0])
-            relative_confidence = confidence_width / abs(predicted_value) if predicted_value != 0 else 1.0
+            # Add epsilon for numerical stability
+            epsilon = 1e-9
+            relative_confidence = confidence_width / (abs(predicted_value) + epsilon)
 
             # Risk based on confidence and range violations
             if normal_range:
                 lower_bound, upper_bound = normal_range
                 if predicted_value < lower_bound or predicted_value > upper_bound:
-                    if relative_confidence > 0.5:
+                    if relative_confidence > self.risk_confidence_threshold_high:
                         return RiskLevel.CRITICAL
                     else:
                         return RiskLevel.HIGH
 
-            # Risk based on confidence alone
+            # Risk based on confidence alone (using configurable thresholds)
             if relative_confidence > 0.8:
                 return RiskLevel.HIGH
-            elif relative_confidence > 0.5:
+            elif relative_confidence > self.risk_confidence_threshold_high:
                 return RiskLevel.MEDIUM
             else:
                 return RiskLevel.LOW
 
-        except:
+        except (ZeroDivisionError, TypeError, ValueError) as e:
+            logger.warning(f"Error calculating risk level: {e}")
             return RiskLevel.MEDIUM
 
     def _calculate_forecast_confidence(self, confidence_interval: tuple, predicted_value: float) -> ForecastConfidence:
-        """Calculate forecast confidence level"""
+        """Calculate forecast confidence level
+
+        Args:
+            confidence_interval: Tuple of (lower, upper) confidence bounds
+            predicted_value: Forecasted value
+
+        Returns:
+            ForecastConfidence: Confidence level classification
+        """
         try:
             confidence_width = abs(confidence_interval[1] - confidence_interval[0])
-            relative_confidence = confidence_width / abs(predicted_value) if predicted_value != 0 else 1.0
+            # Add epsilon for numerical stability
+            epsilon = 1e-9
+            relative_confidence = confidence_width / (abs(predicted_value) + epsilon)
 
-            if relative_confidence < 0.2:
+            # Use configurable thresholds
+            if relative_confidence < self.risk_confidence_threshold_low:
                 return ForecastConfidence.HIGH
-            elif relative_confidence < 0.5:
+            elif relative_confidence < self.risk_confidence_threshold_high:
                 return ForecastConfidence.MEDIUM
             else:
                 return ForecastConfidence.LOW
-        except:
+
+        except (ZeroDivisionError, TypeError, ValueError) as e:
+            logger.warning(f"Error calculating forecast confidence: {e}")
             return ForecastConfidence.MEDIUM
 
     def _calculate_accuracy_metrics(self, actual: np.ndarray, predicted: np.ndarray) -> Dict[str, float]:
@@ -146,43 +217,62 @@ class ForecastingService(ForecasterInterface):
                 'r2_score': 0.0
             }
 
-    def generate_forecast(self, sensor_id: str, data: np.ndarray, horizon_hours: int = 24) -> Dict[str, Any]:
+    def generate_forecast(
+        self,
+        sensor_id: str,
+        data: np.ndarray,
+        timestamps: List[datetime],
+        horizon_hours: int = 24
+    ) -> Dict[str, Any]:
         """
         Generate forecast for sensor data using Transformer
+
+        **CRITICAL FIX**: Timestamps must be provided with data to ensure
+        accurate forecast timeline. Using datetime.now() leads to incorrect
+        temporal alignment.
 
         Args:
             sensor_id: Unique sensor identifier
             data: Historical time series data
+            timestamps: Corresponding timestamps for historical data
             horizon_hours: Forecast horizon in hours
 
         Returns:
             Dictionary containing forecast results
+
+        Raises:
+            ValueError: If timestamps length doesn't match data length
         """
         start_time = datetime.now()
 
         try:
+            # Validate timestamp and data alignment
+            if len(timestamps) != len(data):
+                raise ValueError(
+                    f"Timestamps length ({len(timestamps)}) must match data length ({len(data)})"
+                )
+
             # Get model for sensor
             model = self._get_model(sensor_id)
 
             if not model or not model.is_trained:
                 logger.warning(f"Model not available or not trained for sensor {sensor_id}, using fallback forecasting")
-                return self._fallback_forecast(sensor_id, data, horizon_hours)
+                return self._fallback_forecast(sensor_id, data, timestamps, horizon_hours)
 
             # Generate forecast
             forecast_result = model.predict(data, horizon_hours)
 
-            # Create timestamps for forecast
-            last_timestamp = datetime.now()
+            # CRITICAL FIX: Use last data timestamp, NOT datetime.now()
+            last_timestamp = timestamps[-1]
+
+            # Create timestamps for forecast (relative to last data point)
             forecast_timestamps = [
                 last_timestamp + timedelta(hours=i+1)
                 for i in range(len(forecast_result['forecast_values']))
             ]
 
-            # Create historical timestamps (assuming hourly data)
-            historical_timestamps = [
-                last_timestamp - timedelta(hours=len(data)-i-1)
-                for i in range(len(data))
-            ]
+            # Use provided historical timestamps
+            historical_timestamps = timestamps
 
             # Calculate confidence intervals
             confidence_intervals = {
@@ -209,11 +299,19 @@ class ForecastingService(ForecasterInterface):
                 )
                 forecast_points.append(forecast_point)
 
-            # Mock accuracy metrics (would be calculated with validation data)
-            accuracy_metrics = self._calculate_accuracy_metrics(
+            # CRITICAL: This is an IN-SAMPLE fit metric, NOT true forecast accuracy
+            # True accuracy requires a held-out validation set with actual future values
+            # This metric only shows how well the model fits recent training data
+            in_sample_fit_metrics = self._calculate_accuracy_metrics(
                 data[-horizon_hours:] if len(data) >= horizon_hours else data,
-                np.array(forecast_result['forecast_values'][:len(data)])
+                np.array(forecast_result['forecast_values'][:min(len(data), len(forecast_result['forecast_values']))])
             )
+
+            # Rename for clarity
+            accuracy_metrics = {
+                **in_sample_fit_metrics,
+                'note': 'IN_SAMPLE_FIT_ONLY - Not true forecast accuracy. Requires validation set.'
+            }
 
             processing_time = (datetime.now() - start_time).total_seconds()
 
@@ -241,8 +339,8 @@ class ForecastingService(ForecasterInterface):
                 self._forecast_history[sensor_id] = []
             self._forecast_history[sensor_id].append(result)
 
-            # Keep only recent forecasts (last 100)
-            self._forecast_history[sensor_id] = self._forecast_history[sensor_id][-100:]
+            # Keep only recent forecasts (configurable size)
+            self._forecast_history[sensor_id] = self._forecast_history[sensor_id][-self.forecast_history_size:]
 
             logger.info(f"Generated {horizon_hours}h forecast for sensor {sensor_id}")
 
@@ -262,10 +360,28 @@ class ForecastingService(ForecasterInterface):
 
         except Exception as e:
             logger.error(f"Error generating forecast for sensor {sensor_id}: {e}")
-            return self._fallback_forecast(sensor_id, data, horizon_hours)
+            return self._fallback_forecast(sensor_id, data, timestamps, horizon_hours)
 
-    def _fallback_forecast(self, sensor_id: str, data: np.ndarray, horizon_hours: int) -> Dict[str, Any]:
-        """Fallback forecasting when model is not available"""
+    def _fallback_forecast(
+        self,
+        sensor_id: str,
+        data: np.ndarray,
+        timestamps: List[datetime],
+        horizon_hours: int
+    ) -> Dict[str, Any]:
+        """Fallback forecasting when model is not available
+
+        Uses simple linear trend extrapolation with improved uncertainty estimation.
+
+        Args:
+            sensor_id: Sensor identifier
+            data: Historical data
+            timestamps: Historical timestamps
+            horizon_hours: Forecast horizon
+
+        Returns:
+            dict: Forecast results in consistent format
+        """
         try:
             if len(data) < 2:
                 # Not enough data for any forecast
@@ -280,14 +396,24 @@ class ForecastingService(ForecasterInterface):
                 future_x = np.arange(len(data), len(data) + horizon_hours)
                 forecast_values = np.polyval(coeffs, future_x).tolist()
 
-            # Simple confidence intervals (±10% of forecast value)
-            confidence_upper = [v * 1.1 for v in forecast_values]
-            confidence_lower = [v * 0.9 for v in forecast_values]
+            # Improved confidence intervals based on data variance
+            # Use standard deviation of data for uncertainty estimation
+            data_std = np.std(data) if len(data) > 1 else abs(data[0] * 0.1) if len(data) > 0 else 1.0
 
-            # Create timestamps
-            now = datetime.now()
-            historical_timestamps = [now - timedelta(hours=len(data)-i-1) for i in range(len(data))]
-            forecast_timestamps = [now + timedelta(hours=i+1) for i in range(horizon_hours)]
+            # Confidence grows with forecast horizon (more uncertain further out)
+            confidence_upper = [
+                v + data_std * (1 + 0.1 * i) for i, v in enumerate(forecast_values)
+            ]
+            confidence_lower = [
+                v - data_std * (1 + 0.1 * i) for i, v in enumerate(forecast_values)
+            ]
+
+            # CRITICAL FIX: Use last data timestamp, NOT datetime.now()
+            last_timestamp = timestamps[-1]
+            historical_timestamps = timestamps
+            forecast_timestamps = [
+                last_timestamp + timedelta(hours=i+1) for i in range(horizon_hours)
+            ]
 
             return {
                 'sensor_id': sensor_id,

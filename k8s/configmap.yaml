@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: iot-config
+  namespace: iot-system
+  labels:
+    app: iot-predictive-maintenance
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka-service:9092"
+  MLFLOW_TRACKING_URI: "http://mlflow-service:5000"
+  DASHBOARD_PORT: "8050"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: iot-config-file
+  namespace: iot-system
+  labels:
+    app: iot-predictive-maintenance
+data:
+  config.production.yaml: |
+    environment: production
+
+    system:
+      debug: false
+      log_level: INFO
+
+    dashboard:
+      server:
+        host: 0.0.0.0
+        port: 8050
+        debug: false
+
+    mlflow:
+      enabled: true
+      connection_timeout: 10.0
+
+    performance:
+      memory:
+        max_cache_size: 4096
+      cpu:
+        n_jobs: -1

@@ -1,60 +1,91 @@
-# IoT Predictive Maintenance Dashboard - Quick Start Guide
+# IoT Predictive Maintenance Dashboard - COMPLETE VERSION
 
-## ✅ Dashboard Status: ONLINE
+## ✅ Dashboard Status: RUNNING with ALL SESSION 9 FEATURES!
 
 **URL:** http://127.0.0.1:8050
-**Status:** Running (PID 25748)
-**Uptime:** Stable
+**Version:** Complete (Sessions 1-9)
+**New Features:** 3 additional tabs with advanced capabilities
 
 ---
 
-## How to Access
+## 🎯 Quick Access
 
-1. **Open your web browser**
-2. **Navigate to:** http://127.0.0.1:8050
-3. **Start exploring!** Click on any of the 7 tabs
+1. **Open browser** → http://127.0.0.1:8050
+2. **Explore NEW features** → Tabs 4, 6, 7 (marked with ⭐)
+3. **Start investigating!**
 
 ---
 
-## Available Features
+## 📍 All 10 Available Features
 
-### 🏠 Overview Tab
-- System health status
-- Total sensors (12 NASA sensors)
-- Model availability
-- Active alerts
-- System architecture info
+### 1. 📊 Overview Tab
+- System health dashboard
+- 12 NASA sensors (SMAP + MSL)
+- Real-time system status
+- Active alerts overview
 
-### 📊 Monitoring Tab
-- Real-time sensor data
-- Live monitoring of 12 NASA SMAP/MSL sensors
+### 2. 📡 Monitoring Tab
+- Live sensor data streams
 - Time series visualization
+- NASA SMAP/MSL real-time data
 
-### ⚠️ Anomalies Tab
-- NASA Telemanom anomaly detection
-- 12 pre-trained models ready
+### 3. ⚠️ Anomaly Monitor Tab
 - Real-time anomaly alerts
+- Severity-based filtering
+- Alert acknowledgment
+- Quick actions
 
-### 📈 Forecasting Tab
+### 4. ⭐ 🔍 Anomaly Investigation Tab (NEW SESSION 9!)
+**ADVANCED FEATURE - Click to investigate any anomaly**
+- Interactive anomaly timeline
+- Root cause analysis (with contribution scores)
+- Multi-sensor correlation analysis
+- Similar anomaly matching
+- Actionable recommendations
+- Export investigation reports
+
+### 5. 📈 Enhanced Forecasting Tab
 - Transformer-based predictions
-- 219K parameter models
-- Future sensor value predictions
+- Uncertainty quantification
+- Confidence intervals (80%, 90%, 95%)
+- Ensemble forecasting
 
-### 🔧 Maintenance Tab
+### 6. ⭐ 🤖 MLflow Integration Tab (NEW SESSION 9!)
+**MODEL MANAGEMENT PLATFORM**
+- Embedded MLflow UI (full interface)
+- Experiment comparison
+- Model registry browser
+- Deployment status tracking
+- Performance trend analysis
+- Hyperparameter importance
+
+### 7. ⭐ 🧠 Training Monitor Tab (NEW SESSION 9!)
+**REAL-TIME TRAINING TRACKING**
+- Active training jobs with progress bars
+- Real-time loss curves
+- Resource utilization (CPU, GPU, Memory, Disk)
+- Training queue management
+- Start new training jobs (with modal form)
+- Training history with filters
+- View job logs
+
+### 8. 🔧 Maintenance Scheduler Tab
 - Predictive maintenance scheduling
-- Remaining useful life (RUL) predictions
-- Maintenance task tracking
+- Calendar and Gantt views
+- Resource optimization
+- Work order generation
 
-### 📋 Work Orders Tab
-- Work order management
-- Task creation and tracking
-- Maintenance workflow
+### 9. 📋 Work Orders Tab
+- Complete CRUD operations
+- Priority tracking
+- Technician assignment
+- Status management
 
-### ⚙️ System Tab
+### 10. ⚙️ System Performance Tab
+- Infrastructure metrics
 - Training hub
 - Model registry
-- System administration
-- Performance monitoring
+- Pipeline dashboard
 
 ---
 

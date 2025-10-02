@@ -13,7 +13,7 @@ from pathlib import Path
 from ..interfaces.detector_interface import AnomalyDetectorInterface
 from ..models.anomaly import AnomalyDetection, AnomalyDetectionResult, AnomalySummary, AnomalySeverity, AnomalyType
 from ..models.sensor_data import SensorDataBatch
-from ...infrastructure.ml.telemanom_wrapper import NASATelemanom, Telemanom_Config
+from ...infrastructure.ml.telemanom_wrapper import NASATelemanom, Telemanom_Config, ModelNotTrainedError
 from ...infrastructure.ml.model_registry import ModelRegistry
 
 logger = logging.getLogger(__name__)
@@ -24,18 +24,21 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
     Service for anomaly detection using NASA Telemanom algorithm
     """
 
-    def __init__(self, model_path: str = "data/models/nasa_equipment_models", registry_path: str = "data/models"):
+    def __init__(
+        self,
+        registry_path: str = "data/models/registry",
+        detection_history_size: int = 1000,
+        fallback_threshold: float = 3.0
+    ):
         """
         Initialize anomaly detection service
 
         Args:
-            model_path: Path to store/load trained models
-            registry_path: Path to model registry
+            registry_path: Path to model registry (single source of truth for models)
+            detection_history_size: Maximum number of recent detections to keep per sensor
+            fallback_threshold: Z-score threshold for fallback statistical detection
         """
-        self.model_path = Path(model_path)
-        self.model_path.mkdir(parents=True, exist_ok=True)
-
-        # Initialize model registry
+        # Initialize model registry as single source of truth
         self.model_registry = ModelRegistry(registry_path)
 
         # Cache for loaded models
@@ -43,40 +46,82 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
 
         # Detection history for summary generation
         self._detection_history: Dict[str, List[AnomalyDetection]] = {}
+        self.detection_history_size = detection_history_size
+        self.fallback_threshold = fallback_threshold
 
-        logger.info("Anomaly Detection Service initialized with model registry")
+        logger.info(
+            f"Anomaly Detection Service initialized with registry at {registry_path}, "
+            f"history size: {detection_history_size}"
+        )
 
     def _get_model(self, sensor_id: str) -> NASATelemanom:
-        """Get or create Telemanom model for sensor"""
+        """Get or create Telemanom model for sensor
+
+        Uses ModelRegistry as single source of truth for model loading.
+
+        Args:
+            sensor_id: Unique sensor identifier
+
+        Returns:
+            NASATelemanom model instance (may or may not be trained)
+        """
         if sensor_id not in self._models:
             # Create new model instance
             config = Telemanom_Config()
             model = NASATelemanom(sensor_id, config)
 
-            # Try to load model from registry first
+            # Load model from registry (single source of truth)
             active_version = self.model_registry.get_active_model_version(sensor_id, 'telemanom')
+
             if active_version:
                 metadata = self.model_registry.get_model_metadata(active_version)
                 if metadata:
-                    registry_model_path = Path(metadata.model_path if hasattr(metadata, 'model_path') else self.model_path / sensor_id)
-                    if model.load_model(registry_model_path):
-                        logger.info(f"Loaded registered model {active_version} for sensor {sensor_id}")
+                    # Get model path from registry metadata
+                    registry_model_path = Path(metadata.model_path) if hasattr(metadata, 'model_path') else None
+
+                    if registry_model_path and registry_model_path.exists():
+                        load_success = model.load_model(registry_model_path.parent)
+
+                        # Enforce is_trained check after loading
+                        if load_success and model.is_trained:
+                            logger.info(
+                                f"Loaded trained model {active_version} for sensor {sensor_id} "
+                                f"from {registry_model_path}"
+                            )
+                        else:
+                            logger.warning(
+                                f"Model {active_version} loaded but is_trained={model.is_trained} "
+                                f"for sensor {sensor_id}"
+                            )
+                            model.is_trained = False  # Ensure consistency
                     else:
-                        logger.warning(f"Failed to load registered model {active_version} for sensor {sensor_id}")
+                        logger.warning(
+                            f"Model path not found in metadata for version {active_version}, "
+                            f"sensor {sensor_id}"
+                        )
                 else:
-                    logger.warning(f"Model metadata not found for version {active_version}")
+                    logger.warning(f"Model metadata not found for version {active_version}, sensor {sensor_id}")
             else:
-                # Fallback to legacy model loading
-                if not model.load_model(self.model_path):
-                    logger.warning(f"No trained model found for sensor {sensor_id}")
+                # No model in registry - model will be marked as untrained
+                logger.info(f"No registered model found for sensor {sensor_id} - model untrained")
 
             self._models[sensor_id] = model
 
         return self._models[sensor_id]
 
     def _calculate_severity(self, score: float, threshold: float) -> AnomalySeverity:
-        """Calculate anomaly severity based on score and threshold"""
-        severity_ratio = score / threshold if threshold > 0 else 1.0
+        """Calculate anomaly severity based on score and threshold
+
+        Args:
+            score: Anomaly score from detection algorithm
+            threshold: Detection threshold
+
+        Returns:
+            AnomalySeverity: Severity level classification
+        """
+        # Add epsilon for numerical stability
+        epsilon = 1e-10
+        severity_ratio = score / (threshold + epsilon)
 
         if severity_ratio >= 3.0:
             return AnomalySeverity.CRITICAL
@@ -115,13 +160,21 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
             # Convert to structured anomaly objects
             anomalies = []
             anomaly_indices = detection_result['anomalies']
-            scores = detection_result['scores']
+            scores = detection_result['scores']  # Full scores array for all data points
             threshold = detection_result['threshold']
 
             for idx in anomaly_indices:
-                if idx < len(timestamps) and idx < len(scores):
-                    score = scores[idx] if isinstance(scores, list) else scores[min(idx, len(scores)-1)]
+                if idx < len(timestamps):
+                    # Correct indexing: scores is a full array matching data length
+                    # idx refers to the position in the original data
+                    score = float(scores[idx]) if idx < len(scores) else 0.0
+
                     severity = self._calculate_severity(score, threshold)
+
+                    # Calculate severity_ratio instead of "confidence"
+                    # This more accurately reflects what we're measuring
+                    epsilon = 1e-10
+                    severity_magnitude = score / (threshold + epsilon)
 
                     anomaly = AnomalyDetection(
                         sensor_id=sensor_id,
@@ -130,8 +183,8 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
                         score=float(score),
                         severity=severity,
                         anomaly_type=AnomalyType.POINT,
-                        confidence=min(1.0, score / threshold) if threshold > 0 else 0.5,
-                        description=f"Telemanom detected anomaly (score: {score:.3f})"
+                        confidence=min(1.0, severity_magnitude),  # Capped severity ratio
+                        description=f"Telemanom detected anomaly (score: {score:.3f}, severity: {severity.value})"
                     )
                     anomalies.append(anomaly)
 
@@ -140,8 +193,8 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
                 self._detection_history[sensor_id] = []
             self._detection_history[sensor_id].extend(anomalies)
 
-            # Keep only recent detections (last 1000)
-            self._detection_history[sensor_id] = self._detection_history[sensor_id][-1000:]
+            # Keep only recent detections (configurable size)
+            self._detection_history[sensor_id] = self._detection_history[sensor_id][-self.detection_history_size:]
 
             processing_time = (datetime.now() - start_time).total_seconds()
 
@@ -178,7 +231,19 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
             return self._fallback_detection(sensor_id, data, timestamps)
 
     def _fallback_detection(self, sensor_id: str, data: np.ndarray, timestamps: List[datetime]) -> Dict[str, Any]:
-        """Fallback anomaly detection when model is not available"""
+        """Fallback anomaly detection when model is not available
+
+        Uses statistical z-score based detection with configurable threshold.
+        Handles edge cases like constant data gracefully.
+
+        Args:
+            sensor_id: Sensor identifier
+            data: Time series data
+            timestamps: Corresponding timestamps
+
+        Returns:
+            dict: Detection results in consistent format with main detection
+        """
         try:
             # Simple statistical anomaly detection
             if len(data) < 10:
@@ -187,29 +252,59 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
                     'anomalies': [],
                     'statistics': {'total_points': len(data), 'anomaly_count': 0},
                     'processing_time': 0.0,
-                    'model_status': 'fallback'
+                    'model_status': 'fallback_insufficient_data'
                 }
 
-            # Use z-score based detection
+            # Use z-score based detection with configurable threshold
             mean_val = np.mean(data)
             std_val = np.std(data)
-            threshold = 3.0  # 3-sigma rule
 
             anomalies = []
-            for i, (value, timestamp) in enumerate(zip(data, timestamps)):
-                z_score = abs(value - mean_val) / std_val if std_val > 0 else 0
 
-                if z_score > threshold:
-                    severity = AnomalySeverity.HIGH if z_score > 4 else AnomalySeverity.MEDIUM
+            # Handle constant data case
+            if std_val == 0:
+                logger.warning(
+                    f"Constant data detected for sensor {sensor_id} (std=0). "
+                    f"No anomalies detected via z-score method."
+                )
+                # All values are identical - no anomalies can be detected via z-score
+                return {
+                    'sensor_id': sensor_id,
+                    'anomalies': [],
+                    'statistics': {
+                        'total_points': len(data),
+                        'anomaly_count': 0,
+                        'anomaly_rate': 0.0,
+                        'threshold': self.fallback_threshold,
+                        'mean_value': float(mean_val),
+                        'std_value': 0.0,
+                        'note': 'Constant data - no variance'
+                    },
+                    'processing_time': 0.001,
+                    'model_status': 'fallback_constant_data'
+                }
+
+            # Calculate z-scores
+            for i, (value, timestamp) in enumerate(zip(data, timestamps)):
+                z_score = abs(value - mean_val) / std_val
+
+                if z_score > self.fallback_threshold:
+                    # Severity based on z-score magnitude
+                    if z_score > self.fallback_threshold * 2:
+                        severity = AnomalySeverity.HIGH
+                    elif z_score > self.fallback_threshold * 1.5:
+                        severity = AnomalySeverity.MEDIUM
+                    else:
+                        severity = AnomalySeverity.LOW
 
                     anomaly = AnomalyDetection(
                         sensor_id=sensor_id,
                         timestamp=timestamp,
                         value=float(value),
-                        score=z_score / threshold,
+                        score=z_score / self.fallback_threshold,
                         severity=severity,
                         anomaly_type=AnomalyType.POINT,
-                        confidence=0.7,
+                        confidence=0.6,  # Lower confidence for fallback detection
                         description=f"Statistical anomaly (z-score: {z_score:.2f})"
                     )
                     anomalies.append(anomaly)
@@ -221,9 +316,9 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
                     'total_points': len(data),
                     'anomaly_count': len(anomalies),
                     'anomaly_rate': len(anomalies) / len(data),
-                    'threshold': threshold,
-                    'mean_value': mean_val,
-                    'std_value': std_val
+                    'threshold': self.fallback_threshold,
+                    'mean_value': float(mean_val),
+                    'std_value': float(std_val)
                 },
                 'processing_time': 0.001,
                 'model_status': 'fallback'
@@ -291,9 +386,16 @@ class AnomalyDetectionService(AnomalyDetectorInterface):
                     recent_anomalies = [a for a in anomalies if a.timestamp >= cutoff_time]
                     all_anomalies.extend(recent_anomalies)
 
+                    # Fix: Safely access latest_detection
+                    latest_detection_time = None
+                    if recent_anomalies:
+                        # Sort by timestamp to get the truly latest
+                        sorted_anomalies = sorted(recent_anomalies, key=lambda x: x.timestamp, reverse=True)
+                        latest_detection_time = sorted_anomalies[0].timestamp.isoformat()
+
                     sensor_stats[sid] = {
                         'anomaly_count': len(recent_anomalies),
-                        'latest_detection': recent_anomalies[-1].timestamp if recent_anomalies else None,
+                        'latest_detection': latest_detection_time,
                         'model_trained': self.is_model_trained(sid)
                     }
 

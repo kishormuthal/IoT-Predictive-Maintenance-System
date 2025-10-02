@@ -1,0 +1,90 @@
+# Docker Compose for Development Environment
+# Simplified setup with hot reload and debugging
+
+version: '3.8'
+
+services:
+  # IoT Dashboard (Development)
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: iot-dashboard-dev
+    ports:
+      - "8050:8050"
+      - "5678:5678"  # Debugger port
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URI=sqlite:////app/data/dev_iot_telemetry.db
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - LOG_LEVEL=DEBUG
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - .:/app:delegated  # Mount source code for hot reload
+      - dev-venv:/app/venv  # Persist virtual environment
+    stdin_open: true
+    tty: true
+    networks:
+      - iot-network-dev
+    restart: unless-stopped
+    command: python run_full_dashboard.py
+
+  # MLflow (Optional for development)
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.8.0
+    container_name: iot-mlflow-dev
+    ports:
+      - "5000:5000"
+    environment:
+      - BACKEND_STORE_URI=sqlite:////mlflow/mlflow.db
+      - ARTIFACT_ROOT=/mlflow/artifacts
+    volumes:
+      - mlflow-dev-data:/mlflow
+    command: >
+      mlflow server
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+      --host 0.0.0.0
+      --port 5000
+    networks:
+      - iot-network-dev
+    restart: unless-stopped
+
+  # PostgreSQL (Optional for testing)
+  postgres:
+    image: postgres:14-alpine
+    container_name: iot-postgres-dev
+    environment:
+      - POSTGRES_DB=iot_telemetry_dev
+      - POSTGRES_USER=dev_user
+      - POSTGRES_PASSWORD=dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+    networks:
+      - iot-network-dev
+    restart: unless-stopped
+
+  # Redis (Optional for testing)
+  redis:
+    image: redis:7-alpine
+    container_name: iot-redis-dev
+    ports:
+      - "6379:6379"
+    networks:
+      - iot-network-dev
+    restart: unless-stopped
+
+networks:
+  iot-network-dev:
+    driver: bridge
+    name: iot-network-dev
+
+volumes:
+  dev-venv:
+    name: iot-dev-venv
+  mlflow-dev-data:
+    name: iot-mlflow-dev-data
+  postgres-dev-data:
+    name: iot-postgres-dev-data
