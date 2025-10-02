@@ -48,20 +48,14 @@ def create_header():
                         dbc.Col(
                             [
                                 html.Img(src="/assets/logo.png", height="40px"),
-                                dbc.NavbarBrand(
-                                    "IoT Predictive Maintenance", className="ms-2"
-                                ),
+                                dbc.NavbarBrand("IoT Predictive Maintenance", className="ms-2"),
                             ]
                         ),
                         dbc.Col(
                             [
                                 dbc.Nav(
                                     [
-                                        dbc.NavItem(
-                                            dbc.NavLink(
-                                                "Dashboard", href="/", active="exact"
-                                            )
-                                        ),
+                                        dbc.NavItem(dbc.NavLink("Dashboard", href="/", active="exact")),
                                         dbc.NavItem(
                                             dbc.NavLink(
                                                 "Anomalies",

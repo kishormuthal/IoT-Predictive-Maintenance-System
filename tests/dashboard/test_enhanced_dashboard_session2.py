@@ -29,9 +29,7 @@ class TestUpdatedDashboardImport:
             import_time = time.time() - start_time
 
             # Should import much faster now with timeout fixes
-            assert (
-                import_time < 15.0
-            ), f"Dashboard import still too slow: {import_time}s"
+            assert import_time < 15.0, f"Dashboard import still too slow: {import_time}s"
             assert EnhancedIoTDashboard is not None, "Dashboard class not imported"
 
         except Exception as e:
@@ -50,9 +48,7 @@ class TestUpdatedDashboardImport:
             init_time = time.time() - start_time
 
             # Should initialize faster with timeouts
-            assert (
-                init_time < 30.0
-            ), f"Dashboard initialization still too slow: {init_time}s"
+            assert init_time < 30.0, f"Dashboard initialization still too slow: {init_time}s"
             assert dashboard is not None, "Dashboard not initialized"
             assert hasattr(dashboard, "app"), "Dashboard app not created"
 
@@ -68,19 +64,13 @@ class TestUpdatedDashboardImport:
         # Check that core services are initialized (even if some fail)
         assert hasattr(dashboard, "data_loader"), "Data loader not present"
         assert hasattr(dashboard, "anomaly_service"), "Anomaly service not present"
-        assert hasattr(
-            dashboard, "forecasting_service"
-        ), "Forecasting service not present"
+        assert hasattr(dashboard, "forecasting_service"), "Forecasting service not present"
 
         # Optional services might be None due to fallbacks
-        assert hasattr(
-            dashboard, "training_use_case"
-        ), "Training use case attribute missing"
+        assert hasattr(dashboard, "training_use_case"), "Training use case attribute missing"
         assert hasattr(dashboard, "config_manager"), "Config manager attribute missing"
         assert hasattr(dashboard, "model_registry"), "Model registry attribute missing"
-        assert hasattr(
-            dashboard, "performance_monitor"
-        ), "Performance monitor attribute missing"
+        assert hasattr(dashboard, "performance_monitor"), "Performance monitor attribute missing"
 
     def test_dashboard_memory_usage(self):
         """Test dashboard memory usage during initialization"""
@@ -94,9 +84,7 @@ class TestUpdatedDashboardImport:
         memory_increase = final_memory - initial_memory
 
         # Memory increase should be reasonable (less than 200MB)
-        assert (
-            memory_increase < 200
-        ), f"Dashboard uses too much memory: {memory_increase}MB"
+        assert memory_increase < 200, f"Dashboard uses too much memory: {memory_increase}MB"
 
     def test_performance_monitoring_startup(self):
         """Test that performance monitoring starts properly with new fixes"""
@@ -128,12 +116,8 @@ class TestDashboardComponentIsolation:
         )
 
         import_time = time.time() - start_time
-        assert (
-            import_time < 5.0
-        ), f"Simplified callbacks import too slow: {import_time}s"
-        assert (
-            register_enhanced_callbacks is not None
-        ), "Callback registration function not available"
+        assert import_time < 5.0, f"Simplified callbacks import too slow: {import_time}s"
+        assert register_enhanced_callbacks is not None, "Callback registration function not available"
 
     def test_layout_component_functions(self):
         """Test individual layout component creation functions"""
@@ -186,9 +170,7 @@ class TestDashboardComponentIsolation:
 
         # Check dashboard state initialization
         assert hasattr(dashboard, "dashboard_state"), "Dashboard state not initialized"
-        assert isinstance(
-            dashboard.dashboard_state, dict
-        ), "Dashboard state not a dictionary"
+        assert isinstance(dashboard.dashboard_state, dict), "Dashboard state not a dictionary"
 
         required_state_keys = [
             "system_health",
@@ -197,9 +179,7 @@ class TestDashboardComponentIsolation:
             "performance_metrics",
         ]
         for key in required_state_keys:
-            assert (
-                key in dashboard.dashboard_state
-            ), f"Required state key '{key}' missing"
+            assert key in dashboard.dashboard_state, f"Required state key '{key}' missing"
 
     def test_equipment_list_loading(self):
         """Test that equipment list loads properly"""
@@ -230,9 +210,7 @@ class TestDashboardPerformanceOptimizations:
         total_time = time.time() - start_time
 
         # Total initialization should be under reasonable time limit
-        assert (
-            total_time < 45.0
-        ), f"Total dashboard initialization too slow: {total_time}s"
+        assert total_time < 45.0, f"Total dashboard initialization too slow: {total_time}s"
 
     def test_timeout_mechanism_effectiveness(self):
         """Test that timeout mechanisms are working"""
@@ -245,9 +223,7 @@ class TestDashboardPerformanceOptimizations:
         initialization_time = time.time() - start_time
 
         # Should complete within timeout limits
-        assert (
-            initialization_time < 60.0
-        ), f"Dashboard still hanging despite timeouts: {initialization_time}s"
+        assert initialization_time < 60.0, f"Dashboard still hanging despite timeouts: {initialization_time}s"
 
     def test_fallback_service_functionality(self):
         """Test that fallback services provide basic functionality"""
@@ -257,19 +233,13 @@ class TestDashboardPerformanceOptimizations:
 
         # Even with fallbacks, core services should be functional
         if dashboard.data_loader:
-            assert hasattr(
-                dashboard.data_loader, "__class__"
-            ), "Data loader not properly initialized"
+            assert hasattr(dashboard.data_loader, "__class__"), "Data loader not properly initialized"
 
         if dashboard.anomaly_service:
-            assert hasattr(
-                dashboard.anomaly_service, "__class__"
-            ), "Anomaly service not properly initialized"
+            assert hasattr(dashboard.anomaly_service, "__class__"), "Anomaly service not properly initialized"
 
         if dashboard.forecasting_service:
-            assert hasattr(
-                dashboard.forecasting_service, "__class__"
-            ), "Forecasting service not properly initialized"
+            assert hasattr(dashboard.forecasting_service, "__class__"), "Forecasting service not properly initialized"
 
     def test_simplified_layout_performance(self):
         """Test that simplified layout setup is fast"""
@@ -298,9 +268,7 @@ class TestDashboardErrorHandling:
         dashboard = EnhancedIoTDashboard(debug=False)
 
         # Should not crash even if some services are None
-        assert (
-            dashboard.app is not None
-        ), "Dashboard app not created despite service failures"
+        assert dashboard.app is not None, "Dashboard app not created despite service failures"
 
     def test_timeout_error_handling(self):
         """Test that timeout errors are handled properly"""
@@ -322,9 +290,7 @@ class TestDashboardErrorHandling:
         dashboard = EnhancedIoTDashboard(debug=False)
 
         # Test fallback service initialization method exists
-        assert hasattr(
-            dashboard, "_initialize_fallback_services"
-        ), "Fallback service method missing"
+        assert hasattr(dashboard, "_initialize_fallback_services"), "Fallback service method missing"
 
         # Fallback services should be available
         fallback_services = ["data_loader", "anomaly_service", "forecasting_service"]
@@ -376,9 +342,7 @@ class TestDashboardIntegration:
 
         startup_time = time.time() - startup_start
 
-        assert (
-            startup_time < 90.0
-        ), f"Complete dashboard startup too slow: {startup_time}s"
+        assert startup_time < 90.0, f"Complete dashboard startup too slow: {startup_time}s"
         assert dashboard is not None, "Dashboard not created"
         assert dashboard.app is not None, "Dashboard app not available"
 
@@ -395,18 +359,12 @@ def test_session2_overall_dashboard_health():
         total_time = time.time() - start_time
 
         # All improvements should result in faster, more reliable dashboard
-        assert (
-            total_time < 60.0
-        ), f"Dashboard health check failed - still too slow: {total_time}s"
+        assert total_time < 60.0, f"Dashboard health check failed - still too slow: {total_time}s"
         assert dashboard is not None, "Dashboard health check failed - not created"
 
         # Check that improvements are in place
-        assert hasattr(
-            dashboard, "_initialize_fallback_services"
-        ), "Fallback mechanism missing"
-        assert hasattr(
-            dashboard, "_start_performance_monitoring"
-        ), "Performance monitoring startup missing"
+        assert hasattr(dashboard, "_initialize_fallback_services"), "Fallback mechanism missing"
+        assert hasattr(dashboard, "_start_performance_monitoring"), "Performance monitoring startup missing"
 
     except Exception as e:
         pytest.fail(f"Session 2 dashboard health check failed: {e}")

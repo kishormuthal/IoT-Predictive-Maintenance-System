@@ -64,15 +64,11 @@ class ValidationResult:
 
         if self.failed:
             print(f"{RED}{BOLD}❌ VALIDATION FAILED{RESET}")
-            print(
-                f"{YELLOW}Please fix the errors above before starting the dashboard{RESET}\n"
-            )
+            print(f"{YELLOW}Please fix the errors above before starting the dashboard{RESET}\n")
             return False
         elif self.warnings:
             print(f"{YELLOW}{BOLD}⚠️  VALIDATION PASSED WITH WARNINGS{RESET}")
-            print(
-                f"{YELLOW}Dashboard can start, but some features may not work optimally{RESET}\n"
-            )
+            print(f"{YELLOW}Dashboard can start, but some features may not work optimally{RESET}\n")
             return True
         else:
             print(f"{GREEN}{BOLD}✅ ALL CHECKS PASSED{RESET}")
@@ -86,9 +82,7 @@ def check_python_version(result: ValidationResult):
     if major == 3 and minor >= 8:
         result.add_pass("Python version", f"Python {major}.{minor}")
     else:
-        result.add_fail(
-            "Python version", f"Python 3.8+ required, found {major}.{minor}"
-        )
+        result.add_fail("Python version", f"Python 3.8+ required, found {major}.{minor}")
 
 
 def check_dependencies(result: ValidationResult):
@@ -113,9 +107,7 @@ def check_dependencies(result: ValidationResult):
             missing.append(package)
 
     if not missing:
-        result.add_pass(
-            "Dependencies", f"All {len(required_packages)} packages installed"
-        )
+        result.add_pass("Dependencies", f"All {len(required_packages)} packages installed")
     else:
         result.add_fail("Dependencies", f"Missing packages: {', '.join(missing)}")
 
@@ -145,13 +137,9 @@ def check_directory_structure(result: ValidationResult):
             missing.append(dir_path)
 
     if not missing:
-        result.add_pass(
-            "Directory structure", f"All {len(required_dirs)} directories present"
-        )
+        result.add_pass("Directory structure", f"All {len(required_dirs)} directories present")
     else:
-        result.add_fail(
-            "Directory structure", f"Missing directories: {', '.join(missing)}"
-        )
+        result.add_fail("Directory structure", f"Missing directories: {', '.join(missing)}")
 
 
 def check_nasa_data_files(result: ValidationResult):
@@ -184,9 +172,7 @@ def check_model_files(result: ValidationResult):
     models_dir = project_root / "data" / "models"
 
     if not models_dir.exists():
-        result.add_warning(
-            "Model files", "Models directory missing - training may be required"
-        )
+        result.add_warning("Model files", "Models directory missing - training may be required")
         return
 
     # Count model files
@@ -195,9 +181,7 @@ def check_model_files(result: ValidationResult):
     if model_files:
         result.add_pass("Model files", f"Found {len(model_files)} model files")
     else:
-        result.add_warning(
-            "Model files", "No models found - training required before forecasting"
-        )
+        result.add_warning("Model files", "No models found - training required before forecasting")
 
 
 def check_config_files(result: ValidationResult):
@@ -251,9 +235,7 @@ def check_port_availability(result: ValidationResult, port=8050):
         sock.close()
         result.add_pass("Port availability", f"Port {port} is available")
     except OSError:
-        result.add_warning(
-            "Port availability", f"Port {port} is in use - dashboard may fail to start"
-        )
+        result.add_warning("Port availability", f"Port {port} is in use - dashboard may fail to start")
 
 
 def check_disk_space(result: ValidationResult):
@@ -294,13 +276,9 @@ def check_core_imports(result: ValidationResult):
             failed_imports.append(f"{module}: {str(e)}")
 
     if not failed_imports:
-        result.add_pass(
-            "Core imports", f"All {len(core_modules)} core modules importable"
-        )
+        result.add_pass("Core imports", f"All {len(core_modules)} core modules importable")
     else:
-        result.add_fail(
-            "Core imports", f"Failed imports:\n    " + "\n    ".join(failed_imports)
-        )
+        result.add_fail("Core imports", f"Failed imports:\n    " + "\n    ".join(failed_imports))
 
 
 def main():

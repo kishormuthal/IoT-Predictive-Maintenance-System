@@ -70,20 +70,14 @@ def create_layout() -> html.Div:
                     dbc.Row(
                         [
                             dbc.Col([dcc.Graph(id="system-cpu-usage-chart")], width=6),
-                            dbc.Col(
-                                [dcc.Graph(id="system-memory-usage-chart")], width=6
-                            ),
+                            dbc.Col([dcc.Graph(id="system-memory-usage-chart")], width=6),
                         ],
                         className="mb-3",
                     ),
                     dbc.Row(
                         [
-                            dbc.Col(
-                                [dcc.Graph(id="model-accuracy-trend-chart")], width=6
-                            ),
-                            dbc.Col(
-                                [dcc.Graph(id="data-processing-rate-chart")], width=6
-                            ),
+                            dbc.Col([dcc.Graph(id="model-accuracy-trend-chart")], width=6),
+                            dbc.Col([dcc.Graph(id="data-processing-rate-chart")], width=6),
                         ]
                     ),
                 ]
@@ -108,9 +102,7 @@ def create_layout() -> html.Div:
                             ),
                             dbc.CardBody(
                                 [
-                                    html.H6(
-                                        "ML Training Status", className="card-title"
-                                    ),
+                                    html.H6("ML Training Status", className="card-title"),
                                     html.Div(id="training-summary-content"),
                                     dbc.Button(
                                         "Manage Training",
@@ -164,9 +156,7 @@ def create_layout() -> html.Div:
                 [
                     dbc.Card(
                         [
-                            dbc.CardHeader(
-                                [html.I(className="fas fa-stream me-2"), "ML Pipeline"]
-                            ),
+                            dbc.CardHeader([html.I(className="fas fa-stream me-2"), "ML Pipeline"]),
                             dbc.CardBody(
                                 [
                                     html.H6("Pipeline Health", className="card-title"),
@@ -199,14 +189,10 @@ def create_layout() -> html.Div:
                 [
                     dbc.Card(
                         [
-                            dbc.CardHeader(
-                                [html.I(className="fas fa-cogs me-2"), "Configuration"]
-                            ),
+                            dbc.CardHeader([html.I(className="fas fa-cogs me-2"), "Configuration"]),
                             dbc.CardBody(
                                 [
-                                    html.H6(
-                                        "System Configuration", className="card-title"
-                                    ),
+                                    html.H6("System Configuration", className="card-title"),
                                     html.Div(id="config-summary-content"),
                                     dbc.Button(
                                         "Manage Config",
@@ -228,9 +214,7 @@ def create_layout() -> html.Div:
                 [
                     dbc.Card(
                         [
-                            dbc.CardHeader(
-                                [html.I(className="fas fa-server me-2"), "System Admin"]
-                            ),
+                            dbc.CardHeader([html.I(className="fas fa-server me-2"), "System Admin"]),
                             dbc.CardBody(
                                 [
                                     html.H6("System Health", className="card-title"),
@@ -266,9 +250,7 @@ def create_layout() -> html.Div:
                                 [
                                     html.H5(
                                         [
-                                            html.I(
-                                                className="fas fa-graduation-cap me-2"
-                                            ),
+                                            html.I(className="fas fa-graduation-cap me-2"),
                                             "Training Hub - Detailed View",
                                         ]
                                     ),
@@ -447,9 +429,7 @@ def create_layout() -> html.Div:
             # Detailed sections (collapsible)
             detailed_sections,
             # Auto-refresh for real-time updates
-            dcc.Interval(
-                id="system-performance-refresh", interval=30 * 1000, n_intervals=0
-            ),
+            dcc.Interval(id="system-performance-refresh", interval=30 * 1000, n_intervals=0),
         ]
     )
 
@@ -862,9 +842,7 @@ def register_callbacks(app, services=None):
                 return create_model_registry_layout()
             except Exception as e:
                 logger.error(f"Error loading model registry layout: {e}")
-                return dbc.Alert(
-                    "Error loading Model Registry details", color="warning"
-                )
+                return dbc.Alert("Error loading Model Registry details", color="warning")
         return html.Div()
 
     @app.callback(
@@ -915,9 +893,7 @@ def register_callbacks(app, services=None):
         """Create system performance chart"""
         try:
             # Generate sample performance data
-            time_range = pd.date_range(
-                start=datetime.now() - timedelta(hours=24), end=datetime.now(), freq="H"
-            )
+            time_range = pd.date_range(start=datetime.now() - timedelta(hours=24), end=datetime.now(), freq="H")
 
             # Sample metrics
             cpu_usage = np.random.normal(25, 5, len(time_range))
@@ -992,9 +968,7 @@ def register_callbacks(app, services=None):
                             [
                                 html.H6(
                                     [
-                                        html.I(
-                                            className="fas fa-server text-success me-2"
-                                        ),
+                                        html.I(className="fas fa-server text-success me-2"),
                                         "System",
                                     ],
                                     className="mb-1",
@@ -1012,9 +986,7 @@ def register_callbacks(app, services=None):
                             [
                                 html.H6(
                                     [
-                                        html.I(
-                                            className="fas fa-database text-primary me-2"
-                                        ),
+                                        html.I(className="fas fa-database text-primary me-2"),
                                         "Database",
                                     ],
                                     className="mb-1",
@@ -1050,9 +1022,7 @@ def register_callbacks(app, services=None):
                             [
                                 html.H6(
                                     [
-                                        html.I(
-                                            className="fas fa-bell text-warning me-2"
-                                        ),
+                                        html.I(className="fas fa-bell text-warning me-2"),
                                         "Alerts",
                                     ],
                                     className="mb-1",
@@ -1070,9 +1040,7 @@ def register_callbacks(app, services=None):
 
         except Exception as e:
             logger.error(f"Error updating status indicators: {e}")
-            return dbc.Alert(
-                "Error loading status", color="warning", className="text-center"
-            )
+            return dbc.Alert("Error loading status", color="warning", className="text-center")
 
 
 if __name__ == "__main__":

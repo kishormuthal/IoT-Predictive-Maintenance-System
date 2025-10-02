@@ -136,17 +136,13 @@ class DataPipeline:
 
             # Step 2: Data quality assessment
             logger.info(f"[2/6] Assessing data quality for {sensor_id}")
-            quality_report = self.processing_service.assess_data_quality(
-                raw_data, timestamps, sensor_id
-            )
+            quality_report = self.processing_service.assess_data_quality(raw_data, timestamps, sensor_id)
 
             results["quality_report"] = quality_report
 
             if quality_report.status == DataQualityStatus.CRITICAL:
                 logger.error(f"Critical data quality issues: {quality_report.issues}")
-                results["errors"].append(
-                    f"Critical data quality: {quality_report.issues}"
-                )
+                results["errors"].append(f"Critical data quality: {quality_report.issues}")
                 # Continue anyway, but flag it
 
             # Step 3: Preprocessing and normalization
@@ -162,31 +158,20 @@ class DataPipeline:
             # Normalize if requested
             norm_params = None
             if normalize:
-                method = (
-                    normalization_method
-                    or self.processing_service.default_normalization
-                )
+                method = normalization_method or self.processing_service.default_normalization
 
                 # Check if we have existing parameters
                 existing_params = self.processing_service.get_cached_params(sensor_id)
 
                 if existing_params:
-                    logger.info(
-                        f"Using cached normalization parameters for {sensor_id}"
-                    )
+                    logger.info(f"Using cached normalization parameters for {sensor_id}")
                     norm_params = existing_params
-                    normalized_data = self.processing_service.normalize(
-                        processed_data, sensor_id, norm_params
-                    )
+                    normalized_data = self.processing_service.normalize(processed_data, sensor_id, norm_params)
                 else:
                     # Fit new parameters on this data
                     logger.info(f"Fitting new normalization parameters for {sensor_id}")
-                    norm_params = self.processing_service.fit_normalization(
-                        processed_data, sensor_id, method
-                    )
-                    normalized_data = self.processing_service.normalize(
-                        processed_data, sensor_id, norm_params
-                    )
+                    norm_params = self.processing_service.fit_normalization(processed_data, sensor_id, method)
+                    normalized_data = self.processing_service.normalize(processed_data, sensor_id, norm_params)
 
                 processed_data = normalized_data
 
@@ -200,9 +185,7 @@ class DataPipeline:
                 feature_config = feature_config or FeatureConfig()
                 self.feature_engineer.config = feature_config
 
-                features = self.feature_engineer.engineer_features(
-                    processed_data, timestamps, sensor_id
-                )
+                features = self.feature_engineer.engineer_features(processed_data, timestamps, sensor_id)
 
                 results["engineered_features"] = list(features.keys())
                 results["feature_count"] = len(features)
@@ -217,20 +200,14 @@ class DataPipeline:
 
                 # Check if we have reference distribution
                 if sensor_id in self.drift_detector.reference_distributions:
-                    drift_report = self.drift_detector.detect_drift(
-                        processed_data, sensor_id, timestamps
-                    )
+                    drift_report = self.drift_detector.detect_drift(processed_data, sensor_id, timestamps)
                     results["drift_report"] = drift_report.to_dict()
                     results["drift_detected"] = drift_report.drift_detected
                 else:
                     # Fit reference distribution
                     logger.info(f"Fitting reference distribution for {sensor_id}")
-                    self.drift_detector.fit_reference(
-                        processed_data, sensor_id, timestamps
-                    )
-                    results["drift_report"] = (
-                        "Reference distribution fitted (no drift check)"
-                    )
+                    self.drift_detector.fit_reference(processed_data, sensor_id, timestamps)
+                    results["drift_report"] = "Reference distribution fitted (no drift check)"
                     results["drift_detected"] = False
             else:
                 logger.info(f"[5/6] Skipping drift detection")
@@ -294,17 +271,12 @@ class DataPipeline:
             # Mark success
             results["success"] = True
             results["end_time"] = datetime.now()
-            results["duration_seconds"] = (
-                results["end_time"] - results["start_time"]
-            ).total_seconds()
+            results["duration_seconds"] = (results["end_time"] - results["start_time"]).total_seconds()
 
             # Store pipeline run
             self.pipeline_runs[pipeline_id] = results
 
-            logger.info(
-                f"Pipeline {pipeline_id} completed successfully in "
-                f"{results['duration_seconds']:.2f}s"
-            )
+            logger.info(f"Pipeline {pipeline_id} completed successfully in " f"{results['duration_seconds']:.2f}s")
 
             return results
 
@@ -362,9 +334,7 @@ class DataPipeline:
 
         return prepared_data
 
-    def run_batch_pipeline(
-        self, sensor_ids: List[str], **kwargs
-    ) -> Dict[str, Dict[str, Any]]:
+    def run_batch_pipeline(self, sensor_ids: List[str], **kwargs) -> Dict[str, Dict[str, Any]]:
         """
         Run pipeline for multiple sensors
 
@@ -388,9 +358,7 @@ class DataPipeline:
 
         # Summary
         successful = sum(1 for r in results.values() if r.get("success"))
-        logger.info(
-            f"Batch pipeline complete: {successful}/{len(sensor_ids)} successful"
-        )
+        logger.info(f"Batch pipeline complete: {successful}/{len(sensor_ids)} successful")
 
         return results
 
@@ -439,11 +407,7 @@ class DataPipeline:
             List of pipeline IDs
         """
         if sensor_id:
-            return [
-                pid
-                for pid, results in self.pipeline_runs.items()
-                if results.get("sensor_id") == sensor_id
-            ]
+            return [pid for pid, results in self.pipeline_runs.items() if results.get("sensor_id") == sensor_id]
         else:
             return list(self.pipeline_runs.keys())
 

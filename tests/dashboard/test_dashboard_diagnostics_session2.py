@@ -30,9 +30,7 @@ class TestDashboardDiagnostics:
             import_time = time.time() - start_time
 
             assert import_time < 10.0, f"Module import too slow: {import_time}s"
-            assert hasattr(
-                enhanced_app, "EnhancedIoTDashboard"
-            ), "Dashboard class not found"
+            assert hasattr(enhanced_app, "EnhancedIoTDashboard"), "Dashboard class not found"
 
         except Exception as e:
             pytest.fail(f"Module import failed: {e}")
@@ -43,9 +41,7 @@ class TestDashboardDiagnostics:
 
         # Should be able to access the class
         assert EnhancedIoTDashboard is not None, "Dashboard class is None"
-        assert hasattr(
-            EnhancedIoTDashboard, "__init__"
-        ), "Dashboard class missing __init__"
+        assert hasattr(EnhancedIoTDashboard, "__init__"), "Dashboard class missing __init__"
 
     def test_simplified_callbacks_isolated(self):
         """Test simplified callbacks in isolation"""
@@ -60,9 +56,7 @@ class TestDashboardDiagnostics:
         )
 
         import_time = time.time() - start_time
-        assert (
-            import_time < 5.0
-        ), f"Simplified callbacks import too slow: {import_time}s"
+        assert import_time < 5.0, f"Simplified callbacks import too slow: {import_time}s"
 
         # Test layout creation
         layout_start = time.time()
@@ -123,14 +117,10 @@ class TestDashboardDiagnostics:
         # Analyze results
         for service_name, result in results.items():
             if result["success"]:
-                assert (
-                    result["total_time"] < 10.0
-                ), f"{service_name} initialization too slow: {result['total_time']}s"
+                assert result["total_time"] < 10.0, f"{service_name} initialization too slow: {result['total_time']}s"
             else:
                 # Log failed services but don't fail test
-                print(
-                    f"Warning: {service_name} failed to initialize: {result.get('error', 'Unknown error')}"
-                )
+                print(f"Warning: {service_name} failed to initialize: {result.get('error', 'Unknown error')}")
 
     @pytest.mark.slow
     def test_dashboard_timeout_behavior(self):
@@ -181,9 +171,7 @@ except Exception as e:
             )
 
             if result.returncode == 0:
-                assert (
-                    "Dashboard created successfully" in result.stdout
-                ), "Dashboard creation did not complete"
+                assert "Dashboard created successfully" in result.stdout, "Dashboard creation did not complete"
             else:
                 # Dashboard failed or timed out
                 if "TIMEOUT" in result.stdout:
@@ -223,15 +211,9 @@ except Exception as e:
         total_increase = final_memory - initial_memory
 
         # Memory increases should be reasonable
-        assert (
-            import_increase < 50
-        ), f"Component import uses too much memory: {import_increase}MB"
-        assert (
-            layout_increase < 20
-        ), f"Layout creation uses too much memory: {layout_increase}MB"
-        assert (
-            total_increase < 70
-        ), f"Total component memory usage too high: {total_increase}MB"
+        assert import_increase < 50, f"Component import uses too much memory: {import_increase}MB"
+        assert layout_increase < 20, f"Layout creation uses too much memory: {layout_increase}MB"
+        assert total_increase < 70, f"Total component memory usage too high: {total_increase}MB"
 
     def test_config_dependencies(self):
         """Test configuration and equipment dependencies"""
@@ -249,9 +231,7 @@ except Exception as e:
             equipment_list = get_equipment_list()
             equipment_time = time.time() - equipment_start
 
-            assert (
-                equipment_time < 3.0
-            ), f"Equipment list loading too slow: {equipment_time}s"
+            assert equipment_time < 3.0, f"Equipment list loading too slow: {equipment_time}s"
             assert len(equipment_list) > 0, "Equipment list is empty"
 
         except Exception as e:
@@ -295,9 +275,7 @@ class TestDashboardComponentPerformance:
         card = dbc.Card([dbc.CardHeader("Test"), dbc.CardBody("Test content")])
         component_time = time.time() - component_start
 
-        assert (
-            component_time < 1.0
-        ), f"DBC component creation too slow: {component_time}s"
+        assert component_time < 1.0, f"DBC component creation too slow: {component_time}s"
 
     def test_plotly_performance(self):
         """Test Plotly import and basic functionality"""
@@ -330,9 +308,7 @@ class TestDashboardComponentPerformance:
         div = html.Div([html.H1("Test"), dcc.Graph(id="test-graph")])
         component_time = time.time() - component_start
 
-        assert (
-            component_time < 1.0
-        ), f"Dash component creation too slow: {component_time}s"
+        assert component_time < 1.0, f"Dash component creation too slow: {component_time}s"
 
 
 def test_session2_diagnostic_summary():

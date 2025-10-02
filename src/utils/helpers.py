@@ -97,9 +97,7 @@ def normalize_data(
         raise
 
 
-def create_sliding_windows(
-    data: np.ndarray, window_size: int, stride: int = 1
-) -> np.ndarray:
+def create_sliding_windows(data: np.ndarray, window_size: int, stride: int = 1) -> np.ndarray:
     """Create sliding windows from time series data
 
     Args:
@@ -112,9 +110,7 @@ def create_sliding_windows(
     """
     try:
         if len(data) < window_size:
-            raise ValueError(
-                f"Data length {len(data)} is less than window size {window_size}"
-            )
+            raise ValueError(f"Data length {len(data)} is less than window size {window_size}")
 
         windows = []
         for i in range(0, len(data) - window_size + 1, stride):
@@ -127,9 +123,7 @@ def create_sliding_windows(
         raise
 
 
-def interpolate_missing_values(
-    data: pd.DataFrame, method: str = "linear", limit: Optional[int] = None
-) -> pd.DataFrame:
+def interpolate_missing_values(data: pd.DataFrame, method: str = "linear", limit: Optional[int] = None) -> pd.DataFrame:
     """Interpolate missing values in DataFrame
 
     Args:
@@ -155,9 +149,7 @@ def interpolate_missing_values(
         raise
 
 
-def remove_outliers(
-    data: np.ndarray, method: str = "iqr", threshold: float = 1.5
-) -> Tuple[np.ndarray, np.ndarray]:
+def remove_outliers(data: np.ndarray, method: str = "iqr", threshold: float = 1.5) -> Tuple[np.ndarray, np.ndarray]:
     """Remove outliers from data
 
     Args:
@@ -195,9 +187,7 @@ def remove_outliers(
 # ========================================
 
 
-def resample_timeseries(
-    df: pd.DataFrame, freq: str, agg_func: Union[str, Dict] = "mean"
-) -> pd.DataFrame:
+def resample_timeseries(df: pd.DataFrame, freq: str, agg_func: Union[str, Dict] = "mean") -> pd.DataFrame:
     """Resample time series data to different frequency
 
     Args:
@@ -251,9 +241,7 @@ def detect_seasonality(data: np.ndarray, max_lag: int = 100) -> Optional[int]:
         return None
 
 
-def create_time_features(
-    df: pd.DataFrame, datetime_col: str = "timestamp"
-) -> pd.DataFrame:
+def create_time_features(df: pd.DataFrame, datetime_col: str = "timestamp") -> pd.DataFrame:
     """Create time-based features from datetime column
 
     Args:
@@ -460,9 +448,7 @@ def validate_dataframe(
                 if col in df.columns:
                     actual_type = df[col].dtype
                     if not np.issubdtype(actual_type, expected_type):
-                        raise TypeError(
-                            f"Column {col} has type {actual_type}, expected {expected_type}"
-                        )
+                        raise TypeError(f"Column {col} has type {actual_type}, expected {expected_type}")
 
         # Check for empty DataFrame
         if df.empty:
@@ -513,9 +499,7 @@ def validate_time_series(
 
             result = adfuller(data)
             if result[1] > 0.05:
-                warnings.warn(
-                    f"Time series may be non-stationary (p-value: {result[1]:.4f})"
-                )
+                warnings.warn(f"Time series may be non-stationary (p-value: {result[1]:.4f})")
 
         return True
 
@@ -549,9 +533,7 @@ def validate_config(config: Dict, schema: Dict) -> bool:
                     check_nested(cfg[key], value_type, current_path)
                 elif value_type is not None:
                     if not isinstance(cfg[key], value_type):
-                        raise TypeError(
-                            f"Config key {current_path} should be {value_type.__name__}"
-                        )
+                        raise TypeError(f"Config key {current_path} should be {value_type.__name__}")
 
         check_nested(config, schema)
         return True
@@ -587,9 +569,7 @@ def convert_to_numpy(
         raise TypeError(f"Cannot convert {type(data)} to numpy array")
 
 
-def convert_to_dataframe(
-    data: Union[np.ndarray, list, dict], columns: Optional[List[str]] = None
-) -> pd.DataFrame:
+def convert_to_dataframe(data: Union[np.ndarray, list, dict], columns: Optional[List[str]] = None) -> pd.DataFrame:
     """Convert various data types to DataFrame
 
     Args:
@@ -797,11 +777,7 @@ class Cache:
         """Remove expired entries"""
         with self.lock:
             current_time = time.time()
-            expired_keys = [
-                k
-                for k, (_, timestamp) in self.cache.items()
-                if current_time - timestamp >= self.ttl
-            ]
+            expired_keys = [k for k, (_, timestamp) in self.cache.items() if current_time - timestamp >= self.ttl]
             for key in expired_keys:
                 del self.cache[key]
 
@@ -867,9 +843,7 @@ def build_insert_query(table: str, data: Dict[str, Any]) -> Tuple[str, List]:
     return query, values
 
 
-def build_update_query(
-    table: str, data: Dict[str, Any], where: Dict[str, Any]
-) -> Tuple[str, List]:
+def build_update_query(table: str, data: Dict[str, Any], where: Dict[str, Any]) -> Tuple[str, List]:
     """Build UPDATE SQL query
 
     Args:
@@ -939,9 +913,7 @@ def retry(
                 except exceptions as e:
                     last_exception = e
                     if attempt < max_attempts - 1:
-                        logger.warning(
-                            f"Attempt {attempt + 1} failed for {func.__name__}: {str(e)}"
-                        )
+                        logger.warning(f"Attempt {attempt + 1} failed for {func.__name__}: {str(e)}")
                         time.sleep(current_delay)
                         current_delay *= backoff
                     else:
@@ -1087,9 +1059,7 @@ def validate_url(url: str) -> bool:
 
 
 @retry(max_attempts=3, delay=1.0)
-def download_file(
-    url: str, destination: Union[str, Path], chunk_size: int = 8192
-) -> bool:
+def download_file(url: str, destination: Union[str, Path], chunk_size: int = 8192) -> bool:
     """Download file from URL
 
     Args:

@@ -145,9 +145,7 @@ class FilterStatePersistence:
             logger.error(f"Error clearing persisted state: {e}")
             return False
 
-    def create_shareable_url(
-        self, base_url: str, filters: Optional[FilterCriteria] = None
-    ) -> str:
+    def create_shareable_url(self, base_url: str, filters: Optional[FilterCriteria] = None) -> str:
         """
         Create shareable URL with current filter state
 
@@ -312,9 +310,7 @@ class FilterStatePersistence:
                 "time_range": self.shared_state.get_state("filters.time_range"),
                 "chart_type": self.shared_state.get_state("filters.chart_type"),
                 "show_anomalies": self.shared_state.get_state("filters.show_anomalies"),
-                "show_thresholds": self.shared_state.get_state(
-                    "filters.show_thresholds"
-                ),
+                "show_thresholds": self.shared_state.get_state("filters.show_thresholds"),
                 "is_realtime": self.shared_state.get_state("filters.is_realtime"),
             }
 
@@ -441,12 +437,8 @@ class FilterStatePersistence:
         """Setup automatic saving on state changes"""
         try:
             # Subscribe to relevant state changes
-            self.shared_state.subscribe(
-                "selections.*", self._on_auto_save_trigger, "filter_persistence"
-            )
-            self.shared_state.subscribe(
-                "filters.*", self._on_auto_save_trigger, "filter_persistence"
-            )
+            self.shared_state.subscribe("selections.*", self._on_auto_save_trigger, "filter_persistence")
+            self.shared_state.subscribe("filters.*", self._on_auto_save_trigger, "filter_persistence")
         except Exception as e:
             logger.error(f"Error setting up auto-save: {e}")
 

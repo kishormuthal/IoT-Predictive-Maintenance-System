@@ -208,10 +208,7 @@ class RetrainingTriggerSystem:
         drift_severity_index = severity_levels.index(drift_report.severity)
         threshold_index = severity_levels.index(self.policy.drift_severity_threshold)
 
-        if (
-            drift_severity_index >= threshold_index
-            or drift_report.drift_score >= self.policy.drift_score_threshold
-        ):
+        if drift_severity_index >= threshold_index or drift_report.drift_score >= self.policy.drift_score_threshold:
             trigger = RetrainingTrigger(
                 sensor_id=sensor_id,
                 model_type=model_type,
@@ -264,9 +261,7 @@ class RetrainingTriggerSystem:
             return None
 
         # Calculate degradation
-        degradation = (baseline_performance - current_performance) / (
-            baseline_performance + 1e-10
-        )
+        degradation = (baseline_performance - current_performance) / (baseline_performance + 1e-10)
 
         # Check thresholds
         if (
@@ -331,8 +326,7 @@ class RetrainingTriggerSystem:
             )
 
             logger.info(
-                f"Scheduled trigger for {sensor_id} ({model_type}): "
-                f"{days_since_training} days since last training"
+                f"Scheduled trigger for {sensor_id} ({model_type}): " f"{days_since_training} days since last training"
             )
 
             return trigger
@@ -384,9 +378,7 @@ class RetrainingTriggerSystem:
 
         return None
 
-    def should_retrain(
-        self, sensor_id: str, model_type: str, trigger: RetrainingTrigger
-    ) -> bool:
+    def should_retrain(self, sensor_id: str, model_type: str, trigger: RetrainingTrigger) -> bool:
         """
         Determine if retraining should proceed based on cooldown period
 
@@ -415,9 +407,7 @@ class RetrainingTriggerSystem:
 
         return True
 
-    def register_trigger(
-        self, trigger: RetrainingTrigger, execute_retraining: bool = False
-    ):
+    def register_trigger(self, trigger: RetrainingTrigger, execute_retraining: bool = False):
         """
         Register a retraining trigger
 
@@ -488,9 +478,7 @@ class RetrainingTriggerSystem:
             "triggered_count": triggered_count,
             "not_triggered_count": len(self.triggers) - triggered_count,
             "triggers_by_reason": reason_counts,
-            "last_trigger": (
-                self.triggers[-1].timestamp.isoformat() if self.triggers else None
-            ),
+            "last_trigger": (self.triggers[-1].timestamp.isoformat() if self.triggers else None),
         }
 
     def auto_promote_model(
@@ -515,9 +503,7 @@ class RetrainingTriggerSystem:
         if not self.policy.auto_promote_to_production or not self.mlflow_tracker:
             return False
 
-        improvement = (new_performance - production_performance) / (
-            production_performance + 1e-10
-        )
+        improvement = (new_performance - production_performance) / (production_performance + 1e-10)
 
         if improvement >= self.policy.min_improvement_for_promotion:
             try:

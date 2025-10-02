@@ -187,46 +187,30 @@ class Settings:
     def _override_with_env(self):
         """Override configuration with environment variables"""
         # Environment
-        self._config["environment"] = os.getenv(
-            "ENVIRONMENT", self._config.get("environment", "development")
-        )
+        self._config["environment"] = os.getenv("ENVIRONMENT", self._config.get("environment", "development"))
 
         # Debug mode
         if "DEBUG" in os.environ:
-            self._config["system"]["debug"] = (
-                os.getenv("DEBUG", "false").lower() == "true"
-            )
+            self._config["system"]["debug"] = os.getenv("DEBUG", "false").lower() == "true"
 
         # Database
         if "DATABASE_URL" in os.environ:
-            self._config["data_ingestion"]["database"]["postgresql"]["host"] = (
-                os.getenv("DB_HOST", "localhost")
-            )
-            self._config["data_ingestion"]["database"]["postgresql"]["port"] = int(
-                os.getenv("DB_PORT", 5432)
-            )
-            self._config["data_ingestion"]["database"]["postgresql"]["database"] = (
-                os.getenv("DB_NAME", "iot_telemetry")
-            )
-            self._config["data_ingestion"]["database"]["postgresql"]["username"] = (
-                os.getenv("DB_USER", "iot_user")
-            )
-            self._config["data_ingestion"]["database"]["postgresql"]["password"] = (
-                os.getenv("DB_PASSWORD", "iot_password")
+            self._config["data_ingestion"]["database"]["postgresql"]["host"] = os.getenv("DB_HOST", "localhost")
+            self._config["data_ingestion"]["database"]["postgresql"]["port"] = int(os.getenv("DB_PORT", 5432))
+            self._config["data_ingestion"]["database"]["postgresql"]["database"] = os.getenv("DB_NAME", "iot_telemetry")
+            self._config["data_ingestion"]["database"]["postgresql"]["username"] = os.getenv("DB_USER", "iot_user")
+            self._config["data_ingestion"]["database"]["postgresql"]["password"] = os.getenv(
+                "DB_PASSWORD", "iot_password"
             )
 
         # Kafka
         if "KAFKA_BOOTSTRAP_SERVERS" in os.environ:
-            self._config["data_ingestion"]["kafka"]["bootstrap_servers"] = os.getenv(
-                "KAFKA_BOOTSTRAP_SERVERS"
-            )
+            self._config["data_ingestion"]["kafka"]["bootstrap_servers"] = os.getenv("KAFKA_BOOTSTRAP_SERVERS")
             self._config["data_ingestion"]["kafka"]["enabled"] = True
 
         # Dashboard
         if "DASHBOARD_PORT" in os.environ:
-            self._config["dashboard"]["server"]["port"] = int(
-                os.getenv("DASHBOARD_PORT")
-            )
+            self._config["dashboard"]["server"]["port"] = int(os.getenv("DASHBOARD_PORT"))
 
     def _validate_config(self):
         """Validate configuration values"""
@@ -249,10 +233,7 @@ class Settings:
         if self.get("data_ingestion.simulation.speed_multiplier", 1.0) <= 0:
             raise ValueError("Speed multiplier must be positive")
 
-        if (
-            self.get("dashboard.server.port", 8050) < 1
-            or self.get("dashboard.server.port", 8050) > 65535
-        ):
+        if self.get("dashboard.server.port", 8050) < 1 or self.get("dashboard.server.port", 8050) > 65535:
             raise ValueError("Dashboard port must be between 1 and 65535")
 
     def _setup_logging(self):

@@ -90,9 +90,7 @@ def check_dependencies():
 
             print(f"  {GREEN}✓{RESET} tensorflow: {tf.__version__}")
         except ImportError:
-            print(
-                f"  {YELLOW}⚠{RESET} tensorflow: Not available (forecasting may not work)"
-            )
+            print(f"  {YELLOW}⚠{RESET} tensorflow: Not available (forecasting may not work)")
 
         try:
             import sklearn
@@ -231,9 +229,7 @@ def print_summary(checks):
         failed = [name for name, passed in checks.items() if not passed]
         print(f"{YELLOW}{BOLD}⚠️  CHECKS COMPLETED WITH WARNINGS{RESET}")
         print(f"{YELLOW}Some components not available: {', '.join(failed)}{RESET}\n")
-        print(
-            f"{BOLD}Dashboard can still start, but some features may not work{RESET}\n"
-        )
+        print(f"{BOLD}Dashboard can still start, but some features may not work{RESET}\n")
         print(f"{BOLD}To start anyway:{RESET}")
         print(f"  {BLUE}python start_dashboard.py{RESET}\n")
 

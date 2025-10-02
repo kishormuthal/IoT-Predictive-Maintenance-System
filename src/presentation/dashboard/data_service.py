@@ -97,9 +97,7 @@ class DashboardDataService:
                         "equipment_name": equipment_name,
                         "subsystem": subsystem,
                         "anomaly_score": getattr(anomaly, "anomaly_score", 0.0),
-                        "severity": self._get_severity(
-                            getattr(anomaly, "anomaly_score", 0.0)
-                        ),
+                        "severity": self._get_severity(getattr(anomaly, "anomaly_score", 0.0)),
                         "timestamp": getattr(anomaly, "timestamp", datetime.now()),
                         "description": f"Anomaly detected in {equipment_name}",
                     }
@@ -118,15 +116,9 @@ class DashboardDataService:
                 "equipment_anomalies": equipment_anomalies,
                 "summary": {
                     "total_anomalies": len(anomaly_list),
-                    "critical_anomalies": len(
-                        [a for a in anomaly_list if a["severity"] == "CRITICAL"]
-                    ),
-                    "high_anomalies": len(
-                        [a for a in anomaly_list if a["severity"] == "HIGH"]
-                    ),
-                    "medium_anomalies": len(
-                        [a for a in anomaly_list if a["severity"] == "MEDIUM"]
-                    ),
+                    "critical_anomalies": len([a for a in anomaly_list if a["severity"] == "CRITICAL"]),
+                    "high_anomalies": len([a for a in anomaly_list if a["severity"] == "HIGH"]),
+                    "medium_anomalies": len([a for a in anomaly_list if a["severity"] == "MEDIUM"]),
                     "affected_equipment": len(equipment_anomalies),
                 },
                 "timestamp": datetime.now(),
@@ -156,8 +148,7 @@ class DashboardDataService:
                     "predicted_values": self._generate_forecast(equipment.equipment_id),
                     "confidence": np.random.uniform(0.7, 0.95),
                     "trend": np.random.choice(["STABLE", "INCREASING", "DECREASING"]),
-                    "next_maintenance": datetime.now()
-                    + timedelta(days=np.random.randint(7, 30)),
+                    "next_maintenance": datetime.now() + timedelta(days=np.random.randint(7, 30)),
                 }
 
             return {
@@ -194,11 +185,8 @@ class DashboardDataService:
                         "equipment_id": equipment_id,
                         "equipment_name": equipment_name,
                         "priority": priority,
-                        "status": np.random.choice(
-                            ["PENDING", "IN_PROGRESS", "COMPLETED"]
-                        ),
-                        "scheduled_date": datetime.now()
-                        + timedelta(days=np.random.randint(1, 14)),
+                        "status": np.random.choice(["PENDING", "IN_PROGRESS", "COMPLETED"]),
+                        "scheduled_date": datetime.now() + timedelta(days=np.random.randint(1, 14)),
                         "estimated_duration": np.random.randint(2, 8),  # hours
                         "description": f"Maintenance required for {equipment_name}",
                         "anomaly_score": getattr(anomaly, "anomaly_score", 0.0),
@@ -208,15 +196,9 @@ class DashboardDataService:
             return {
                 "maintenance_tasks": maintenance_tasks,
                 "schedule_summary": {
-                    "pending_tasks": len(
-                        [t for t in maintenance_tasks if t["status"] == "PENDING"]
-                    ),
-                    "in_progress_tasks": len(
-                        [t for t in maintenance_tasks if t["status"] == "IN_PROGRESS"]
-                    ),
-                    "completed_tasks": len(
-                        [t for t in maintenance_tasks if t["status"] == "COMPLETED"]
-                    ),
+                    "pending_tasks": len([t for t in maintenance_tasks if t["status"] == "PENDING"]),
+                    "in_progress_tasks": len([t for t in maintenance_tasks if t["status"] == "IN_PROGRESS"]),
+                    "completed_tasks": len([t for t in maintenance_tasks if t["status"] == "COMPLETED"]),
                     "total_tasks": len(maintenance_tasks),
                 },
                 "timestamp": datetime.now(),
@@ -241,8 +223,7 @@ class DashboardDataService:
                         "equipment_name": task["equipment_name"],
                         "priority": task["priority"],
                         "status": task["status"],
-                        "created_date": datetime.now()
-                        - timedelta(days=np.random.randint(0, 5)),
+                        "created_date": datetime.now() - timedelta(days=np.random.randint(0, 5)),
                         "scheduled_date": task["scheduled_date"],
                         "assigned_technician": f"Tech-{np.random.randint(1, 5):02d}",
                         "estimated_cost": np.random.randint(500, 5000),
@@ -254,18 +235,10 @@ class DashboardDataService:
                 "work_orders": work_orders,
                 "summary": {
                     "total_orders": len(work_orders),
-                    "pending_orders": len(
-                        [wo for wo in work_orders if wo["status"] == "PENDING"]
-                    ),
-                    "in_progress_orders": len(
-                        [wo for wo in work_orders if wo["status"] == "IN_PROGRESS"]
-                    ),
-                    "completed_orders": len(
-                        [wo for wo in work_orders if wo["status"] == "COMPLETED"]
-                    ),
-                    "total_estimated_cost": sum(
-                        wo["estimated_cost"] for wo in work_orders
-                    ),
+                    "pending_orders": len([wo for wo in work_orders if wo["status"] == "PENDING"]),
+                    "in_progress_orders": len([wo for wo in work_orders if wo["status"] == "IN_PROGRESS"]),
+                    "completed_orders": len([wo for wo in work_orders if wo["status"] == "COMPLETED"]),
+                    "total_estimated_cost": sum(wo["estimated_cost"] for wo in work_orders),
                 },
                 "timestamp": datetime.now(),
             }

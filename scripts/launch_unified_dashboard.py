@@ -20,9 +20,7 @@ if hasattr(importlib, "invalidate_caches"):
     importlib.invalidate_caches()
 
 # Configure clean logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 
 def main():
@@ -46,9 +44,7 @@ def main():
         app = create_app()
 
         print("[URL] Dashboard available at: http://127.0.0.1:8050")
-        print(
-            "[FEATURES] Overview | Monitoring | Anomalies | Forecasting | Maintenance | Work Orders | Performance"
-        )
+        print("[FEATURES] Overview | Monitoring | Anomalies | Forecasting | Maintenance | Work Orders | Performance")
         print("[CTRL] Press Ctrl+C to stop")
         print("-" * 70)
 

@@ -41,9 +41,7 @@ class ImportTimer:
 
         if self.import_time > self.timeout:
             self.timed_out = True
-            logger.warning(
-                f"Import of {self.module_name} took {self.import_time:.2f}s (timeout: {self.timeout}s)"
-            )
+            logger.warning(f"Import of {self.module_name} took {self.import_time:.2f}s (timeout: {self.timeout}s)")
 
     def is_slow(self, threshold: float = 5.0) -> bool:
         """Check if import was slower than threshold"""
@@ -93,9 +91,7 @@ class MemoryMonitor:
             "peak_mb": self.peak_memory,
             "final_mb": self.final_memory,
             "increase_mb": (
-                self.final_memory - self.initial_memory
-                if self.final_memory and self.initial_memory
-                else 0
+                self.final_memory - self.initial_memory if self.final_memory and self.initial_memory else 0
             ),
             "samples_count": len(self.memory_samples),
         }
@@ -120,9 +116,7 @@ class TestDataValidator:
 
         # Check data consistency
         if "timestamps" in data and "values" in data:
-            results["timestamps_values_match"] = len(data["timestamps"]) == len(
-                data["values"]
-            )
+            results["timestamps_values_match"] = len(data["timestamps"]) == len(data["values"])
         else:
             results["timestamps_values_match"] = False
 
@@ -130,9 +124,7 @@ class TestDataValidator:
         if "values" in data:
             values = data["values"]
             if hasattr(values, "__iter__"):
-                results["values_are_numeric"] = all(
-                    isinstance(v, (int, float, np.number)) for v in values
-                )
+                results["values_are_numeric"] = all(isinstance(v, (int, float, np.number)) for v in values)
             else:
                 results["values_are_numeric"] = False
         else:
@@ -142,9 +134,7 @@ class TestDataValidator:
         if "timestamps" in data and hasattr(data["timestamps"], "__iter__"):
             timestamps = data["timestamps"]
             if len(timestamps) > 1:
-                results["timestamps_ordered"] = all(
-                    t1 <= t2 for t1, t2 in zip(timestamps[:-1], timestamps[1:])
-                )
+                results["timestamps_ordered"] = all(t1 <= t2 for t1, t2 in zip(timestamps[:-1], timestamps[1:]))
             else:
                 results["timestamps_ordered"] = True
         else:
@@ -170,15 +160,11 @@ class TestDataValidator:
         )
 
         # Check score ranges (0-1)
-        results["scores_in_range"] = all(
-            0.0 <= anomaly.get("score", -1) <= 1.0 for anomaly in anomalies
-        )
+        results["scores_in_range"] = all(0.0 <= anomaly.get("score", -1) <= 1.0 for anomaly in anomalies)
 
         # Check severity values
         valid_severities = {"LOW", "MEDIUM", "HIGH", "CRITICAL"}
-        results["valid_severities"] = all(
-            anomaly.get("severity") in valid_severities for anomaly in anomalies
-        )
+        results["valid_severities"] = all(anomaly.get("severity") in valid_severities for anomaly in anomalies)
 
         return results
 
@@ -189,15 +175,11 @@ class TestDataValidator:
 
         # Check required fields
         required_fields = ["sensor_id", "forecast_timestamps", "forecast_values"]
-        results["has_required_fields"] = all(
-            field in forecast for field in required_fields
-        )
+        results["has_required_fields"] = all(field in forecast for field in required_fields)
 
         # Check forecast consistency
         if "forecast_timestamps" in forecast and "forecast_values" in forecast:
-            results["forecast_length_match"] = len(
-                forecast["forecast_timestamps"]
-            ) == len(forecast["forecast_values"])
+            results["forecast_length_match"] = len(forecast["forecast_timestamps"]) == len(forecast["forecast_values"])
         else:
             results["forecast_length_match"] = False
 
@@ -209,8 +191,7 @@ class TestDataValidator:
                 if "forecast_values" in forecast:
                     forecast_len = len(forecast["forecast_values"])
                     results["confidence_intervals_match_length"] = (
-                        len(ci["upper"]) == forecast_len
-                        and len(ci["lower"]) == forecast_len
+                        len(ci["upper"]) == forecast_len and len(ci["lower"]) == forecast_len
                     )
                 else:
                     results["confidence_intervals_match_length"] = False
@@ -230,9 +211,7 @@ class PerformanceBenchmark:
     def __init__(self):
         self.benchmarks = {}
 
-    def time_operation(
-        self, operation_name: str, operation: Callable, *args, **kwargs
-    ) -> Dict[str, Any]:
+    def time_operation(self, operation_name: str, operation: Callable, *args, **kwargs) -> Dict[str, Any]:
         """Time a specific operation"""
         memory_monitor = MemoryMonitor()
         memory_monitor.start()
@@ -274,15 +253,9 @@ class PerformanceBenchmark:
             "operation1": operation1,
             "operation2": operation2,
             "time_difference": bench2["execution_time"] - bench1["execution_time"],
-            "faster_operation": (
-                operation1
-                if bench1["execution_time"] < bench2["execution_time"]
-                else operation2
-            ),
+            "faster_operation": (operation1 if bench1["execution_time"] < bench2["execution_time"] else operation2),
             "performance_ratio": (
-                bench2["execution_time"] / bench1["execution_time"]
-                if bench1["execution_time"] > 0
-                else float("inf")
+                bench2["execution_time"] / bench1["execution_time"] if bench1["execution_time"] > 0 else float("inf")
             ),
         }
 
@@ -291,27 +264,15 @@ class PerformanceBenchmark:
         if not self.benchmarks:
             return {"message": "No benchmarks recorded"}
 
-        execution_times = [
-            b["execution_time"] for b in self.benchmarks.values() if b["success"]
-        ]
-        memory_increases = [
-            b["memory_usage"]["increase_mb"]
-            for b in self.benchmarks.values()
-            if b["success"]
-        ]
+        execution_times = [b["execution_time"] for b in self.benchmarks.values() if b["success"]]
+        memory_increases = [b["memory_usage"]["increase_mb"] for b in self.benchmarks.values() if b["success"]]
 
         return {
             "total_operations": len(self.benchmarks),
-            "successful_operations": sum(
-                1 for b in self.benchmarks.values() if b["success"]
-            ),
-            "average_execution_time": (
-                np.mean(execution_times) if execution_times else 0
-            ),
+            "successful_operations": sum(1 for b in self.benchmarks.values() if b["success"]),
+            "average_execution_time": (np.mean(execution_times) if execution_times else 0),
             "max_execution_time": max(execution_times) if execution_times else 0,
-            "average_memory_increase": (
-                np.mean(memory_increases) if memory_increases else 0
-            ),
+            "average_memory_increase": (np.mean(memory_increases) if memory_increases else 0),
             "max_memory_increase": max(memory_increases) if memory_increases else 0,
         }
 
@@ -401,9 +362,7 @@ class TestSessionTracker:
                 "total_tests": self.tests_run,
                 "passed": self.tests_passed,
                 "failed": self.tests_failed,
-                "success_rate": (
-                    self.tests_passed / self.tests_run if self.tests_run > 0 else 0
-                ),
+                "success_rate": (self.tests_passed / self.tests_run if self.tests_run > 0 else 0),
             },
             "test_breakdown": {
                 "import_tests": len(self.import_tests),
@@ -411,9 +370,7 @@ class TestSessionTracker:
                 "integration_tests": len(self.integration_tests),
             },
             "issues_found": len(self.issues_found),
-            "critical_issues": len(
-                [i for i in self.issues_found if i.get("severity") == "critical"]
-            ),
+            "critical_issues": len([i for i in self.issues_found if i.get("severity") == "critical"]),
             "session_status": "completed" if self.end_time else "in_progress",
         }
 
@@ -445,9 +402,7 @@ Critical Issues: {summary['critical_issues']}
             report += "\n=== DETAILED ISSUES ===\n"
             for i, issue in enumerate(self.issues_found, 1):
                 report += f"{i}. [{issue.get('severity', 'unknown').upper()}] {issue.get('issue_type', 'unknown')}\n"
-                report += (
-                    f"   Description: {issue.get('description', 'No description')}\n"
-                )
+                report += f"   Description: {issue.get('description', 'No description')}\n"
                 if "error" in issue:
                     report += f"   Error: {issue['error']}\n"
                 report += "\n"
@@ -455,9 +410,7 @@ Critical Issues: {summary['critical_issues']}
         return report
 
 
-def assert_within_tolerance(
-    actual: float, expected: float, tolerance: float = 0.01, message: str = ""
-):
+def assert_within_tolerance(actual: float, expected: float, tolerance: float = 0.01, message: str = ""):
     """Assert that actual value is within tolerance of expected value"""
     diff = abs(actual - expected)
     tolerance_value = abs(expected * tolerance)
@@ -471,18 +424,10 @@ def assert_sensor_data_valid(sensor_data: Dict[str, Any], sensor_id: str):
     validator = TestDataValidator()
     validation_results = validator.validate_sensor_data(sensor_data)
 
-    assert validation_results[
-        "has_required_fields"
-    ], f"Sensor {sensor_id} missing required fields"
-    assert validation_results[
-        "timestamps_values_match"
-    ], f"Sensor {sensor_id} timestamps and values length mismatch"
-    assert validation_results[
-        "values_are_numeric"
-    ], f"Sensor {sensor_id} has non-numeric values"
-    assert validation_results[
-        "timestamps_ordered"
-    ], f"Sensor {sensor_id} timestamps not in order"
+    assert validation_results["has_required_fields"], f"Sensor {sensor_id} missing required fields"
+    assert validation_results["timestamps_values_match"], f"Sensor {sensor_id} timestamps and values length mismatch"
+    assert validation_results["values_are_numeric"], f"Sensor {sensor_id} has non-numeric values"
+    assert validation_results["timestamps_ordered"], f"Sensor {sensor_id} timestamps not in order"
 
 
 def create_mock_sensor_data(

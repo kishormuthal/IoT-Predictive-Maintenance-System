@@ -131,12 +131,8 @@ class ComponentEventBus:
             def wrapped_callback(event: DashboardEvent):
                 try:
                     if component_id in self._registered_components:
-                        self._registered_components[component_id][
-                            "events_received"
-                        ] += 1
-                        self._registered_components[component_id][
-                            "last_activity"
-                        ] = datetime.now()
+                        self._registered_components[component_id]["events_received"] += 1
+                        self._registered_components[component_id]["last_activity"] = datetime.now()
                     callback(event)
                 except Exception as e:
                     logger.error(f"Error in event callback for {component_id}: {e}")
@@ -183,9 +179,7 @@ class ComponentEventBus:
             # Update component activity
             if source_component in self._registered_components:
                 self._registered_components[source_component]["events_emitted"] += 1
-                self._registered_components[source_component][
-                    "last_activity"
-                ] = datetime.now()
+                self._registered_components[source_component]["last_activity"] = datetime.now()
 
             # Store in history
             self._event_history.append(event)
@@ -204,9 +198,7 @@ class ComponentEventBus:
 
         logger.debug(f"Event emitted: {event_type.value} from {source_component}")
 
-    def get_recent_events(
-        self, event_type: Optional[EventType] = None, limit: int = 50
-    ) -> List[DashboardEvent]:
+    def get_recent_events(self, event_type: Optional[EventType] = None, limit: int = 50) -> List[DashboardEvent]:
         """
         Get recent events, optionally filtered by type
 
@@ -285,13 +277,9 @@ class EventDrivenComponent:
         self.event_bus = get_event_bus()
 
         # Register with event bus
-        self.event_bus.register_component(
-            component_id, {"type": component_type, "created_at": datetime.now()}
-        )
+        self.event_bus.register_component(component_id, {"type": component_type, "created_at": datetime.now()})
 
-        logger.info(
-            f"Event-driven component initialized: {component_id} ({component_type})"
-        )
+        logger.info(f"Event-driven component initialized: {component_id} ({component_type})")
 
     def emit_event(
         self,
@@ -302,9 +290,7 @@ class EventDrivenComponent:
         """Emit an event from this component"""
         self.event_bus.emit(event_type, self.component_id, data, metadata)
 
-    def subscribe_to_event(
-        self, event_type: EventType, callback: Callable[[DashboardEvent], None]
-    ):
+    def subscribe_to_event(self, event_type: EventType, callback: Callable[[DashboardEvent], None]):
         """Subscribe to an event type"""
         self.event_bus.subscribe(event_type, callback, self.component_id)
 
@@ -315,9 +301,7 @@ class EventDrivenComponent:
 
 
 # Utility functions for common event patterns
-def emit_sensor_selection(
-    component_id: str, sensor_id: str, additional_data: Dict[str, Any] = None
-):
+def emit_sensor_selection(component_id: str, sensor_id: str, additional_data: Dict[str, Any] = None):
     """Utility to emit sensor selection event"""
     bus = get_event_bus()
     data = {"sensor_id": sensor_id}

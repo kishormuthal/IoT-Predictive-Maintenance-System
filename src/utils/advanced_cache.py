@@ -130,14 +130,10 @@ class AdvancedCacheManager:
 
             # Test connection
             self.redis_client.ping()
-            logger.info(
-                f"Redis connection established: {self.config.redis_host}:{self.config.redis_port}"
-            )
+            logger.info(f"Redis connection established: {self.config.redis_host}:{self.config.redis_port}")
 
         except Exception as e:
-            logger.warning(
-                f"Redis connection failed: {e}. Falling back to file cache + in-memory cache."
-            )
+            logger.warning(f"Redis connection failed: {e}. Falling back to file cache + in-memory cache.")
             self.redis_client = None
             self.config.l2_enabled = False
             # Initialize file-based fallback cache
@@ -158,9 +154,7 @@ class AdvancedCacheManager:
             logger.info(f"File cache initialized at: {self.file_cache_dir}")
 
         except Exception as e:
-            logger.warning(
-                f"File cache initialization failed: {e}. Using memory-only cache."
-            )
+            logger.warning(f"File cache initialization failed: {e}. Using memory-only cache.")
             self.file_cache_dir = None
 
     def _setup_fallback_chain(self):
@@ -423,9 +417,7 @@ class AdvancedCacheManager:
 
         # Update average retrieval time (exponential moving average)
         alpha = 0.1
-        self.metrics.avg_retrieval_time = (
-            alpha * retrieval_time + (1 - alpha) * self.metrics.avg_retrieval_time
-        )
+        self.metrics.avg_retrieval_time = alpha * retrieval_time + (1 - alpha) * self.metrics.avg_retrieval_time
 
     def invalidate_pattern(self, pattern: str, **kwargs) -> int:
         """Invalidate cache entries matching pattern"""
@@ -434,11 +426,7 @@ class AdvancedCacheManager:
 
         # Invalidate L1 cache
         with self.lock:
-            keys_to_remove = [
-                k
-                for k in self.l1_cache.keys()
-                if k.startswith(key_prefix.split("*")[0])
-            ]
+            keys_to_remove = [k for k in self.l1_cache.keys() if k.startswith(key_prefix.split("*")[0])]
             for key in keys_to_remove:
                 del self.l1_cache[key]
                 if key in self.l1_access_times:
@@ -532,9 +520,7 @@ def cache_result(ttl: int = 300, key_pattern: str = None):
             else:
                 # Generate key from function name and arguments
                 args_str = str(args) + str(sorted(kwargs.items()))
-                cache_key = (
-                    f"func:{func.__name__}:{hashlib.md5(args_str.encode()).hexdigest()}"
-                )
+                cache_key = f"func:{func.__name__}:{hashlib.md5(args_str.encode()).hexdigest()}"
 
             # Try to get from cache
             cached_result = advanced_cache.get(cache_key)
@@ -560,9 +546,7 @@ class SensorCacheHelper:
     """Helper class for sensor-specific caching operations"""
 
     @staticmethod
-    def cache_sensor_data(
-        sensor_id: str, time_window: str, data: Dict[str, Any], ttl: int = None
-    ) -> bool:
+    def cache_sensor_data(sensor_id: str, time_window: str, data: Dict[str, Any], ttl: int = None) -> bool:
         """Cache sensor data with standardized key"""
         ttl = ttl or advanced_cache.config.sensor_data_ttl
         key = advanced_cache._generate_cache_key(
@@ -586,9 +570,7 @@ class SensorCacheHelper:
     def invalidate_sensor_data(sensor_id: str = None):
         """Invalidate sensor data cache"""
         if sensor_id:
-            pattern = advanced_cache.key_patterns["sensor_data"].replace(
-                "{time_window}", "*"
-            )
+            pattern = advanced_cache.key_patterns["sensor_data"].replace("{time_window}", "*")
             advanced_cache.invalidate_pattern(pattern, sensor_id=sensor_id)
         else:
             # Invalidate all sensor data
@@ -600,9 +582,7 @@ class EquipmentCacheHelper:
     """Helper class for equipment-specific caching operations"""
 
     @staticmethod
-    def cache_equipment_data(
-        equipment_id: str, time_range: str, data: Dict[str, Any], ttl: int = None
-    ) -> bool:
+    def cache_equipment_data(equipment_id: str, time_range: str, data: Dict[str, Any], ttl: int = None) -> bool:
         """Cache equipment data with standardized key"""
         ttl = ttl or advanced_cache.config.aggregated_data_ttl
         key = advanced_cache._generate_cache_key(
@@ -613,9 +593,7 @@ class EquipmentCacheHelper:
         return advanced_cache.set(key, data, ttl)
 
     @staticmethod
-    def get_equipment_data(
-        equipment_id: str, time_range: str
-    ) -> Optional[Dict[str, Any]]:
+    def get_equipment_data(equipment_id: str, time_range: str) -> Optional[Dict[str, Any]]:
         """Get cached equipment data"""
         key = advanced_cache._generate_cache_key(
             advanced_cache.key_patterns["equipment_data"],
@@ -630,14 +608,10 @@ class DashboardCacheHelper:
     """Helper class for dashboard component caching"""
 
     @staticmethod
-    def cache_component(
-        component: str, data: Any, params: Dict = None, ttl: int = None
-    ) -> bool:
+    def cache_component(component: str, data: Any, params: Dict = None, ttl: int = None) -> bool:
         """Cache dashboard component with parameters hash"""
         ttl = ttl or advanced_cache.config.dashboard_component_ttl
-        params_hash = hashlib.md5(
-            str(sorted((params or {}).items())).encode()
-        ).hexdigest()[:8]
+        params_hash = hashlib.md5(str(sorted((params or {}).items())).encode()).hexdigest()[:8]
         key = advanced_cache._generate_cache_key(
             advanced_cache.key_patterns["dashboard_component"],
             component=component,
@@ -648,9 +622,7 @@ class DashboardCacheHelper:
     @staticmethod
     def get_component(component: str, params: Dict = None) -> Any:
         """Get cached dashboard component"""
-        params_hash = hashlib.md5(
-            str(sorted((params or {}).items())).encode()
-        ).hexdigest()[:8]
+        params_hash = hashlib.md5(str(sorted((params or {}).items())).encode()).hexdigest()[:8]
         key = advanced_cache._generate_cache_key(
             advanced_cache.key_patterns["dashboard_component"],
             component=component,

@@ -48,9 +48,7 @@ class MonitoringDashboard:
                 self.equipment_list = get_equipment_list()
                 self.sensor_ids = [eq.equipment_id for eq in self.equipment_list]
                 self.data_loader = NASADataLoader()
-                logger.info(
-                    f"Monitoring dashboard initialized with {len(self.sensor_ids)} sensors"
-                )
+                logger.info(f"Monitoring dashboard initialized with {len(self.sensor_ids)} sensors")
             except Exception as e:
                 logger.warning(f"Service initialization failed: {e}")
                 self.data_loader = None
@@ -104,11 +102,7 @@ class MonitoringDashboard:
                                                         [
                                                             {
                                                                 "label": (
-                                                                    eq.name
-                                                                    if hasattr(
-                                                                        eq, "name"
-                                                                    )
-                                                                    else eq.equipment_id
+                                                                    eq.name if hasattr(eq, "name") else eq.equipment_id
                                                                 ),
                                                                 "value": eq.equipment_id,
                                                             }
@@ -123,11 +117,7 @@ class MonitoringDashboard:
                                                             for i in range(12)
                                                         ]
                                                     ),
-                                                    value=(
-                                                        self.sensor_ids[0]
-                                                        if self.sensor_ids
-                                                        else "sensor_1"
-                                                    ),
+                                                    value=(self.sensor_ids[0] if self.sensor_ids else "sensor_1"),
                                                     clearable=False,
                                                     className="mb-3",
                                                 ),
@@ -161,9 +151,7 @@ class MonitoringDashboard:
                                                 ),
                                                 dbc.Button(
                                                     [
-                                                        html.I(
-                                                            className="fas fa-sync-alt me-2"
-                                                        ),
+                                                        html.I(className="fas fa-sync-alt me-2"),
                                                         "Refresh Data",
                                                     ],
                                                     id="monitoring-refresh-btn",
@@ -186,11 +174,7 @@ class MonitoringDashboard:
                                             [
                                                 self._create_status_card(
                                                     "Total Sensors",
-                                                    (
-                                                        str(len(self.sensor_ids))
-                                                        if self.sensor_ids
-                                                        else "12"
-                                                    ),
+                                                    (str(len(self.sensor_ids)) if self.sensor_ids else "12"),
                                                     "fas fa-broadcast-tower",
                                                     "primary",
                                                     "monitoring-total-sensors",
@@ -202,11 +186,7 @@ class MonitoringDashboard:
                                             [
                                                 self._create_status_card(
                                                     "Online",
-                                                    (
-                                                        str(len(self.sensor_ids))
-                                                        if self.sensor_ids
-                                                        else "12"
-                                                    ),
+                                                    (str(len(self.sensor_ids)) if self.sensor_ids else "12"),
                                                     "fas fa-check-circle",
                                                     "success",
                                                     "monitoring-online-count",
@@ -257,9 +237,7 @@ class MonitoringDashboard:
                                             [
                                                 html.H5(
                                                     [
-                                                        html.I(
-                                                            className="fas fa-chart-line me-2"
-                                                        ),
+                                                        html.I(className="fas fa-chart-line me-2"),
                                                         "Sensor Time Series",
                                                     ],
                                                     className="mb-0",
@@ -271,9 +249,7 @@ class MonitoringDashboard:
                                                 dcc.Loading(
                                                     dcc.Graph(
                                                         id="monitoring-timeseries-chart",
-                                                        config={
-                                                            "displayModeBar": False
-                                                        },
+                                                        config={"displayModeBar": False},
                                                     ),
                                                     type="circle",
                                                 )
@@ -329,23 +305,13 @@ class MonitoringDashboard:
                                                 html.Div(
                                                     id="monitoring-stats-panel",
                                                     children=[
-                                                        self._create_stat_row(
-                                                            "Mean", "0.00"
-                                                        ),
-                                                        self._create_stat_row(
-                                                            "Std Dev", "0.00"
-                                                        ),
-                                                        self._create_stat_row(
-                                                            "Min", "0.00"
-                                                        ),
-                                                        self._create_stat_row(
-                                                            "Max", "0.00"
-                                                        ),
+                                                        self._create_stat_row("Mean", "0.00"),
+                                                        self._create_stat_row("Std Dev", "0.00"),
+                                                        self._create_stat_row("Min", "0.00"),
+                                                        self._create_stat_row("Max", "0.00"),
                                                         self._create_stat_row(
                                                             "Last Update",
-                                                            datetime.now().strftime(
-                                                                "%H:%M:%S"
-                                                            ),
+                                                            datetime.now().strftime("%H:%M:%S"),
                                                         ),
                                                     ],
                                                 )
@@ -365,18 +331,10 @@ class MonitoringDashboard:
                                             [
                                                 html.Div(
                                                     [
-                                                        self._create_health_indicator(
-                                                            "Connection", True
-                                                        ),
-                                                        self._create_health_indicator(
-                                                            "Data Quality", True
-                                                        ),
-                                                        self._create_health_indicator(
-                                                            "Latency", True
-                                                        ),
-                                                        self._create_health_indicator(
-                                                            "Model Active", True
-                                                        ),
+                                                        self._create_health_indicator("Connection", True),
+                                                        self._create_health_indicator("Data Quality", True),
+                                                        self._create_health_indicator("Latency", True),
+                                                        self._create_health_indicator("Model Active", True),
                                                     ]
                                                 )
                                             ]
@@ -390,17 +348,13 @@ class MonitoringDashboard:
                     className="mb-4",
                 ),
                 # Refresh interval
-                dcc.Interval(
-                    id="monitoring-refresh-interval", interval=10000, n_intervals=0
-                ),
+                dcc.Interval(id="monitoring-refresh-interval", interval=10000, n_intervals=0),
             ],
             fluid=True,
             className="mt-2",
         )
 
-    def _create_status_card(
-        self, title: str, value: str, icon: str, color: str, card_id: str
-    ) -> dbc.Card:
+    def _create_status_card(self, title: str, value: str, icon: str, color: str, card_id: str) -> dbc.Card:
         """Create status card"""
         return dbc.Card(
             [
@@ -495,26 +449,16 @@ def update_timeseries_chart(equipment_id, time_range, n_clicks, n_intervals):
                 # Fallback if no data
                 logger.warning(f"No data available for {equipment_id}")
                 num_points = min(hours * 12, 100)
-                timestamps = pd.date_range(
-                    end=datetime.now(), periods=num_points, freq="5min"
-                )
+                timestamps = pd.date_range(end=datetime.now(), periods=num_points, freq="5min")
                 values = (
-                    50
-                    + 10 * np.sin(np.linspace(0, 4 * np.pi, len(timestamps)))
-                    + np.random.randn(len(timestamps)) * 2
+                    50 + 10 * np.sin(np.linspace(0, 4 * np.pi, len(timestamps))) + np.random.randn(len(timestamps)) * 2
                 )
         except Exception as e:
             logger.error(f"Error loading sensor data: {e}")
             # Fallback
             num_points = min(hours * 12, 100)
-            timestamps = pd.date_range(
-                end=datetime.now(), periods=num_points, freq="5min"
-            )
-            values = (
-                50
-                + 10 * np.sin(np.linspace(0, 4 * np.pi, len(timestamps)))
-                + np.random.randn(len(timestamps)) * 2
-            )
+            timestamps = pd.date_range(end=datetime.now(), periods=num_points, freq="5min")
+            values = 50 + 10 * np.sin(np.linspace(0, 4 * np.pi, len(timestamps))) + np.random.randn(len(timestamps)) * 2
 
         fig = go.Figure()
         fig.add_trace(
@@ -604,15 +548,9 @@ def update_stats_panel(equipment_id, time_range, n_intervals):
 
         sensor_data = data_loader.get_sensor_data(equipment_id, hours_back=hours)
 
-        if (
-            sensor_data is not None
-            and "data" in sensor_data
-            and len(sensor_data["data"]) > 0
-        ):
+        if sensor_data is not None and "data" in sensor_data and len(sensor_data["data"]) > 0:
             values = (
-                sensor_data["data"]
-                if isinstance(sensor_data["data"], np.ndarray)
-                else np.array(sensor_data["data"])
+                sensor_data["data"] if isinstance(sensor_data["data"], np.ndarray) else np.array(sensor_data["data"])
             )
             mean_val = np.mean(values)
             std_val = np.std(values)
@@ -694,9 +632,7 @@ def update_stats_panel(equipment_id, time_range, n_intervals):
             html.Div(
                 [
                     html.Span("Last Update", className="fw-bold me-2"),
-                    html.Span(
-                        datetime.now().strftime("%H:%M:%S"), className="text-muted"
-                    ),
+                    html.Span(datetime.now().strftime("%H:%M:%S"), className="text-muted"),
                 ],
                 className="mb-2",
             ),
@@ -706,7 +642,5 @@ def update_stats_panel(equipment_id, time_range, n_intervals):
 def register_callbacks(app, data_service=None):
     """Register callbacks for monitoring dashboard (placeholder for compatibility)"""
     # Callbacks are auto-registered via @callback decorators
-    logger.info(
-        "Monitoring dashboard callbacks are auto-registered via @callback decorators"
-    )
+    logger.info("Monitoring dashboard callbacks are auto-registered via @callback decorators")
     return True

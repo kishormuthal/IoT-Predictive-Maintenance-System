@@ -11,9 +11,7 @@ import time
 from pathlib import Path
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 # Project root
@@ -52,9 +50,7 @@ class TestRunner:
         cmd = [c for c in cmd if c]
 
         try:
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, cwd=PROJECT_ROOT
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, cwd=PROJECT_ROOT)
 
             duration = time.time() - start_time
 
@@ -99,9 +95,7 @@ class TestRunner:
 
         for test_name, test_path in unit_tests:
             if (PROJECT_ROOT / test_path).exists():
-                self.run_test_suite(
-                    f"Unit: {test_name}", test_path, f"Unit tests for {test_name}"
-                )
+                self.run_test_suite(f"Unit: {test_name}", test_path, f"Unit tests for {test_name}")
             else:
                 logger.warning(f"Test file not found: {test_path}")
 
@@ -134,9 +128,7 @@ class TestRunner:
 
         for test_name, test_path in e2e_tests:
             if (PROJECT_ROOT / test_path).exists():
-                self.run_test_suite(
-                    f"E2E: {test_name}", test_path, f"End-to-end {test_name}"
-                )
+                self.run_test_suite(f"E2E: {test_name}", test_path, f"End-to-end {test_name}")
             else:
                 logger.warning(f"Test file not found: {test_path}")
 
@@ -161,9 +153,7 @@ class TestRunner:
 
     def run_system_validation(self):
         """Run complete system validation"""
-        validation_script = (
-            PROJECT_ROOT / "scripts" / "validate_complete_nasa_system.py"
-        )
+        validation_script = PROJECT_ROOT / "scripts" / "validate_complete_nasa_system.py"
 
         if validation_script.exists():
             logger.info(f"\n{'='*60}")
@@ -229,11 +219,7 @@ class TestRunner:
         logger.info(f"Total Test Suites: {total_tests}")
         logger.info(f"Passed: {passed_tests}")
         logger.info(f"Failed: {failed_tests}")
-        logger.info(
-            f"Success Rate: {passed_tests/total_tests*100:.1f}%"
-            if total_tests > 0
-            else "N/A"
-        )
+        logger.info(f"Success Rate: {passed_tests/total_tests*100:.1f}%" if total_tests > 0 else "N/A")
         logger.info(f"Total Execution Time: {total_time:.2f} seconds")
 
         logger.info(f"\nDetailed Results:")
@@ -279,23 +265,13 @@ def main():
     """Main function"""
     parser = argparse.ArgumentParser(description="NASA IoT System Test Runner")
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
-    parser.add_argument(
-        "-f", "--fast", action="store_true", help="Fast mode (skip performance tests)"
-    )
+    parser.add_argument("-f", "--fast", action="store_true", help="Fast mode (skip performance tests)")
     parser.add_argument("--unit-only", action="store_true", help="Run only unit tests")
-    parser.add_argument(
-        "--integration-only", action="store_true", help="Run only integration tests"
-    )
+    parser.add_argument("--integration-only", action="store_true", help="Run only integration tests")
     parser.add_argument("--e2e-only", action="store_true", help="Run only e2e tests")
-    parser.add_argument(
-        "--performance-only", action="store_true", help="Run only performance tests"
-    )
-    parser.add_argument(
-        "--validation-only", action="store_true", help="Run only system validation"
-    )
-    parser.add_argument(
-        "--no-validation", action="store_true", help="Skip system validation"
-    )
+    parser.add_argument("--performance-only", action="store_true", help="Run only performance tests")
+    parser.add_argument("--validation-only", action="store_true", help="Run only system validation")
+    parser.add_argument("--no-validation", action="store_true", help="Skip system validation")
 
     args = parser.parse_args()
 

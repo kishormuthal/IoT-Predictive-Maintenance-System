@@ -65,18 +65,10 @@ class NASADataLoader(DataSourceInterface):
 
             # Load only required SMAP data
             if smap_channels:
-                smap_train_full = np.load(
-                    self.data_root / "smap" / "train.npy", allow_pickle=True
-                )
-                smap_test_full = np.load(
-                    self.data_root / "smap" / "test.npy", allow_pickle=True
-                )
-                smap_train_labels = np.load(
-                    self.data_root / "smap" / "train_labels.npy", allow_pickle=True
-                )
-                smap_test_labels = np.load(
-                    self.data_root / "smap" / "test_labels.npy", allow_pickle=True
-                )
+                smap_train_full = np.load(self.data_root / "smap" / "train.npy", allow_pickle=True)
+                smap_test_full = np.load(self.data_root / "smap" / "test.npy", allow_pickle=True)
+                smap_train_labels = np.load(self.data_root / "smap" / "train_labels.npy", allow_pickle=True)
+                smap_test_labels = np.load(self.data_root / "smap" / "test_labels.npy", allow_pickle=True)
 
                 # Extract only required channels
                 max_channel = max(smap_channels)
@@ -85,17 +77,13 @@ class NASADataLoader(DataSourceInterface):
                     smap_test = smap_test_full[:, smap_channels]
                 else:
                     # Fallback to available channels
-                    available_channels = min(
-                        len(smap_channels), smap_train_full.shape[1]
-                    )
+                    available_channels = min(len(smap_channels), smap_train_full.shape[1])
                     smap_train = smap_train_full[:, :available_channels]
                     smap_test = smap_test_full[:, :available_channels]
 
                 self.smap_data = {
                     "data": (
-                        np.vstack([smap_train, smap_test])
-                        if smap_train.size > 0 and smap_test.size > 0
-                        else smap_train
+                        np.vstack([smap_train, smap_test]) if smap_train.size > 0 and smap_test.size > 0 else smap_train
                     ),
                     "labels": (
                         np.concatenate([smap_train_labels, smap_test_labels])
@@ -113,18 +101,10 @@ class NASADataLoader(DataSourceInterface):
 
             # Load only required MSL data
             if msl_channels:
-                msl_train_full = np.load(
-                    self.data_root / "msl" / "train.npy", allow_pickle=True
-                )
-                msl_test_full = np.load(
-                    self.data_root / "msl" / "test.npy", allow_pickle=True
-                )
-                msl_train_labels = np.load(
-                    self.data_root / "msl" / "train_labels.npy", allow_pickle=True
-                )
-                msl_test_labels = np.load(
-                    self.data_root / "msl" / "test_labels.npy", allow_pickle=True
-                )
+                msl_train_full = np.load(self.data_root / "msl" / "train.npy", allow_pickle=True)
+                msl_test_full = np.load(self.data_root / "msl" / "test.npy", allow_pickle=True)
+                msl_train_labels = np.load(self.data_root / "msl" / "train_labels.npy", allow_pickle=True)
+                msl_test_labels = np.load(self.data_root / "msl" / "test_labels.npy", allow_pickle=True)
 
                 # Extract only required channels
                 max_channel = max(msl_channels)
@@ -139,9 +119,7 @@ class NASADataLoader(DataSourceInterface):
 
                 self.msl_data = {
                     "data": (
-                        np.vstack([msl_train, msl_test])
-                        if msl_train.size > 0 and msl_test.size > 0
-                        else msl_train
+                        np.vstack([msl_train, msl_test]) if msl_train.size > 0 and msl_test.size > 0 else msl_train
                     ),
                     "labels": (
                         np.concatenate([msl_train_labels, msl_test_labels])
@@ -167,12 +145,8 @@ class NASADataLoader(DataSourceInterface):
             self.is_loaded = True
 
             logger.info(f"NASA data loaded for 12 sensors:")
-            logger.info(
-                f"  SMAP data shape: {self.smap_data['data'].shape} (channels: {len(smap_channels)})"
-            )
-            logger.info(
-                f"  MSL data shape: {self.msl_data['data'].shape} (channels: {len(msl_channels)})"
-            )
+            logger.info(f"  SMAP data shape: {self.smap_data['data'].shape} (channels: {len(smap_channels)})")
+            logger.info(f"  MSL data shape: {self.msl_data['data'].shape} (channels: {len(msl_channels)})")
             logger.info(f"  Total memory footprint reduced significantly")
             logger.info(f"  Labeled anomalies: {len(self.labeled_anomalies)}")
 
@@ -245,10 +219,7 @@ class NASADataLoader(DataSourceInterface):
 
             # Create timestamps (assuming hourly data)
             end_time = datetime.now()
-            timestamps = [
-                end_time - timedelta(hours=data_points - i - 1)
-                for i in range(data_points)
-            ]
+            timestamps = [end_time - timedelta(hours=data_points - i - 1) for i in range(data_points)]
 
             # Calculate statistics
             statistics = self._calculate_statistics(values, equipment)
@@ -296,10 +267,7 @@ class NASADataLoader(DataSourceInterface):
 
             # Create timestamps
             end_time = datetime.now()
-            timestamps = [
-                end_time - timedelta(hours=hours_back - i - 1)
-                for i in range(hours_back)
-            ]
+            timestamps = [end_time - timedelta(hours=hours_back - i - 1) for i in range(hours_back)]
 
             # Generate values with realistic patterns
             values = []
@@ -372,9 +340,7 @@ class NASADataLoader(DataSourceInterface):
                 status = SensorStatus.CRITICAL.value
             elif current_value <= equipment.warning_threshold:
                 status = SensorStatus.WARNING.value
-            elif (
-                equipment.normal_range[0] <= current_value <= equipment.normal_range[1]
-            ):
+            elif equipment.normal_range[0] <= current_value <= equipment.normal_range[1]:
                 status = SensorStatus.NORMAL.value
             else:
                 status = SensorStatus.WARNING.value
@@ -456,28 +422,16 @@ class NASADataLoader(DataSourceInterface):
         """Get data quality report"""
         try:
             total_sensors = len(EQUIPMENT_REGISTRY)
-            smap_sensors = len(
-                [eq for eq in EQUIPMENT_REGISTRY.values() if eq.data_source == "smap"]
-            )
-            msl_sensors = len(
-                [eq for eq in EQUIPMENT_REGISTRY.values() if eq.data_source == "msl"]
-            )
+            smap_sensors = len([eq for eq in EQUIPMENT_REGISTRY.values() if eq.data_source == "smap"])
+            msl_sensors = len([eq for eq in EQUIPMENT_REGISTRY.values() if eq.data_source == "msl"])
 
             return {
                 "total_sensors": total_sensors,
                 "smap_sensors": smap_sensors,
                 "msl_sensors": msl_sensors,
                 "data_loaded": self.is_loaded,
-                "smap_data_shape": (
-                    self.smap_data["data"].shape
-                    if self.smap_data["data"].size > 0
-                    else (0, 0)
-                ),
-                "msl_data_shape": (
-                    self.msl_data["data"].shape
-                    if self.msl_data["data"].size > 0
-                    else (0, 0)
-                ),
+                "smap_data_shape": (self.smap_data["data"].shape if self.smap_data["data"].size > 0 else (0, 0)),
+                "msl_data_shape": (self.msl_data["data"].shape if self.msl_data["data"].size > 0 else (0, 0)),
                 "smap_channels_loaded": len(self.smap_data.get("channels", [])),
                 "msl_channels_loaded": len(self.msl_data.get("channels", [])),
                 "labeled_anomalies": len(self.labeled_anomalies),

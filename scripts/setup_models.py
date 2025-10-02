@@ -16,9 +16,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -133,9 +131,7 @@ def main():
         action="store_true",
         help="Train only anomaly detection models",
     )
-    parser.add_argument(
-        "--forecasting-only", action="store_true", help="Train only forecasting models"
-    )
+    parser.add_argument("--forecasting-only", action="store_true", help="Train only forecasting models")
     parser.add_argument(
         "--skip-existing",
         action="store_true",
@@ -187,9 +183,7 @@ def main():
     print("📊 TRAINING COMPLETE!")
     print("=" * 80)
     print(f"✅ Successful: {success_count}/{total_tasks} training tasks")
-    print(
-        f"⏱️  Total time: {total_elapsed:.1f} seconds ({total_elapsed/60:.1f} minutes)"
-    )
+    print(f"⏱️  Total time: {total_elapsed:.1f} seconds ({total_elapsed/60:.1f} minutes)")
 
     if success_count == total_tasks:
         print("🎉 ALL MODELS TRAINED SUCCESSFULLY!")

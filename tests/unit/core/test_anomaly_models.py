@@ -351,9 +351,7 @@ class TestAnomalyModelIntegration:
                     timestamp=timestamp + timedelta(minutes=j),
                     value=90.0 + j,
                     score=0.8 + j * 0.05,
-                    severity=(
-                        AnomalySeverity.HIGH if j % 2 == 0 else AnomalySeverity.MEDIUM
-                    ),
+                    severity=(AnomalySeverity.HIGH if j % 2 == 0 else AnomalySeverity.MEDIUM),
                     anomaly_type=AnomalyType.POINT,
                 )
                 sensor_anomalies.append(anomaly)
@@ -367,9 +365,7 @@ class TestAnomalyModelIntegration:
         # Calculate severity breakdown
         severity_breakdown = {
             "LOW": 0,
-            "MEDIUM": sum(
-                1 for a in all_anomalies if a.severity == AnomalySeverity.MEDIUM
-            ),
+            "MEDIUM": sum(1 for a in all_anomalies if a.severity == AnomalySeverity.MEDIUM),
             "HIGH": sum(1 for a in all_anomalies if a.severity == AnomalySeverity.HIGH),
             "CRITICAL": 0,
         }
@@ -384,10 +380,7 @@ class TestAnomalyModelIntegration:
 
         assert summary.total_anomalies == 6  # 1 + 2 + 3
         assert len(summary.sensor_stats) == 3
-        assert (
-            summary.severity_breakdown["MEDIUM"] + summary.severity_breakdown["HIGH"]
-            == 6
-        )
+        assert summary.severity_breakdown["MEDIUM"] + summary.severity_breakdown["HIGH"] == 6
 
     def test_nasa_sensor_anomaly_detection(self, sample_sensors):
         """Test anomaly detection for NASA sensors"""
@@ -406,10 +399,7 @@ class TestAnomalyModelIntegration:
             )
 
             assert anomaly.sensor_id == sensor_id
-            assert (
-                "SMAP" in anomaly.metadata["mission"]
-                or "MSL" in anomaly.metadata["mission"]
-            )
+            assert "SMAP" in anomaly.metadata["mission"] or "MSL" in anomaly.metadata["mission"]
             assert anomaly.description.endswith(sensor_id)
 
     def test_anomaly_severity_escalation(self):
@@ -436,8 +426,5 @@ class TestAnomalyModelIntegration:
 
         # Check that severity escalated (CRITICAL > MEDIUM)
         severity_order = {"LOW": 1, "MEDIUM": 2, "HIGH": 3, "CRITICAL": 4}
-        assert (
-            severity_order[escalated_anomaly.severity.value]
-            > severity_order[base_anomaly.severity.value]
-        )
+        assert severity_order[escalated_anomaly.severity.value] > severity_order[base_anomaly.severity.value]
         assert escalated_anomaly.score > base_anomaly.score

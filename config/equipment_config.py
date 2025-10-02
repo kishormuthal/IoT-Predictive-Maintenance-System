@@ -255,18 +255,12 @@ def get_msl_equipment() -> List[EquipmentConfig]:
 
 def get_critical_equipment() -> List[EquipmentConfig]:
     """Get critical equipment only"""
-    return [
-        eq
-        for eq in EQUIPMENT_REGISTRY.values()
-        if eq.criticality == CriticalityLevel.CRITICAL
-    ]
+    return [eq for eq in EQUIPMENT_REGISTRY.values() if eq.criticality == CriticalityLevel.CRITICAL]
 
 
 def get_equipment_by_type(equipment_type: EquipmentType) -> List[EquipmentConfig]:
     """Get equipment by type"""
-    return [
-        eq for eq in EQUIPMENT_REGISTRY.values() if eq.equipment_type == equipment_type
-    ]
+    return [eq for eq in EQUIPMENT_REGISTRY.values() if eq.equipment_type == equipment_type]
 
 
 # Equipment summary statistics
@@ -275,8 +269,6 @@ EQUIPMENT_STATS = {
     "smap_equipment": len(get_smap_equipment()),
     "msl_equipment": len(get_msl_equipment()),
     "critical_equipment": len(get_critical_equipment()),
-    "equipment_types": len(
-        set(eq.equipment_type for eq in EQUIPMENT_REGISTRY.values())
-    ),
+    "equipment_types": len(set(eq.equipment_type for eq in EQUIPMENT_REGISTRY.values())),
     "data_sources": ["smap", "msl"],
 }

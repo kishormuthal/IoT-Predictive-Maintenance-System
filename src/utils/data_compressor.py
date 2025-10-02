@@ -95,9 +95,7 @@ class IntelligentDataCompressor:
             f"threshold={self.config.compression_threshold}B"
         )
 
-    def compress_dashboard_data(
-        self, data: Any, data_key: str = None, force_method: str = None
-    ) -> Dict[str, Any]:
+    def compress_dashboard_data(self, data: Any, data_key: str = None, force_method: str = None) -> Dict[str, Any]:
         """
         Compress dashboard data with intelligent method selection
 
@@ -150,18 +148,14 @@ class IntelligentDataCompressor:
                     }
 
             # Select compression method
-            method = force_method or self._select_compression_method(
-                data, original_size
-            )
+            method = force_method or self._select_compression_method(data, original_size)
 
             # Compress data
             compressed_data = self.compression_methods[method](serialized_data)
             compressed_size = len(compressed_data)
 
             # Update metrics
-            self._update_metrics(
-                original_size, compressed_size, method, time.time() - start_time
-            )
+            self._update_metrics(original_size, compressed_size, method, time.time() - start_time)
 
             # Store for delta compression if enabled
             if self.config.enable_delta_compression and data_key:
@@ -215,9 +209,7 @@ class IntelligentDataCompressor:
             compressed_data = compressed_package["data"]
 
             if method == "delta":
-                return self._decompress_delta(
-                    compressed_data, compressed_package.get("delta_key")
-                )
+                return self._decompress_delta(compressed_data, compressed_package.get("delta_key"))
 
             # Decode base64 and decompress
             compressed_bytes = base64.b64decode(compressed_data.encode("utf-8"))
@@ -229,9 +221,7 @@ class IntelligentDataCompressor:
             logger.error(f"Decompression failed: {e}")
             raise
 
-    def compress_sensor_stream(
-        self, sensor_data: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    def compress_sensor_stream(self, sensor_data: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Compress sensor stream data with sensor-specific optimizations
 
@@ -321,9 +311,7 @@ class IntelligentDataCompressor:
         else:
             return self.config.preferred_method
 
-    def _optimize_sensor_data(
-        self, sensor_data: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+    def _optimize_sensor_data(self, sensor_data: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Optimize sensor data structure for better compression"""
         if not sensor_data:
             return {}
@@ -358,21 +346,13 @@ class IntelligentDataCompressor:
             for trace in optimized["data"]:
                 # Round numeric values to reduce precision and improve compression
                 if "x" in trace and isinstance(trace["x"], list):
-                    trace["x"] = [
-                        round(x, 3) if isinstance(x, (int, float)) else x
-                        for x in trace["x"]
-                    ]
+                    trace["x"] = [round(x, 3) if isinstance(x, (int, float)) else x for x in trace["x"]]
                 if "y" in trace and isinstance(trace["y"], list):
-                    trace["y"] = [
-                        round(y, 3) if isinstance(y, (int, float)) else y
-                        for y in trace["y"]
-                    ]
+                    trace["y"] = [round(y, 3) if isinstance(y, (int, float)) else y for y in trace["y"]]
 
         return optimized
 
-    def _try_delta_compression(
-        self, current_data: bytes, data_key: str
-    ) -> Optional[bytes]:
+    def _try_delta_compression(self, current_data: bytes, data_key: str) -> Optional[bytes]:
         """Try delta compression against cached data"""
         with self.delta_lock:
             if data_key not in self.delta_cache:
@@ -468,8 +448,7 @@ class IntelligentDataCompressor:
 
             # Update compression time
             self.metrics.avg_compression_time = (
-                alpha * compression_time
-                + (1 - alpha) * self.metrics.avg_compression_time
+                alpha * compression_time + (1 - alpha) * self.metrics.avg_compression_time
             )
 
             # Update method stats
@@ -498,9 +477,7 @@ class IntelligentDataCompressor:
 
         total_savings = metrics.total_original_size - metrics.total_compressed_size
         savings_percentage = (
-            (total_savings / metrics.total_original_size * 100)
-            if metrics.total_original_size > 0
-            else 0
+            (total_savings / metrics.total_original_size * 100) if metrics.total_original_size > 0 else 0
         )
 
         return {
@@ -539,9 +516,7 @@ def compress_response(method: str = None, cache_key: str = None):
                 key = cache_key
 
             # Compress the result
-            compressed = data_compressor.compress_dashboard_data(
-                result, data_key=key, force_method=method
-            )
+            compressed = data_compressor.compress_dashboard_data(result, data_key=key, force_method=method)
 
             return compressed
 

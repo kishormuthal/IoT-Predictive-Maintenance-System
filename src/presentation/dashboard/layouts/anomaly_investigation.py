@@ -104,9 +104,7 @@ def create_anomaly_investigation_layout() -> html.Div:
                                 [
                                     dbc.Col(
                                         [
-                                            html.Label(
-                                                "Equipment/Sensor:", className="fw-bold"
-                                            ),
+                                            html.Label("Equipment/Sensor:", className="fw-bold"),
                                             dcc.Dropdown(
                                                 id="investigation-sensor-selector",
                                                 options=[
@@ -138,9 +136,7 @@ def create_anomaly_investigation_layout() -> html.Div:
                                     ),
                                     dbc.Col(
                                         [
-                                            html.Label(
-                                                "Severity:", className="fw-bold"
-                                            ),
+                                            html.Label("Severity:", className="fw-bold"),
                                             dcc.Dropdown(
                                                 id="investigation-severity-filter",
                                                 options=[
@@ -166,9 +162,7 @@ def create_anomaly_investigation_layout() -> html.Div:
                                     ),
                                     dbc.Col(
                                         [
-                                            html.Label(
-                                                "Time Range:", className="fw-bold"
-                                            ),
+                                            html.Label("Time Range:", className="fw-bold"),
                                             dcc.Dropdown(
                                                 id="investigation-time-range",
                                                 options=[
@@ -200,9 +194,7 @@ def create_anomaly_investigation_layout() -> html.Div:
                                     ),
                                     dbc.Col(
                                         [
-                                            html.Label(
-                                                "Anomaly Type:", className="fw-bold"
-                                            ),
+                                            html.Label("Anomaly Type:", className="fw-bold"),
                                             dcc.Dropdown(
                                                 id="investigation-type-filter",
                                                 options=[
@@ -237,9 +229,7 @@ def create_anomaly_investigation_layout() -> html.Div:
                                         [
                                             dbc.Button(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-filter me-2"
-                                                    ),
+                                                    html.I(className="fas fa-filter me-2"),
                                                     "Apply Filters",
                                                 ],
                                                 id="apply-investigation-filters-btn",
@@ -248,9 +238,7 @@ def create_anomaly_investigation_layout() -> html.Div:
                                             ),
                                             dbc.Button(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-undo me-2"
-                                                    ),
+                                                    html.I(className="fas fa-undo me-2"),
                                                     "Reset",
                                                 ],
                                                 id="reset-investigation-filters-btn",
@@ -334,9 +322,7 @@ def create_anomaly_detail_view(anomaly_data: Dict) -> html.Div:
                                         [
                                             html.H4(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-exclamation-triangle me-2"
-                                                    ),
+                                                    html.I(className="fas fa-exclamation-triangle me-2"),
                                                     f"Anomaly Investigation: {anomaly_data['id']}",
                                                 ],
                                                 className="mb-0",
@@ -348,14 +334,10 @@ def create_anomaly_detail_view(anomaly_data: Dict) -> html.Div:
                                         [
                                             dbc.Badge(
                                                 anomaly_data["severity"].upper(),
-                                                color=get_severity_color(
-                                                    anomaly_data["severity"]
-                                                ),
+                                                color=get_severity_color(anomaly_data["severity"]),
                                                 className="me-2",
                                             ),
-                                            dbc.Badge(
-                                                anomaly_data["type"], color="info"
-                                            ),
+                                            dbc.Badge(anomaly_data["type"], color="info"),
                                         ],
                                         width=4,
                                         className="text-end",
@@ -449,9 +431,7 @@ def create_anomaly_detail_view(anomaly_data: Dict) -> html.Div:
                                                         [
                                                             dcc.Graph(
                                                                 id="anomaly-detail-timeseries",
-                                                                figure=create_anomaly_timeseries(
-                                                                    anomaly_data
-                                                                ),
+                                                                figure=create_anomaly_timeseries(anomaly_data),
                                                             )
                                                         ],
                                                         width=12,
@@ -470,9 +450,7 @@ def create_anomaly_detail_view(anomaly_data: Dict) -> html.Div:
                                                             ),
                                                             dcc.Graph(
                                                                 id="anomaly-statistical-breakdown",
-                                                                figure=create_statistical_breakdown(
-                                                                    anomaly_data
-                                                                ),
+                                                                figure=create_statistical_breakdown(anomaly_data),
                                                             ),
                                                         ],
                                                         width=6,
@@ -486,9 +464,7 @@ def create_anomaly_detail_view(anomaly_data: Dict) -> html.Div:
                                                             ),
                                                             dcc.Graph(
                                                                 id="anomaly-probability-dist",
-                                                                figure=create_probability_distribution(
-                                                                    anomaly_data
-                                                                ),
+                                                                figure=create_probability_distribution(anomaly_data),
                                                             ),
                                                         ],
                                                         width=6,
@@ -510,15 +486,11 @@ def create_anomaly_detail_view(anomaly_data: Dict) -> html.Div:
                                 [
                                     dbc.CardBody(
                                         [
-                                            html.H5(
-                                                "Contributing Factors", className="mb-3"
-                                            ),
+                                            html.H5("Contributing Factors", className="mb-3"),
                                             # Factor importance chart
                                             dcc.Graph(
                                                 id="root-cause-factors",
-                                                figure=create_root_cause_chart(
-                                                    anomaly_data
-                                                ),
+                                                figure=create_root_cause_chart(anomaly_data),
                                             ),
                                             html.Hr(),
                                             # Detailed factors
@@ -528,9 +500,7 @@ def create_anomaly_detail_view(anomaly_data: Dict) -> html.Div:
                                             ),
                                             html.Div(
                                                 id="root-cause-details",
-                                                children=create_root_cause_details(
-                                                    anomaly_data
-                                                ),
+                                                children=create_root_cause_details(anomaly_data),
                                             ),
                                         ]
                                     )
@@ -558,9 +528,7 @@ def create_anomaly_detail_view(anomaly_data: Dict) -> html.Div:
                                                         [
                                                             dcc.Graph(
                                                                 id="correlation-heatmap",
-                                                                figure=create_correlation_heatmap(
-                                                                    anomaly_data
-                                                                ),
+                                                                figure=create_correlation_heatmap(anomaly_data),
                                                             )
                                                         ],
                                                         width=6,
@@ -573,9 +541,7 @@ def create_anomaly_detail_view(anomaly_data: Dict) -> html.Div:
                                                             ),
                                                             html.Div(
                                                                 id="correlated-sensors",
-                                                                children=create_correlated_sensors_list(
-                                                                    anomaly_data
-                                                                ),
+                                                                children=create_correlated_sensors_list(anomaly_data),
                                                             ),
                                                         ],
                                                         width=6,
@@ -591,9 +557,7 @@ def create_anomaly_detail_view(anomaly_data: Dict) -> html.Div:
                                             ),
                                             dcc.Graph(
                                                 id="cross-correlation-chart",
-                                                figure=create_cross_correlation_chart(
-                                                    anomaly_data
-                                                ),
+                                                figure=create_cross_correlation_chart(anomaly_data),
                                             ),
                                         ]
                                     )
@@ -617,9 +581,7 @@ def create_anomaly_detail_view(anomaly_data: Dict) -> html.Div:
                                             # Similarity scores
                                             html.Div(
                                                 id="similar-anomalies",
-                                                children=create_similar_anomalies_list(
-                                                    anomaly_data
-                                                ),
+                                                children=create_similar_anomalies_list(anomaly_data),
                                             ),
                                         ]
                                     )
@@ -636,9 +598,7 @@ def create_anomaly_detail_view(anomaly_data: Dict) -> html.Div:
                                 [
                                     dbc.CardBody(
                                         [
-                                            html.H5(
-                                                "Recommended Actions", className="mb-3"
-                                            ),
+                                            html.H5("Recommended Actions", className="mb-3"),
                                             dbc.ListGroup(
                                                 [
                                                     dbc.ListGroupItem(
@@ -668,9 +628,7 @@ def create_anomaly_detail_view(anomaly_data: Dict) -> html.Div:
                                                         [
                                                             html.Div(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-eye fa-2x text-info mb-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-eye fa-2x text-info mb-2"),
                                                                     html.H6(
                                                                         "Monitor Closely",
                                                                         className="mt-2",
@@ -749,9 +707,7 @@ def register_anomaly_investigation_callbacks(app: dash.Dash):
             State("investigation-type-filter", "value"),
         ],
     )
-    def update_anomaly_timeline(
-        n_intervals, n_clicks, sensor, severity, time_range, anom_type
-    ):
+    def update_anomaly_timeline(n_intervals, n_clicks, sensor, severity, time_range, anom_type):
         """Update anomaly timeline based on filters"""
 
         # Generate mock anomaly data
@@ -760,9 +716,7 @@ def register_anomaly_investigation_callbacks(app: dash.Dash):
 
         # Random anomalies
         np.random.seed(42)
-        anomaly_indices = np.random.choice(
-            len(timestamps), size=int(len(timestamps) * 0.05), replace=False
-        )
+        anomaly_indices = np.random.choice(len(timestamps), size=int(len(timestamps) * 0.05), replace=False)
 
         anomalies = []
         for idx in sorted(anomaly_indices):
@@ -770,16 +724,10 @@ def register_anomaly_investigation_callbacks(app: dash.Dash):
                 {
                     "id": f"ANO_{timestamps[idx].strftime('%Y%m%d_%H%M%S')}",
                     "timestamp": timestamps[idx].isoformat(),
-                    "sensor": np.random.choice(
-                        ["SMAP_PWR_01", "SMAP_COM_03", "MSL_MOB_F_05", "MSL_PWR_02"]
-                    ),
-                    "severity": np.random.choice(
-                        ["critical", "high", "medium", "low"], p=[0.1, 0.3, 0.4, 0.2]
-                    ),
+                    "sensor": np.random.choice(["SMAP_PWR_01", "SMAP_COM_03", "MSL_MOB_F_05", "MSL_PWR_02"]),
+                    "severity": np.random.choice(["critical", "high", "medium", "low"], p=[0.1, 0.3, 0.4, 0.2]),
                     "score": np.random.uniform(0.7, 1.0),
-                    "type": np.random.choice(
-                        ["point", "contextual", "collective"], p=[0.6, 0.3, 0.1]
-                    ),
+                    "type": np.random.choice(["point", "contextual", "collective"], p=[0.6, 0.3, 0.1]),
                     "value": np.random.uniform(50, 150),
                 }
             )
@@ -803,8 +751,7 @@ def register_anomaly_investigation_callbacks(app: dash.Dash):
                             line=dict(width=1, color="white"),
                         ),
                         text=[
-                            f"ID: {a['id']}<br>Sensor: {a['sensor']}<br>Score: {a['score']:.3f}"
-                            for a in sev_anomalies
+                            f"ID: {a['id']}<br>Sensor: {a['sensor']}<br>Score: {a['score']:.3f}" for a in sev_anomalies
                         ],
                         hovertemplate="%{text}<extra></extra>",
                         customdata=[a["id"] for a in sev_anomalies],
@@ -879,9 +826,7 @@ def get_severity_color(severity: str) -> str:
 def create_anomaly_timeseries(anomaly_data: Dict) -> go.Figure:
     """Create time series chart with anomaly context"""
     # Generate context data around anomaly
-    times = pd.date_range(
-        end=pd.to_datetime(anomaly_data["timestamp"]), periods=100, freq="1min"
-    )
+    times = pd.date_range(end=pd.to_datetime(anomaly_data["timestamp"]), periods=100, freq="1min")
 
     # Normal data with anomaly spike
     np.random.seed(42)
@@ -961,11 +906,7 @@ def create_statistical_breakdown(anomaly_data: Dict) -> go.Figure:
     ]
 
     fig = go.Figure()
-    fig.add_trace(
-        go.Bar(
-            name="Normal Period", x=categories, y=normal_values, marker_color="#3498db"
-        )
-    )
+    fig.add_trace(go.Bar(name="Normal Period", x=categories, y=normal_values, marker_color="#3498db"))
     fig.add_trace(
         go.Bar(
             name="Anomaly Window",

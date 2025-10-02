@@ -105,9 +105,7 @@ class ForecastView:
                                         ),
                                         dbc.Button(
                                             [
-                                                html.I(
-                                                    className="fas fa-download me-2"
-                                                ),
+                                                html.I(className="fas fa-download me-2"),
                                                 "Export",
                                             ],
                                             id="export-forecast-btn",
@@ -474,9 +472,7 @@ class ForecastView:
                                                     [
                                                         dbc.Col(
                                                             [
-                                                                html.Label(
-                                                                    "Adjust Parameters:"
-                                                                ),
+                                                                html.Label("Adjust Parameters:"),
                                                                 html.Div(
                                                                     [
                                                                         html.Label(
@@ -560,9 +556,7 @@ class ForecastView:
                                                         ),
                                                         dbc.Col(
                                                             [
-                                                                html.Label(
-                                                                    "Impact Analysis:"
-                                                                ),
+                                                                html.Label("Impact Analysis:"),
                                                                 html.Div(
                                                                     id="whatif-analysis-results",
                                                                     className="mt-2",
@@ -582,9 +576,7 @@ class ForecastView:
                     ]
                 ),
                 # Update intervals
-                dcc.Interval(
-                    id="forecast-update-interval", interval=30000, n_intervals=0
-                ),
+                dcc.Interval(id="forecast-update-interval", interval=30000, n_intervals=0),
                 # Hidden stores
                 dcc.Store(id="forecast-data-store", storage_type="memory"),
                 dcc.Store(id="model-results-store", storage_type="session"),
@@ -616,11 +608,7 @@ class ForecastView:
                             style={"height": "5px"},
                         ),
                         html.Div(
-                            [
-                                html.Small(
-                                    "MAE: 2.3 | RMSE: 3.1", className="text-muted"
-                                )
-                            ],
+                            [html.Small("MAE: 2.3 | RMSE: 3.1", className="text-muted")],
                             className="mt-2",
                         ),
                     ]
@@ -678,9 +666,7 @@ class ForecastView:
                                 html.H3("15.2%", className="mb-0 text-warning"),
                                 html.Small(
                                     [
-                                        html.I(
-                                            className="fas fa-arrow-up text-danger me-1"
-                                        ),
+                                        html.I(className="fas fa-arrow-up text-danger me-1"),
                                         "3.2% from last week",
                                     ]
                                 ),
@@ -728,9 +714,7 @@ class ForecastView:
                         html.H6("Optimal Maintenance", className="text-muted mb-3"),
                         html.Div(
                             [
-                                html.I(
-                                    className="fas fa-calendar-alt fa-2x text-primary mb-2"
-                                ),
+                                html.I(className="fas fa-calendar-alt fa-2x text-primary mb-2"),
                                 html.H5("In 5 Days", className="mb-0"),
                                 html.Small("Nov 12, 2025"),
                             ]
@@ -738,16 +722,12 @@ class ForecastView:
                         html.Hr(className="my-2"),
                         html.Div(
                             [
-                                html.Small(
-                                    "Confidence: 85%", className="text-muted d-block"
-                                ),
+                                html.Small("Confidence: 85%", className="text-muted d-block"),
                                 html.Small(
                                     "Cost Savings: $12,500",
                                     className="text-success d-block",
                                 ),
-                                html.Small(
-                                    "Downtime: 4 hours", className="text-info d-block"
-                                ),
+                                html.Small("Downtime: 4 hours", className="text-info d-block"),
                             ]
                         ),
                         dbc.Button(
@@ -848,12 +828,8 @@ class ForecastView:
                 ),
                 dbc.ModalFooter(
                     [
-                        dbc.Button(
-                            "Apply", id="apply-forecast-settings", color="primary"
-                        ),
-                        dbc.Button(
-                            "Cancel", id="cancel-forecast-settings", color="secondary"
-                        ),
+                        dbc.Button("Apply", id="apply-forecast-settings", color="primary"),
+                        dbc.Button("Cancel", id="cancel-forecast-settings", color="secondary"),
                     ]
                 ),
             ],
@@ -910,11 +886,7 @@ class ForecastView:
                 elif metric == "vibration":
                     # Look for vibration-like columns
                     for col in df.columns:
-                        if (
-                            "vibration" in col.lower()
-                            or "vib" in col.lower()
-                            or "accel" in col.lower()
-                        ):
+                        if "vibration" in col.lower() or "vib" in col.lower() or "accel" in col.lower():
                             target_col = col
                             break
 
@@ -956,22 +928,13 @@ class ForecastView:
                 # Generate forecast values using trend and mean reversion
                 base_forecast = np.full(forecast_points, historical_values[-1])
                 trend_component = trend_slope * np.arange(1, forecast_points + 1)
-                seasonal_component = 2 * np.sin(
-                    np.linspace(0, 4 * np.pi, forecast_points)
-                )
+                seasonal_component = 2 * np.sin(np.linspace(0, 4 * np.pi, forecast_points))
 
-                forecast_values = (
-                    base_forecast + trend_component * 0.1 + seasonal_component
-                )
+                forecast_values = base_forecast + trend_component * 0.1 + seasonal_component
 
                 # Add some realistic decay to the forecast
-                decay_factor = np.exp(
-                    -np.arange(forecast_points) / (forecast_points * 0.3)
-                )
-                forecast_values = (
-                    historical_values[-1]
-                    + (forecast_values - historical_values[-1]) * decay_factor
-                )
+                decay_factor = np.exp(-np.arange(forecast_points) / (forecast_points * 0.3))
+                forecast_values = historical_values[-1] + (forecast_values - historical_values[-1]) * decay_factor
 
                 # Calculate confidence intervals from historical variance
                 noise_std = np.std(np.diff(historical_values))
@@ -988,41 +951,29 @@ class ForecastView:
 
                 # Historical data
                 historical_points = min(horizon_hours * 4, 500)
-                historical_time = pd.date_range(
-                    end=datetime.now(), periods=historical_points, freq="15min"
-                )
+                historical_time = pd.date_range(end=datetime.now(), periods=historical_points, freq="15min")
 
                 # Generate realistic sensor data
                 np.random.seed(42)
-                trend = np.linspace(
-                    70, 72, historical_points
-                )  # NASA-like temperature range
+                trend = np.linspace(70, 72, historical_points)  # NASA-like temperature range
                 seasonal = 5 * np.sin(np.linspace(0, 8 * np.pi, historical_points))
                 noise = np.random.randn(historical_points) * 2
                 historical_values = trend + seasonal + noise
 
                 # Forecast
                 forecast_points = horizon_hours * 4
-                forecast_time = pd.date_range(
-                    start=datetime.now(), periods=forecast_points, freq="15min"
-                )
+                forecast_time = pd.date_range(start=datetime.now(), periods=forecast_points, freq="15min")
                 forecast_trend = np.linspace(72, 74, forecast_points)
-                forecast_seasonal = 5 * np.sin(
-                    np.linspace(8 * np.pi, 12 * np.pi, forecast_points)
-                )
+                forecast_seasonal = 5 * np.sin(np.linspace(8 * np.pi, 12 * np.pi, forecast_points))
                 forecast_values = forecast_trend + forecast_seasonal
                 noise_std = np.std(noise)
         else:
             # Fallback to original sample data
-            horizon_hours = {"1h": 1, "6h": 6, "24h": 24, "7d": 168, "30d": 720}.get(
-                horizon, 24
-            )
+            horizon_hours = {"1h": 1, "6h": 6, "24h": 24, "7d": 168, "30d": 720}.get(horizon, 24)
 
             # Historical data
             historical_points = min(horizon_hours * 4, 500)
-            historical_time = pd.date_range(
-                end=datetime.now(), periods=historical_points, freq="15min"
-            )
+            historical_time = pd.date_range(end=datetime.now(), periods=historical_points, freq="15min")
 
             # Generate realistic sensor data
             np.random.seed(42)
@@ -1033,23 +984,15 @@ class ForecastView:
 
             # Forecast
             forecast_points = horizon_hours * 4
-            forecast_time = pd.date_range(
-                start=datetime.now(), periods=forecast_points, freq="15min"
-            )
+            forecast_time = pd.date_range(start=datetime.now(), periods=forecast_points, freq="15min")
             forecast_trend = np.linspace(52, 54, forecast_points)
-            forecast_seasonal = 5 * np.sin(
-                np.linspace(8 * np.pi, 12 * np.pi, forecast_points)
-            )
+            forecast_seasonal = 5 * np.sin(np.linspace(8 * np.pi, 12 * np.pi, forecast_points))
             forecast_values = forecast_trend + forecast_seasonal
             noise_std = 2
 
         # Confidence intervals for forecast
         confidence_mult = 1.96  # 95% confidence
-        if (
-            self.data_manager
-            and isinstance(self.data_manager, dict)
-            and self.data_manager.get("telemetry")
-        ):
+        if self.data_manager and isinstance(self.data_manager, dict) and self.data_manager.get("telemetry"):
             # For NASA data, ensure forecast_points matches forecast_values
             forecast_points = len(forecast_values)
 
@@ -1125,9 +1068,7 @@ class ForecastView:
 
         # Historical anomalies
         if "anomalies" in show_options:
-            anomaly_indices = np.random.choice(
-                historical_points, size=10, replace=False
-            )
+            anomaly_indices = np.random.choice(historical_points, size=10, replace=False)
             fig.add_trace(
                 go.Scatter(
                     x=historical_time[anomaly_indices],
@@ -1145,16 +1086,12 @@ class ForecastView:
             yaxis_title=f"{metric.capitalize()}",
             hovermode="x unified",
             template="plotly_white",
-            legend=dict(
-                orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-            ),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             margin=dict(l=0, r=0, t=40, b=0),
         )
 
         # Add vertical line for current time
-        fig.add_vline(
-            x=datetime.now(), line_dash="dash", line_color="gray", annotation_text="Now"
-        )
+        fig.add_vline(x=datetime.now(), line_dash="dash", line_color="gray", annotation_text="Now")
 
         return fig
 
@@ -1292,9 +1229,7 @@ class ForecastView:
             barmode="group",
             template="plotly_white",
             margin=dict(l=0, r=0, t=40, b=0),
-            legend=dict(
-                orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-            ),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         )
 
         return fig
@@ -1503,9 +1438,7 @@ class ForecastView:
 
         return predictions
 
-    def create_whatif_analysis_results(
-        self, temp_adj: float, maint_delay: int, op_hours: int
-    ) -> html.Div:
+    def create_whatif_analysis_results(self, temp_adj: float, maint_delay: int, op_hours: int) -> html.Div:
         """Create what-if analysis results
 
         Args:
@@ -1544,9 +1477,7 @@ class ForecastView:
             [
                 dbc.Alert(
                     [
-                        html.H5(
-                            f"Risk Level: {risk_level}", className=f"text-{risk_color}"
-                        ),
+                        html.H5(f"Risk Level: {risk_level}", className=f"text-{risk_color}"),
                         html.Hr(),
                         html.Div(
                             [
@@ -1588,11 +1519,7 @@ class ForecastView:
                                 html.Strong(
                                     "Immediate action required"
                                     if risk_level == "High"
-                                    else (
-                                        "Monitor closely"
-                                        if risk_level == "Medium"
-                                        else "Continue normal operations"
-                                    )
+                                    else ("Monitor closely" if risk_level == "Medium" else "Continue normal operations")
                                 ),
                             ]
                         ),
@@ -1622,9 +1549,7 @@ class ForecastView:
         )
         def update_main_forecast(equipment, metric, horizon, model, display_options):
             """Update main forecast chart"""
-            return self.create_main_forecast_chart(
-                equipment, metric, horizon, model, display_options or []
-            )
+            return self.create_main_forecast_chart(equipment, metric, horizon, model, display_options or [])
 
         @app.callback(
             Output("decomposition-chart", "figure"),
@@ -1695,9 +1620,7 @@ class ForecastView:
     def _get_equipment_options(self) -> List[Dict[str, Any]]:
         """Get equipment options using DropdownStateManager"""
         try:
-            dropdown_options = self.dropdown_manager.get_equipment_options(
-                include_all=True
-            )
+            dropdown_options = self.dropdown_manager.get_equipment_options(include_all=True)
 
             # Convert to Dash format
             options = []
@@ -1733,9 +1656,7 @@ class ForecastView:
                 if not equipment_id:
                     return [], None
 
-                sensor_options = self.dropdown_manager.get_sensor_options_for_equipment(
-                    equipment_id, include_all=True
-                )
+                sensor_options = self.dropdown_manager.get_sensor_options_for_equipment(equipment_id, include_all=True)
 
                 # Convert to Dash format
                 dash_options = []
@@ -1751,16 +1672,12 @@ class ForecastView:
                 # Set default value to first available sensor
                 default_value = dash_options[0]["value"] if dash_options else None
 
-                logger.info(
-                    f"[FORECAST] Updated sensor options: {len(dash_options)} sensors for {equipment_id}"
-                )
+                logger.info(f"[FORECAST] Updated sensor options: {len(dash_options)} sensors for {equipment_id}")
                 return dash_options, default_value
 
             except Exception as e:
                 logger.error(f"[FORECAST] Error updating sensor options: {e}")
-                return [
-                    {"label": "Error loading sensors", "value": None, "disabled": True}
-                ], None
+                return [{"label": "Error loading sensors", "value": None, "disabled": True}], None
 
         @app.callback(
             [
@@ -1803,9 +1720,7 @@ class ForecastView:
 
             except Exception as e:
                 logger.error(f"[FORECAST] Error updating metric options: {e}")
-                return [
-                    {"label": "Error loading metrics", "value": None, "disabled": True}
-                ], None
+                return [{"label": "Error loading metrics", "value": None, "disabled": True}], None
 
         # CHART TYPE SWITCHING CALLBACK
 
@@ -1833,9 +1748,7 @@ class ForecastView:
             """Update forecast chart with new chart type and data"""
             try:
                 if not all([equipment_id, sensor_id, metric_id]):
-                    return self._create_placeholder_chart(
-                        "Select equipment, sensor, and metric to view forecast"
-                    )
+                    return self._create_placeholder_chart("Select equipment, sensor, and metric to view forecast")
 
                 # Create chart configuration
                 config = ChartConfig(
@@ -1848,9 +1761,7 @@ class ForecastView:
                 )
 
                 # Generate sample forecast data (replace with actual forecast logic)
-                chart_data = self._generate_sample_forecast_data(
-                    equipment_id, sensor_id, metric_id, horizon, model
-                )
+                chart_data = self._generate_sample_forecast_data(equipment_id, sensor_id, metric_id, horizon, model)
 
                 # Create chart using ChartManager
                 figure = self.chart_manager.create_chart(chart_data, config)

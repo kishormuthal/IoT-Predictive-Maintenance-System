@@ -33,9 +33,7 @@ def create_performance_analytics_layout():
                                         [
                                             html.H4(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-chart-line me-3 text-info"
-                                                    ),
+                                                    html.I(className="fas fa-chart-line me-3 text-info"),
                                                     "Performance Analytics",
                                                 ],
                                                 className="mb-3",
@@ -71,9 +69,7 @@ def create_performance_analytics_layout():
                                             ),
                                         ]
                                     ),
-                                    dbc.CardBody(
-                                        [html.Div(id="system-metrics-display")]
-                                    ),
+                                    dbc.CardBody([html.Div(id="system-metrics-display")]),
                                 ]
                             )
                         ],
@@ -85,15 +81,11 @@ def create_performance_analytics_layout():
                                 [
                                     dbc.CardHeader(
                                         [
-                                            html.I(
-                                                className="fas fa-exclamation-triangle me-2"
-                                            ),
+                                            html.I(className="fas fa-exclamation-triangle me-2"),
                                             "Performance Alerts",
                                         ]
                                     ),
-                                    dbc.CardBody(
-                                        [html.Div(id="performance-alerts-display")]
-                                    ),
+                                    dbc.CardBody([html.Div(id="performance-alerts-display")]),
                                 ]
                             )
                         ],
@@ -111,9 +103,7 @@ def create_performance_analytics_layout():
                                 [
                                     dbc.CardHeader(
                                         [
-                                            html.I(
-                                                className="fas fa-tachometer-alt me-2"
-                                            ),
+                                            html.I(className="fas fa-tachometer-alt me-2"),
                                             "Performance Metrics Dashboard",
                                         ]
                                     ),
@@ -276,9 +266,7 @@ def create_performance_analytics_layout():
                                                         [
                                                             dbc.Button(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-download me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-download me-2"),
                                                                     "Export Data",
                                                                 ],
                                                                 id="export-analytics-btn",
@@ -325,9 +313,7 @@ def create_performance_analytics_layout():
                             dbc.Card(
                                 [
                                     dbc.CardHeader("📊 Performance Summary"),
-                                    dbc.CardBody(
-                                        [html.Div(id="performance-summary-stats")]
-                                    ),
+                                    dbc.CardBody([html.Div(id="performance-summary-stats")]),
                                 ]
                             )
                         ],
@@ -345,9 +331,7 @@ def create_performance_analytics_layout():
                                 [
                                     dbc.CardHeader(
                                         [
-                                            html.I(
-                                                className="fas fa-balance-scale me-2"
-                                            ),
+                                            html.I(className="fas fa-balance-scale me-2"),
                                             "Model Performance Comparison",
                                         ]
                                     ),
@@ -359,19 +343,13 @@ def create_performance_analytics_layout():
                                                         [
                                                             dcc.Graph(
                                                                 id="model-comparison-chart",
-                                                                style={
-                                                                    "height": "350px"
-                                                                },
+                                                                style={"height": "350px"},
                                                             )
                                                         ],
                                                         width=8,
                                                     ),
                                                     dbc.Col(
-                                                        [
-                                                            html.Div(
-                                                                id="model-comparison-stats"
-                                                            )
-                                                        ],
+                                                        [html.Div(id="model-comparison-stats")],
                                                         width=4,
                                                     ),
                                                 ]
@@ -385,18 +363,14 @@ def create_performance_analytics_layout():
                 ]
             ),
             # Hidden components for real-time updates
-            dcc.Interval(
-                id="performance-refresh-interval", interval=5000, n_intervals=0
-            ),
+            dcc.Interval(id="performance-refresh-interval", interval=5000, n_intervals=0),
             dcc.Store(id="performance-data-store", data={}),
             dcc.Store(id="alerts-data-store", data=[]),
         ]
     )
 
 
-def register_performance_analytics_callbacks(
-    app, performance_monitor, model_registry, training_use_case
-):
+def register_performance_analytics_callbacks(app, performance_monitor, model_registry, training_use_case):
     """Register callbacks for performance analytics functionality"""
 
     @app.callback(
@@ -410,9 +384,7 @@ def register_performance_analytics_callbacks(
         """Update real-time system metrics"""
         try:
             # Get system metrics summary
-            system_summary = performance_monitor.get_system_metrics_summary(
-                hours_back=1
-            )
+            system_summary = performance_monitor.get_system_metrics_summary(hours_back=1)
 
             if "error" in system_summary:
                 return dbc.Alert("System metrics unavailable", color="warning"), {}
@@ -436,16 +408,12 @@ def register_performance_analytics_callbacks(
                                         [
                                             html.H5(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-microchip me-2 text-primary"
-                                                    ),
+                                                    html.I(className="fas fa-microchip me-2 text-primary"),
                                                     "CPU",
                                                 ],
                                                 className="mb-2",
                                             ),
-                                            html.H3(
-                                                f"{cpu_current:.1f}%", className="mb-1"
-                                            ),
+                                            html.H3(f"{cpu_current:.1f}%", className="mb-1"),
                                             html.Small(
                                                 f"Avg: {cpu_avg:.1f}%",
                                                 className="text-muted",
@@ -455,11 +423,7 @@ def register_performance_analytics_callbacks(
                                                 color=(
                                                     "danger"
                                                     if cpu_current > 80
-                                                    else (
-                                                        "warning"
-                                                        if cpu_current > 60
-                                                        else "success"
-                                                    )
+                                                    else ("warning" if cpu_current > 60 else "success")
                                                 ),
                                                 className="mt-2",
                                             ),
@@ -479,9 +443,7 @@ def register_performance_analytics_callbacks(
                                         [
                                             html.H5(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-memory me-2 text-info"
-                                                    ),
+                                                    html.I(className="fas fa-memory me-2 text-info"),
                                                     "Memory",
                                                 ],
                                                 className="mb-2",
@@ -499,11 +461,7 @@ def register_performance_analytics_callbacks(
                                                 color=(
                                                     "danger"
                                                     if memory_current > 85
-                                                    else (
-                                                        "warning"
-                                                        if memory_current > 70
-                                                        else "success"
-                                                    )
+                                                    else ("warning" if memory_current > 70 else "success")
                                                 ),
                                                 className="mt-2",
                                             ),
@@ -523,16 +481,12 @@ def register_performance_analytics_callbacks(
                                         [
                                             html.H5(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-hdd me-2 text-success"
-                                                    ),
+                                                    html.I(className="fas fa-hdd me-2 text-success"),
                                                     "Disk",
                                                 ],
                                                 className="mb-2",
                                             ),
-                                            html.H3(
-                                                f"{disk_usage:.1f}%", className="mb-1"
-                                            ),
+                                            html.H3(f"{disk_usage:.1f}%", className="mb-1"),
                                             html.Small(
                                                 f"Free: {disk_free:.1f} GB",
                                                 className="text-muted",
@@ -542,11 +496,7 @@ def register_performance_analytics_callbacks(
                                                 color=(
                                                     "danger"
                                                     if disk_usage > 90
-                                                    else (
-                                                        "warning"
-                                                        if disk_usage > 75
-                                                        else "success"
-                                                    )
+                                                    else ("warning" if disk_usage > 75 else "success")
                                                 ),
                                                 className="mt-2",
                                             ),
@@ -714,9 +664,7 @@ def register_performance_analytics_callbacks(
                 return empty_fig, empty_fig, empty_fig
 
             cpu_current = performance_data.get("cpu", {}).get("current", 0)
-            memory_current = performance_data.get("memory", {}).get(
-                "current_percent", 0
-            )
+            memory_current = performance_data.get("memory", {}).get("current_percent", 0)
             disk_usage = performance_data.get("disk", {}).get("usage_percent", 0)
 
             # CPU Gauge
@@ -813,12 +761,8 @@ def register_performance_analytics_callbacks(
         """Update performance trends chart and summary"""
         try:
             # Get performance data for the specified time range
-            training_summary = performance_monitor.get_training_metrics_summary(
-                hours_back=time_range
-            )
-            inference_summary = performance_monitor.get_inference_metrics_summary(
-                hours_back=time_range
-            )
+            training_summary = performance_monitor.get_training_metrics_summary(hours_back=time_range)
+            inference_summary = performance_monitor.get_inference_metrics_summary(hours_back=time_range)
 
             # Create mock time series data for demonstration
             end_time = datetime.now()
@@ -841,10 +785,7 @@ def register_performance_analytics_callbacks(
 
             if metric_type in ["all", "system"]:
                 # Add system metrics
-                cpu_values = [
-                    50 + 20 * np.sin(i * 0.1) + np.random.normal(0, 5)
-                    for i in range(len(timestamps))
-                ]
+                cpu_values = [50 + 20 * np.sin(i * 0.1) + np.random.normal(0, 5) for i in range(len(timestamps))]
                 fig.add_trace(
                     go.Scatter(
                         x=timestamps,
@@ -857,10 +798,7 @@ def register_performance_analytics_callbacks(
 
             if metric_type in ["all", "training"]:
                 # Add training metrics
-                training_times = [
-                    120 + 30 * np.sin(i * 0.05) + np.random.normal(0, 10)
-                    for i in range(len(timestamps))
-                ]
+                training_times = [120 + 30 * np.sin(i * 0.05) + np.random.normal(0, 10) for i in range(len(timestamps))]
                 fig.add_trace(
                     go.Scatter(
                         x=timestamps,
@@ -874,10 +812,7 @@ def register_performance_analytics_callbacks(
 
             if metric_type in ["all", "inference"]:
                 # Add inference metrics
-                inference_times = [
-                    50 + 15 * np.sin(i * 0.2) + np.random.normal(0, 3)
-                    for i in range(len(timestamps))
-                ]
+                inference_times = [50 + 15 * np.sin(i * 0.2) + np.random.normal(0, 3) for i in range(len(timestamps))]
                 fig.add_trace(
                     go.Scatter(
                         x=timestamps,
@@ -966,9 +901,7 @@ def register_performance_analytics_callbacks(
                     forecast_scores.append(forecast_info.get("performance_score", 0))
 
             if not sensor_ids:
-                return go.Figure(), dbc.Alert(
-                    "No trained models to compare", color="info"
-                )
+                return go.Figure(), dbc.Alert("No trained models to compare", color="info")
 
             # Create comparison chart
             fig = go.Figure()
@@ -1000,43 +933,23 @@ def register_performance_analytics_callbacks(
             )
 
             # Create comparison stats
-            avg_anomaly = (
-                np.mean([s for s in anomaly_scores if s > 0])
-                if any(s > 0 for s in anomaly_scores)
-                else 0
-            )
-            avg_forecast = (
-                np.mean([s for s in forecast_scores if s > 0])
-                if any(s > 0 for s in forecast_scores)
-                else 0
-            )
+            avg_anomaly = np.mean([s for s in anomaly_scores if s > 0]) if any(s > 0 for s in anomaly_scores) else 0
+            avg_forecast = np.mean([s for s in forecast_scores if s > 0]) if any(s > 0 for s in forecast_scores) else 0
 
             comparison_stats = dbc.ListGroup(
                 [
-                    dbc.ListGroupItem(
-                        [html.Strong("Avg Anomaly Score: "), f"{avg_anomaly:.3f}"]
-                    ),
-                    dbc.ListGroupItem(
-                        [html.Strong("Avg Forecast Score: "), f"{avg_forecast:.3f}"]
-                    ),
+                    dbc.ListGroupItem([html.Strong("Avg Anomaly Score: "), f"{avg_anomaly:.3f}"]),
+                    dbc.ListGroupItem([html.Strong("Avg Forecast Score: "), f"{avg_forecast:.3f}"]),
                     dbc.ListGroupItem(
                         [
                             html.Strong("Best Anomaly Model: "),
-                            (
-                                sensor_ids[np.argmax(anomaly_scores)]
-                                if anomaly_scores
-                                else "None"
-                            ),
+                            (sensor_ids[np.argmax(anomaly_scores)] if anomaly_scores else "None"),
                         ]
                     ),
                     dbc.ListGroupItem(
                         [
                             html.Strong("Best Forecast Model: "),
-                            (
-                                sensor_ids[np.argmax(forecast_scores)]
-                                if forecast_scores
-                                else "None"
-                            ),
+                            (sensor_ids[np.argmax(forecast_scores)] if forecast_scores else "None"),
                         ]
                     ),
                 ],

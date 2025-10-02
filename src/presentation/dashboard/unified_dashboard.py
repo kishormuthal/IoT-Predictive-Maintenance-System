@@ -121,9 +121,7 @@ class SafeLayoutLoader:
                 logger.info(f"✓ Loaded layout: {layout_name}")
                 return True
             else:
-                logger.warning(
-                    f"Layout module {layout_module_path} has no create_layout function"
-                )
+                logger.warning(f"Layout module {layout_module_path} has no create_layout function")
                 return False
 
         except Exception as e:
@@ -158,12 +156,8 @@ class SafeLayoutLoader:
                         html.P(f"There was an issue loading the {layout_name} tab:"),
                         html.Code(error_msg),
                         html.Hr(),
-                        html.P(
-                            "The system is running in safe mode. Other features remain available."
-                        ),
-                        dbc.Button(
-                            "Refresh Page", href="/", color="primary", className="mt-2"
-                        ),
+                        html.P("The system is running in safe mode. Other features remain available."),
+                        dbc.Button("Refresh Page", href="/", color="primary", className="mt-2"),
                     ],
                     color="danger",
                 )
@@ -330,9 +324,7 @@ class UnifiedIoTDashboard:
 
     def _initialize_lightweight_services(self):
         """Initialize lightweight services without heavy ML models"""
-        logger.info(
-            "Using lightweight service initialization (layouts handle their own data access)"
-        )
+        logger.info("Using lightweight service initialization (layouts handle their own data access)")
 
         # Mock service for compatibility
         class MockService:
@@ -358,9 +350,7 @@ class UnifiedIoTDashboard:
         self.model_registry = MockService("ModelRegistry")
         self.performance_monitor = MockService("PerformanceMonitor")
 
-        logger.info(
-            "✓ Lightweight services initialized - full features available in layouts"
-        )
+        logger.info("✓ Lightweight services initialized - full features available in layouts")
 
     def _initialize_services_safely(self):
         """Initialize services with anti-hanging timeout architecture (SLOW - loads TensorFlow)"""
@@ -389,9 +379,7 @@ class UnifiedIoTDashboard:
             thread.join(timeout)
 
             if thread.is_alive():
-                logger.warning(
-                    f"{service_name} initialization timed out after {timeout}s, using mock"
-                )
+                logger.warning(f"{service_name} initialization timed out after {timeout}s, using mock")
                 return MockService(service_name)
             return result["service"] if result["success"] else MockService(service_name)
 
@@ -400,26 +388,16 @@ class UnifiedIoTDashboard:
 
             # Core services with timeout
             self.data_loader = safe_service_init(NASADataLoader, "NASA Data Loader", 10)
-            self.anomaly_service = safe_service_init(
-                AnomalyDetectionService, "Anomaly Service", 10
-            )
-            self.forecasting_service = safe_service_init(
-                ForecastingService, "Forecasting Service", 10
-            )
+            self.anomaly_service = safe_service_init(AnomalyDetectionService, "Anomaly Service", 10)
+            self.forecasting_service = safe_service_init(ForecastingService, "Forecasting Service", 10)
 
             # Application services
-            self.training_use_case = safe_service_init(
-                TrainingUseCase, "Training Use Case", 8
-            )
-            self.config_manager = safe_service_init(
-                TrainingConfigManager, "Config Manager", 5
-            )
+            self.training_use_case = safe_service_init(TrainingUseCase, "Training Use Case", 8)
+            self.config_manager = safe_service_init(TrainingConfigManager, "Config Manager", 5)
 
             # Infrastructure services
             self.model_registry = safe_service_init(ModelRegistry, "Model Registry", 8)
-            self.performance_monitor = safe_service_init(
-                PerformanceMonitor, "Performance Monitor", 5
-            )
+            self.performance_monitor = safe_service_init(PerformanceMonitor, "Performance Monitor", 5)
 
             logger.info("✓ All services initialized with anti-hanging protection")
 
@@ -440,9 +418,7 @@ class UnifiedIoTDashboard:
 
     def _load_all_rich_layouts(self):
         """Load ALL rich layouts from src/presentation/dashboard/layouts/"""
-        logger.info(
-            "Loading layouts (using safe fallback mode to avoid import hangs)..."
-        )
+        logger.info("Loading layouts (using safe fallback mode to avoid import hangs)...")
 
         # Load ALL full-featured layouts (ALL FIXED - no initialization issues)
         layouts_to_load = [
@@ -481,32 +457,20 @@ class UnifiedIoTDashboard:
             if self.layout_loader.safe_import_layout(module_path, layout_name):
                 successfully_loaded += 1
 
-        logger.info(
-            f"✓ Successfully loaded {successfully_loaded}/{len(layouts_to_load)} FULL-FEATURED layouts"
-        )
+        logger.info(f"✓ Successfully loaded {successfully_loaded}/{len(layouts_to_load)} FULL-FEATURED layouts")
         if successfully_loaded == len(layouts_to_load):
             logger.info("✓ ALL ADVANCED FEATURES ENABLED:")
             logger.info("  - Overview: IoT Architecture, Network topology, Heatmaps")
-            logger.info(
-                "  - Anomaly Monitor: Alert actions, Threshold manager, Subsystem patterns"
-            )
-            logger.info(
-                "  - Forecasting: Risk Matrix, What-If Analysis, Model comparison"
-            )
+            logger.info("  - Anomaly Monitor: Alert actions, Threshold manager, Subsystem patterns")
+            logger.info("  - Forecasting: Risk Matrix, What-If Analysis, Model comparison")
             logger.info("  - Maintenance: Calendar/Gantt views, Resource optimization")
             logger.info("  - Work Orders: Complete CRUD, Advanced tracking")
-            logger.info(
-                "  - System Performance: Training Hub, Model Registry, Pipeline"
-            )
+            logger.info("  - System Performance: Training Hub, Model Registry, Pipeline")
         else:
-            logger.info(
-                f"✓ Using enhanced fallback layouts for remaining tabs (production-quality)"
-            )
+            logger.info(f"✓ Using enhanced fallback layouts for remaining tabs (production-quality)")
 
         if successfully_loaded < len(layouts_to_load):
-            logger.warning(
-                f"Some layouts not available: {list(self.layout_loader.failed_layouts.keys())}"
-            )
+            logger.warning(f"Some layouts not available: {list(self.layout_loader.failed_layouts.keys())}")
             logger.info("Fallback layouts will be used for unavailable tabs")
 
     def _setup_unified_layout(self):
@@ -520,9 +484,7 @@ class UnifiedIoTDashboard:
                             [
                                 html.H1(
                                     [
-                                        html.I(
-                                            className="fas fa-satellite-dish me-3 text-primary"
-                                        ),
+                                        html.I(className="fas fa-satellite-dish me-3 text-primary"),
                                         "IoT Predictive Maintenance",
                                     ],
                                     className="mb-1",
@@ -555,9 +517,7 @@ class UnifiedIoTDashboard:
                             [
                                 html.Div(
                                     [
-                                        html.Div(
-                                            id="alert-notifications", className="mb-2"
-                                        ),
+                                        html.Div(id="alert-notifications", className="mb-2"),
                                         html.Div(id="unified-status-panel"),
                                     ],
                                     className="text-end",
@@ -680,9 +640,7 @@ class UnifiedIoTDashboard:
                 # Hidden div to store state
                 html.Div(id="hidden-state", style={"display": "none"}),
                 # Refresh intervals
-                dcc.Interval(
-                    id="global-refresh-interval", interval=30 * 1000, n_intervals=0
-                ),
+                dcc.Interval(id="global-refresh-interval", interval=30 * 1000, n_intervals=0),
             ]
         )
 
@@ -1016,18 +974,10 @@ class UnifiedIoTDashboard:
                                                                 ),
                                                                 html.Ul(
                                                                     [
-                                                                        html.Li(
-                                                                            "Core Layer: Domain Models & Services"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Application Layer: Use Cases & DTOs"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Infrastructure: Data, ML, Monitoring"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Presentation: Dashboard & Components"
-                                                                        ),
+                                                                        html.Li("Core Layer: Domain Models & Services"),
+                                                                        html.Li("Application Layer: Use Cases & DTOs"),
+                                                                        html.Li("Infrastructure: Data, ML, Monitoring"),
+                                                                        html.Li("Presentation: Dashboard & Components"),
                                                                     ]
                                                                 ),
                                                             ],
@@ -1041,24 +991,12 @@ class UnifiedIoTDashboard:
                                                                 ),
                                                                 html.Ul(
                                                                     [
-                                                                        html.Li(
-                                                                            "NASA SMAP/MSL Integration"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Real-time Anomaly Detection"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Transformer Forecasting"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Event-driven Architecture"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Model Registry & Versioning"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Performance Monitoring"
-                                                                        ),
+                                                                        html.Li("NASA SMAP/MSL Integration"),
+                                                                        html.Li("Real-time Anomaly Detection"),
+                                                                        html.Li("Transformer Forecasting"),
+                                                                        html.Li("Event-driven Architecture"),
+                                                                        html.Li("Model Registry & Versioning"),
+                                                                        html.Li("Performance Monitoring"),
                                                                     ]
                                                                 ),
                                                             ],
@@ -1269,11 +1207,7 @@ class UnifiedIoTDashboard:
                 self.alert_manager.create_alert(
                     f"Anomaly Detected: {sensor_id}",
                     f"Anomaly score: {score:.2f} - Severity: {severity}",
-                    (
-                        AlertSeverity.WARNING
-                        if severity == "medium"
-                        else AlertSeverity.ERROR
-                    ),
+                    (AlertSeverity.WARNING if severity == "medium" else AlertSeverity.ERROR),
                     AlertCategory.ANOMALY,
                     event.source_component,
                 )
@@ -1296,9 +1230,7 @@ class UnifiedIoTDashboard:
             except Exception as e:
                 logger.error(f"Error handling forecast event: {e}")
 
-        self.event_bus.subscribe(
-            EventType.ANOMALY_DETECTED, handle_anomaly_detection, "unified_dashboard"
-        )
+        self.event_bus.subscribe(EventType.ANOMALY_DETECTED, handle_anomaly_detection, "unified_dashboard")
         self.event_bus.subscribe(
             EventType.FORECAST_GENERATED,
             handle_forecast_generation,
@@ -1325,11 +1257,7 @@ class UnifiedIoTDashboard:
                 self.alert_manager.create_alert(
                     f"Rich Features Loaded",
                     f"{loaded_layouts} layouts enabled, {failed_layouts} using fallbacks",
-                    (
-                        AlertSeverity.INFO
-                        if failed_layouts == 0
-                        else AlertSeverity.WARNING
-                    ),
+                    (AlertSeverity.INFO if failed_layouts == 0 else AlertSeverity.WARNING),
                     AlertCategory.SYSTEM,
                     "layout_loader",
                 )
@@ -1358,9 +1286,7 @@ class UnifiedIoTDashboard:
     def _start_performance_monitoring_safe(self):
         """Start performance monitoring with error handling"""
         try:
-            if self.performance_monitor and hasattr(
-                self.performance_monitor, "start_monitoring"
-            ):
+            if self.performance_monitor and hasattr(self.performance_monitor, "start_monitoring"):
                 self.performance_monitor.start_monitoring()
                 logger.info("✓ Performance monitoring started")
         except Exception as e:
@@ -1402,9 +1328,7 @@ def create_app(debug: bool = False):
 # Backward compatibility exports
 UnifiedDashboard = UnifiedIoTDashboard
 EnhancedIoTDashboard = UnifiedIoTDashboard  # For backward compatibility with app.py
-OptimizedIoTDashboard = (
-    UnifiedIoTDashboard  # For backward compatibility with start_dashboard.py
-)
+OptimizedIoTDashboard = UnifiedIoTDashboard  # For backward compatibility with start_dashboard.py
 
 
 def create_enhanced_dashboard(debug: bool = False):

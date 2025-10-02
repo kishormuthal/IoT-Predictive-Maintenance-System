@@ -216,17 +216,13 @@ class RealTimeStateManager:
         self._stop_event.clear()
 
         # Start update scheduler thread
-        self.update_scheduler = threading.Thread(
-            target=self._update_scheduler_loop, daemon=True
-        )
+        self.update_scheduler = threading.Thread(target=self._update_scheduler_loop, daemon=True)
         self.update_scheduler.start()
 
         # Start component update threads
         for component_id, component in self.components.items():
             if component.is_active:
-                self.background_executor.submit(
-                    self._component_update_loop, component_id
-                )
+                self.background_executor.submit(self._component_update_loop, component_id)
 
         logger.info("Real-time update system started")
 
@@ -280,9 +276,7 @@ class RealTimeStateManager:
                     break
 
                 # Check if update is due
-                time_since_update = (
-                    datetime.now() - component.last_update
-                ).total_seconds()
+                time_since_update = (datetime.now() - component.last_update).total_seconds()
                 if time_since_update >= component.update_interval:
                     self._update_component(component_id)
 
@@ -308,9 +302,7 @@ class RealTimeStateManager:
             start_time = datetime.now()
 
             # Update component based on type
-            update_data = self._get_component_update_data(
-                component_id, component.component_type
-            )
+            update_data = self._get_component_update_data(component_id, component.component_type)
 
             if update_data:
                 # Cache the update data
@@ -335,9 +327,7 @@ class RealTimeStateManager:
                 component.last_error = str(e)
                 self._record_update_performance(component_id, 0, success=False)
 
-    def _get_component_update_data(
-        self, component_id: str, component_type: ComponentType
-    ) -> Optional[Dict[str, Any]]:
+    def _get_component_update_data(self, component_id: str, component_type: ComponentType) -> Optional[Dict[str, Any]]:
         """Get update data for a component
 
         Args:
@@ -348,10 +338,7 @@ class RealTimeStateManager:
             Update data dictionary
         """
         try:
-            if (
-                component_type == ComponentType.PIPELINE_MONITOR
-                and self.pipeline_monitor
-            ):
+            if component_type == ComponentType.PIPELINE_MONITOR and self.pipeline_monitor:
                 return {
                     "metrics": self.pipeline_monitor.get_current_metrics(),
                     "health_status": self.pipeline_monitor.get_pipeline_health_status(),
@@ -360,9 +347,7 @@ class RealTimeStateManager:
                     "queue_status": self.pipeline_monitor.get_queue_status(),
                 }
 
-            elif (
-                component_type == ComponentType.ANOMALY_HEATMAP and self.anomaly_heatmap
-            ):
+            elif component_type == ComponentType.ANOMALY_HEATMAP and self.anomaly_heatmap:
                 return {
                     "heatmap_data": self.anomaly_heatmap.get_heatmap_data(),
                     "summary_statistics": self.anomaly_heatmap.get_summary_statistics(),
@@ -375,9 +360,7 @@ class RealTimeStateManager:
                     "grid_data": self.model_status.get_model_grid_data(),
                 }
 
-            elif (
-                component_type == ComponentType.ALERTS_PIPELINE and self.alerts_pipeline
-            ):
+            elif component_type == ComponentType.ALERTS_PIPELINE and self.alerts_pipeline:
                 # Generate new alerts
                 new_alerts = self.alerts_pipeline.generate_real_time_alerts()
 
@@ -388,10 +371,7 @@ class RealTimeStateManager:
                     "new_alerts_count": len(new_alerts),
                 }
 
-            elif (
-                component_type == ComponentType.DATA_ORCHESTRATOR
-                and self.data_orchestrator
-            ):
+            elif component_type == ComponentType.DATA_ORCHESTRATOR and self.data_orchestrator:
                 return {
                     "system_overview": self.data_orchestrator.get_system_overview(),
                     "equipment_status": self.data_orchestrator.get_all_equipment_status(),
@@ -425,10 +405,7 @@ class RealTimeStateManager:
             time_since_update = (current_time - component.last_update).total_seconds()
 
             # Check if urgent update is needed
-            if (
-                component.priority == UpdatePriority.CRITICAL
-                and time_since_update > 0.5
-            ):
+            if component.priority == UpdatePriority.CRITICAL and time_since_update > 0.5:
                 self._schedule_urgent_update(component_id)
             elif component.priority == UpdatePriority.HIGH and time_since_update > 2.0:
                 self._schedule_urgent_update(component_id)
@@ -490,29 +467,21 @@ class RealTimeStateManager:
         """Update performance tracking metrics"""
         try:
             current_time = datetime.now()
-            time_since_check = (
-                current_time - self.performance_metrics["last_performance_check"]
-            ).total_seconds()
+            time_since_check = (current_time - self.performance_metrics["last_performance_check"]).total_seconds()
 
             if time_since_check >= 10.0:  # Update every 10 seconds
                 # Calculate updates per second
                 recent_updates = [
-                    u
-                    for u in self.update_history
-                    if (current_time - u["timestamp"]).total_seconds() < 60
+                    u for u in self.update_history if (current_time - u["timestamp"]).total_seconds() < 60
                 ]
 
                 if recent_updates:
-                    self.performance_metrics["updates_per_second"] = (
-                        len(recent_updates) / 60.0
-                    )
+                    self.performance_metrics["updates_per_second"] = len(recent_updates) / 60.0
 
                     # Calculate average update time
                     successful_updates = [u for u in recent_updates if u["success"]]
                     if successful_updates:
-                        avg_time = sum(
-                            [u["duration"] for u in successful_updates]
-                        ) / len(successful_updates)
+                        avg_time = sum([u["duration"] for u in successful_updates]) / len(successful_updates)
                         self.performance_metrics["avg_update_time"] = avg_time
 
                 self.performance_metrics["last_performance_check"] = current_time
@@ -520,9 +489,7 @@ class RealTimeStateManager:
         except Exception as e:
             logger.error(f"Error updating performance metrics: {e}")
 
-    def _record_update_performance(
-        self, component_id: str, duration: float, success: bool
-    ):
+    def _record_update_performance(self, component_id: str, duration: float, success: bool):
         """Record performance metrics for an update
 
         Args:
@@ -578,9 +545,7 @@ class RealTimeStateManager:
             "error_components": error_components,
             "performance_metrics": self.performance_metrics,
             "last_update": (
-                max([c.last_update for c in self.components.values()])
-                if self.components
-                else datetime.now()
+                max([c.last_update for c in self.components.values()]) if self.components else datetime.now()
             ),
         }
 

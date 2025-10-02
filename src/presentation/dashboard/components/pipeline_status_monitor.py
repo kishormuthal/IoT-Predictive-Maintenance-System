@@ -84,18 +84,10 @@ class PipelineStatusMonitor:
 
         # Data source monitoring
         self.data_sources = {
-            "SMAP": DataSourceStatus(
-                "SMAP Satellite", True, datetime.now(), 0.0, 0, "EXCELLENT"
-            ),
-            "MSL": DataSourceStatus(
-                "MSL Mars Rover", True, datetime.now(), 0.0, 0, "EXCELLENT"
-            ),
-            "Models": DataSourceStatus(
-                "Anomaly Models", True, datetime.now(), 0.0, 0, "EXCELLENT"
-            ),
-            "Alerts": DataSourceStatus(
-                "Alert System", True, datetime.now(), 0.0, 0, "EXCELLENT"
-            ),
+            "SMAP": DataSourceStatus("SMAP Satellite", True, datetime.now(), 0.0, 0, "EXCELLENT"),
+            "MSL": DataSourceStatus("MSL Mars Rover", True, datetime.now(), 0.0, 0, "EXCELLENT"),
+            "Models": DataSourceStatus("Anomaly Models", True, datetime.now(), 0.0, 0, "EXCELLENT"),
+            "Alerts": DataSourceStatus("Alert System", True, datetime.now(), 0.0, 0, "EXCELLENT"),
         }
 
         # Performance thresholds
@@ -169,9 +161,7 @@ class PipelineStatusMonitor:
         rate = self.current_metrics.processing_rate
 
         if rate >= 1000:
-            return (
-                f"Processing Rate: {rate/1000:.1f}K records/sec - Real-time NASA data"
-            )
+            return f"Processing Rate: {rate/1000:.1f}K records/sec - Real-time NASA data"
         elif rate >= 1:
             return f"Processing Rate: {rate:.1f} records/sec - Real-time NASA data"
         else:
@@ -243,9 +233,7 @@ class PipelineStatusMonitor:
         for source_name, source in self.data_sources.items():
             # Calculate minutes since last data
             if source.last_data_received:
-                minutes_since = (
-                    datetime.now() - source.last_data_received
-                ).total_seconds() / 60
+                minutes_since = (datetime.now() - source.last_data_received).total_seconds() / 60
             else:
                 minutes_since = float("inf")
 
@@ -255,11 +243,7 @@ class PipelineStatusMonitor:
                     "status": "CONNECTED" if source.is_connected else "DISCONNECTED",
                     "records_per_minute": source.records_per_minute,
                     "quality": source.connection_quality,
-                    "last_data": (
-                        f"{minutes_since:.1f}m ago"
-                        if minutes_since < 60
-                        else "60m+ ago"
-                    ),
+                    "last_data": (f"{minutes_since:.1f}m ago" if minutes_since < 60 else "60m+ ago"),
                     "error_count": source.error_count,
                     "color": self._get_source_status_color(source),
                 }
@@ -284,10 +268,7 @@ class PipelineStatusMonitor:
 
         # Get recent data
         recent_data = list(self.processing_rates)[-60:]  # Last minute
-        timestamps = [
-            datetime.now() - timedelta(seconds=i)
-            for i in range(len(recent_data) - 1, -1, -1)
-        ]
+        timestamps = [datetime.now() - timedelta(seconds=i) for i in range(len(recent_data) - 1, -1, -1)]
 
         # Calculate anomaly rates
         anomaly_rates = []
@@ -331,24 +312,15 @@ class PipelineStatusMonitor:
             # Get streaming service statistics
             if self.streaming_service:
                 stream_stats = self.streaming_service.get_statistics()
-                self.current_metrics.processing_rate = stream_stats.get(
-                    "processing_rate", 0.0
-                )
-                self.current_metrics.total_processed = stream_stats.get(
-                    "records_streamed", 0
-                )
-                self.current_metrics.anomalies_detected = stream_stats.get(
-                    "anomalies_detected", 0
-                )
-                self.current_metrics.queue_sizes["telemetry"] = stream_stats.get(
-                    "queue_size", 0
-                )
+                self.current_metrics.processing_rate = stream_stats.get("processing_rate", 0.0)
+                self.current_metrics.total_processed = stream_stats.get("records_streamed", 0)
+                self.current_metrics.anomalies_detected = stream_stats.get("anomalies_detected", 0)
+                self.current_metrics.queue_sizes["telemetry"] = stream_stats.get("queue_size", 0)
 
                 # Calculate anomaly rate
                 if self.current_metrics.total_processed > 0:
                     self.current_metrics.anomaly_rate = (
-                        self.current_metrics.anomalies_detected
-                        / self.current_metrics.total_processed
+                        self.current_metrics.anomalies_detected / self.current_metrics.total_processed
                     )
 
                 # Calculate uptime
@@ -357,23 +329,17 @@ class PipelineStatusMonitor:
                     if isinstance(start_time, str):
                         start_time = datetime.fromisoformat(start_time)
                     uptime_seconds = (datetime.now() - start_time).total_seconds()
-                    self.current_metrics.pipeline_uptime = (
-                        uptime_seconds / 3600
-                    )  # hours
+                    self.current_metrics.pipeline_uptime = uptime_seconds / 3600  # hours
 
             # Get model manager statistics
             if self.model_manager:
                 model_stats = self.model_manager.get_model_performance_summary()
-                self.current_metrics.model_processing_time = (
-                    model_stats.get("avg_inference_time", 0.0) * 1000
-                )  # ms
+                self.current_metrics.model_processing_time = model_stats.get("avg_inference_time", 0.0) * 1000  # ms
 
             # Get alert manager statistics
             if self.alert_manager:
                 alert_stats = self.alert_manager.get_alert_statistics()
-                self.current_metrics.queue_sizes["alert"] = len(
-                    alert_stats.get("active_alerts", [])
-                )
+                self.current_metrics.queue_sizes["alert"] = len(alert_stats.get("active_alerts", []))
 
             # Update data source statuses
             self._update_data_source_status()
@@ -395,16 +361,12 @@ class PipelineStatusMonitor:
             # SMAP status
             smap_source = self.data_sources["SMAP"]
             smap_source.last_data_received = datetime.now()
-            smap_source.records_per_minute = max(
-                0, self.current_metrics.processing_rate * 60 * 0.45
-            )  # ~45% SMAP
+            smap_source.records_per_minute = max(0, self.current_metrics.processing_rate * 60 * 0.45)  # ~45% SMAP
 
             # MSL status
             msl_source = self.data_sources["MSL"]
             msl_source.last_data_received = datetime.now()
-            msl_source.records_per_minute = max(
-                0, self.current_metrics.processing_rate * 60 * 0.55
-            )  # ~55% MSL
+            msl_source.records_per_minute = max(0, self.current_metrics.processing_rate * 60 * 0.55)  # ~55% MSL
 
             # Models status
             models_source = self.data_sources["Models"]
@@ -416,9 +378,7 @@ class PipelineStatusMonitor:
             alerts_source = self.data_sources["Alerts"]
             alerts_source.is_connected = self.alert_manager is not None
             alerts_source.last_data_received = datetime.now()
-            alerts_source.records_per_minute = (
-                self.current_metrics.alert_generation_rate * 60
-            )
+            alerts_source.records_per_minute = self.current_metrics.alert_generation_rate * 60
 
         except Exception as e:
             logger.error(f"Error updating data source status: {e}")
@@ -445,9 +405,7 @@ class PipelineStatusMonitor:
 
     def _start_monitoring(self):
         """Start background monitoring thread"""
-        self._monitor_thread = threading.Thread(
-            target=self._monitoring_loop, daemon=True
-        )
+        self._monitor_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
         self._monitor_thread.start()
 
     def _monitoring_loop(self):

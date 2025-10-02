@@ -123,9 +123,7 @@ class NASASubsystemFailureAnalyzer:
                         maintenance_recommendations=[],
                     )
 
-            logger.info(
-                f"Initialized monitoring for {len(self.subsystem_health)} subsystems"
-            )
+            logger.info(f"Initialized monitoring for {len(self.subsystem_health)} subsystems")
 
         except Exception as e:
             logger.error(f"Error initializing subsystem monitoring: {e}")
@@ -465,9 +463,7 @@ class NASASubsystemFailureAnalyzer:
                     "spacecraft": spacecraft,
                     "subsystem": subsystem,
                     "health_score": health.overall_health_score,
-                    "status": self._determine_health_status(
-                        health.overall_health_score
-                    ),
+                    "status": self._determine_health_status(health.overall_health_score),
                     "trend_7day": health.trend_7day,
                     "anomaly_count": health.anomaly_count,
                     "equipment_count": health.equipment_count,
@@ -479,9 +475,7 @@ class NASASubsystemFailureAnalyzer:
                         {
                             "subsystem": subsystem_key,
                             "health_score": health.overall_health_score,
-                            "risk_factors": health.risk_factors[
-                                :3
-                            ],  # Top 3 risk factors
+                            "risk_factors": health.risk_factors[:3],  # Top 3 risk factors
                         }
                     )
 
@@ -491,9 +485,7 @@ class NASASubsystemFailureAnalyzer:
                         {
                             "subsystem": subsystem_key,
                             "trend": health.trend_7day,
-                            "direction": (
-                                "improving" if health.trend_7day > 0 else "degrading"
-                            ),
+                            "direction": ("improving" if health.trend_7day > 0 else "degrading"),
                         }
                     )
 
@@ -530,12 +522,7 @@ class NASASubsystemFailureAnalyzer:
             if patterns:
                 # Failure frequency chart
                 pattern_names = [
-                    (
-                        p.pattern_name[:20] + "..."
-                        if len(p.pattern_name) > 20
-                        else p.pattern_name
-                    )
-                    for p in patterns
+                    (p.pattern_name[:20] + "..." if len(p.pattern_name) > 20 else p.pattern_name) for p in patterns
                 ]
                 frequencies = [p.frequency for p in patterns]
 
@@ -648,27 +635,19 @@ class NASASubsystemFailureAnalyzer:
         else:
             return "POOR"
 
-    def _get_patterns_for_subsystem(
-        self, subsystem: str
-    ) -> List[SubsystemFailurePattern]:
+    def _get_patterns_for_subsystem(self, subsystem: str) -> List[SubsystemFailurePattern]:
         """Get all patterns for a specific subsystem"""
         return []  # Implementation needed
 
-    def _aggregate_severity_distribution(
-        self, patterns: List[SubsystemFailurePattern]
-    ) -> Dict[str, float]:
+    def _aggregate_severity_distribution(self, patterns: List[SubsystemFailurePattern]) -> Dict[str, float]:
         """Aggregate severity distribution across patterns"""
         return {"CRITICAL": 0.2, "HIGH": 0.3, "MEDIUM": 0.5}
 
-    def _calculate_equipment_impact(
-        self, patterns: List[SubsystemFailurePattern]
-    ) -> Dict[str, float]:
+    def _calculate_equipment_impact(self, patterns: List[SubsystemFailurePattern]) -> Dict[str, float]:
         """Calculate equipment impact scores"""
         return {"Equipment_1": 0.8, "Equipment_2": 0.6}
 
-    def _generate_trend_data(
-        self, patterns: List[SubsystemFailurePattern]
-    ) -> Dict[str, List]:
+    def _generate_trend_data(self, patterns: List[SubsystemFailurePattern]) -> Dict[str, List]:
         """Generate trend data for visualization"""
         dates = [datetime.now() - timedelta(days=i) for i in range(30, 0, -1)]
         values = np.random.uniform(70, 95, 30)  # Mock data

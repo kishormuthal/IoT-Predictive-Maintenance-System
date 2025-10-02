@@ -70,9 +70,7 @@ class UnifiedDataOrchestrator:
         # Fallback: scan filesystem
         models = []
         try:
-            anomaly_models = glob.glob(
-                str(self.model_dir / "nasa_equipment_models" / "*.pkl")
-            )
+            anomaly_models = glob.glob(str(self.model_dir / "nasa_equipment_models" / "*.pkl"))
             models.extend([Path(f).stem for f in anomaly_models])
         except:
             pass

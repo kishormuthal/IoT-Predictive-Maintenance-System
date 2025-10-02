@@ -142,9 +142,7 @@ class IoTSystemStructure:
                     name=system,
                     text=system_data["Sensors"],
                     textposition="auto",
-                    hovertemplate="<b>%{x}</b><br>System: "
-                    + system
-                    + "<br>Sensors: %{y}<extra></extra>",
+                    hovertemplate="<b>%{x}</b><br>System: " + system + "<br>Sensors: %{y}<extra></extra>",
                 ),
                 row=1,
                 col=2,
@@ -166,11 +164,7 @@ class IoTSystemStructure:
             go.Pie(
                 labels=list(criticality_count.keys()),
                 values=list(criticality_count.values()),
-                marker=dict(
-                    colors=[
-                        criticality_colors[level] for level in criticality_count.keys()
-                    ]
-                ),
+                marker=dict(colors=[criticality_colors[level] for level in criticality_count.keys()]),
                 textinfo="label+percent+value",
                 textposition="auto",
                 hovertemplate="<b>%{label}</b><br>Subsystems: %{value}<br>Percentage: %{percent}<extra></extra>",
@@ -203,9 +197,7 @@ class IoTSystemStructure:
                     text=system_data["Equipment"],
                     textposition="auto",
                     showlegend=False,
-                    hovertemplate="<b>%{x}</b><br>System: "
-                    + system
-                    + "<br>Equipment: %{y}<extra></extra>",
+                    hovertemplate="<b>%{x}</b><br>System: " + system + "<br>Equipment: %{y}<extra></extra>",
                 ),
                 row=2,
                 col=2,
@@ -242,9 +234,7 @@ class IoTSystemStructure:
             parents.append("🛰️ SMAP Satellite")
             values.append(details["sensors"])
             colors.append(
-                0.9
-                if details["criticality"] == "CRITICAL"
-                else 0.7 if details["criticality"] == "HIGH" else 0.5
+                0.9 if details["criticality"] == "CRITICAL" else 0.7 if details["criticality"] == "HIGH" else 0.5
             )
 
         # Add MSL subsystems
@@ -253,9 +243,7 @@ class IoTSystemStructure:
             parents.append("🤖 MSL Mars Rover")
             values.append(details["sensors"])
             colors.append(
-                0.1
-                if details["criticality"] == "CRITICAL"
-                else 0.3 if details["criticality"] == "HIGH" else 0.5
+                0.1 if details["criticality"] == "CRITICAL" else 0.3 if details["criticality"] == "HIGH" else 0.5
             )
 
         fig.add_trace(
@@ -379,19 +367,9 @@ class IoTSystemStructure:
                 node_sizes.append(30)
             else:
                 # Color by criticality
-                if (
-                    "POWER" in node
-                    or "ATTITUDE" in node
-                    or "MOBILITY" in node
-                    or "NAVIGATION" in node
-                ):
+                if "POWER" in node or "ATTITUDE" in node or "MOBILITY" in node or "NAVIGATION" in node:
                     node_colors.append("red")  # Critical
-                elif (
-                    "COMMUNICATION" in node
-                    or "SCIENTIFIC" in node
-                    or "PAYLOAD" in node
-                    or "THERMAL" in node
-                ):
+                elif "COMMUNICATION" in node or "SCIENTIFIC" in node or "PAYLOAD" in node or "THERMAL" in node:
                     node_colors.append("orange")  # High
                 else:
                     node_colors.append("green")  # Medium
@@ -447,9 +425,7 @@ class IoTSystemStructure:
                 # Header
                 html.Div(
                     [
-                        html.H2(
-                            "🏗️ IoT System Architecture", className="text-primary mb-4"
-                        ),
+                        html.H2("🏗️ IoT System Architecture", className="text-primary mb-4"),
                         html.P(
                             [
                                 "Interactive visualization of NASA's predictive maintenance IoT systems. ",
@@ -468,9 +444,7 @@ class IoTSystemStructure:
                             [
                                 html.Div(
                                     [
-                                        html.H4(
-                                            "🛰️ SMAP Satellite", className="card-title"
-                                        ),
+                                        html.H4("🛰️ SMAP Satellite", className="card-title"),
                                         html.H2("25", className="text-primary"),
                                         html.P("Sensors", className="card-text"),
                                         html.Small(
@@ -487,9 +461,7 @@ class IoTSystemStructure:
                             [
                                 html.Div(
                                     [
-                                        html.H4(
-                                            "🤖 MSL Mars Rover", className="card-title"
-                                        ),
+                                        html.H4("🤖 MSL Mars Rover", className="card-title"),
                                         html.H2("55", className="text-primary"),
                                         html.P("Sensors", className="card-text"),
                                         html.Small(
@@ -526,13 +498,9 @@ class IoTSystemStructure:
                             [
                                 html.Div(
                                     [
-                                        html.H4(
-                                            "🔍 Monitoring", className="card-title"
-                                        ),
+                                        html.H4("🔍 Monitoring", className="card-title"),
                                         html.H2("Real-time", className="text-info"),
-                                        html.P(
-                                            "Anomaly Detection", className="card-text"
-                                        ),
+                                        html.P("Anomaly Detection", className="card-text"),
                                         html.Small(
                                             "Pre-trained AI Models",
                                             className="text-muted",
@@ -598,9 +566,7 @@ class IoTSystemStructure:
                 # Detailed System Information
                 html.Div(
                     [
-                        html.H5(
-                            "[DETAIL] Detailed System Breakdown:", className="mb-3"
-                        ),
+                        html.H5("[DETAIL] Detailed System Breakdown:", className="mb-3"),
                         # SMAP System Details
                         html.Div(
                             [
@@ -705,9 +671,7 @@ def create_layout():
 
 
 # Callbacks
-@callback(
-    Output("system-structure-chart", "figure"), Input("viz-type-selector", "value")
-)
+@callback(Output("system-structure-chart", "figure"), Input("viz-type-selector", "value"))
 def update_visualization(viz_type):
     """Update the main visualization based on selection"""
     try:
@@ -742,7 +706,5 @@ def update_system_details(_):
         return smap_details, msl_details
     except Exception as e:
         logger.error(f"Error updating system details: {e}")
-        error_div = html.Div(
-            f"Error loading details: {str(e)}", className="alert alert-warning"
-        )
+        error_div = html.Div(f"Error loading details: {str(e)}", className="alert alert-warning")
         return error_div, error_div

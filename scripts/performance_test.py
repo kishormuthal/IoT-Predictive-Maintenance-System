@@ -78,9 +78,7 @@ class PerformanceTester:
 
     async def run_comprehensive_test(self) -> Dict[str, Any]:
         """Run comprehensive performance test suite"""
-        logger.info(
-            "Starting comprehensive performance testing for 80-sensor dashboard..."
-        )
+        logger.info("Starting comprehensive performance testing for 80-sensor dashboard...")
 
         # Start monitoring
         start_monitoring()
@@ -166,9 +164,7 @@ class PerformanceTester:
             execution_time = time.time() - start_time
 
             # Check if within memory limits
-            memory_within_limits = (
-                memory_stats.total_memory_mb < self.targets["memory_usage_limit_mb"]
-            )
+            memory_within_limits = memory_stats.total_memory_mb < self.targets["memory_usage_limit_mb"]
 
             return TestResult(
                 test_name="Memory Management",
@@ -226,9 +222,7 @@ class PerformanceTester:
                 return {"processed": True, "sensor_id": data["sensor_id"]}
 
             # Process all sensors in parallel
-            results = await async_processor.process_sensor_batch(
-                sensor_data_batch, test_sensor_processor
-            )
+            results = await async_processor.process_sensor_batch(sensor_data_batch, test_sensor_processor)
 
             execution_time = time.time() - start_time
             success_count = sum(1 for r in results if r.success)
@@ -248,10 +242,7 @@ class PerformanceTester:
                     "sensors_processed": len(sensor_data_batch),
                     "successful_operations": success_count,
                     "sensors_per_second": sensors_per_second,
-                    "avg_execution_time_ms": np.mean(
-                        [r.execution_time for r in results]
-                    )
-                    * 1000,
+                    "avg_execution_time_ms": np.mean([r.execution_time for r in results]) * 1000,
                 },
                 timestamp=datetime.now(),
             )
@@ -407,9 +398,7 @@ class PerformanceTester:
                 callback_times.append(callback_time)
 
                 # Record with callback optimizer
-                callback_optimizer.record_callback_time(
-                    f"test_callback_{i % 5}", callback_time / 1000
-                )
+                callback_optimizer.record_callback_time(f"test_callback_{i % 5}", callback_time / 1000)
 
             execution_time = time.time() - start_time
             avg_callback_time = np.mean(callback_times)
@@ -459,10 +448,7 @@ class PerformanceTester:
             # Generate various types of dashboard data
             for i in range(20):
                 sensor_data = {
-                    "timestamps": [
-                        (datetime.now() - timedelta(seconds=j)).isoformat()
-                        for j in range(100)
-                    ],
+                    "timestamps": [(datetime.now() - timedelta(seconds=j)).isoformat() for j in range(100)],
                     "values": [np.random.normal(50, 10) for _ in range(100)],
                     "anomaly_scores": [np.random.uniform(0, 1) for _ in range(100)],
                     "sensor_ids": [f"sensor_{j:03d}" for j in range(100)],
@@ -478,11 +464,7 @@ class PerformanceTester:
             execution_time = time.time() - start_time
 
             # Calculate average compression ratio
-            ratios = [
-                r["compression_ratio"]
-                for r in compression_results
-                if "compression_ratio" in r
-            ]
+            ratios = [r["compression_ratio"] for r in compression_results if "compression_ratio" in r]
             avg_compression_ratio = np.mean(ratios) if ratios else 1.0
 
             # Get compression stats
@@ -497,12 +479,8 @@ class PerformanceTester:
                 execution_time=execution_time,
                 additional_metrics={
                     "datasets_compressed": len(test_data_sets),
-                    "total_savings_bytes": compression_stats.get(
-                        "total_savings_bytes", 0
-                    ),
-                    "avg_compression_time_ms": compression_stats.get(
-                        "avg_compression_time_ms", 0
-                    ),
+                    "total_savings_bytes": compression_stats.get("total_savings_bytes", 0),
+                    "avg_compression_time_ms": compression_stats.get("avg_compression_time_ms", 0),
                     "method_usage": compression_stats.get("method_usage", {}),
                 },
                 timestamp=datetime.now(),
@@ -570,14 +548,11 @@ class PerformanceTester:
             # Calculate performance metrics
             successful_sensors = sum(1 for r in results if isinstance(r, int))
             total_data_points = sum(r for r in results if isinstance(r, int))
-            data_points_per_second = (
-                total_data_points / execution_time if execution_time > 0 else 0
-            )
+            data_points_per_second = total_data_points / execution_time if execution_time > 0 else 0
 
             # Check if we achieved 80 sensors processing target
             target_achieved = (
-                successful_sensors >= 80
-                and data_points_per_second >= self.targets["sensor_processing_rate"]
+                successful_sensors >= 80 and data_points_per_second >= self.targets["sensor_processing_rate"]
             )
 
             return TestResult(
@@ -591,9 +566,7 @@ class PerformanceTester:
                     "sensors_active": 80,
                     "successful_sensors": successful_sensors,
                     "total_data_points": total_data_points,
-                    "avg_data_points_per_sensor": (
-                        total_data_points / 80 if total_data_points > 0 else 0
-                    ),
+                    "avg_data_points_per_sensor": (total_data_points / 80 if total_data_points > 0 else 0),
                 },
                 timestamp=datetime.now(),
             )
@@ -627,9 +600,7 @@ class PerformanceTester:
                 tasks = []
 
                 # Simulate data retrieval
-                tasks.append(
-                    asyncio.create_task(asyncio.sleep(0.05))
-                )  # 50ms data fetch
+                tasks.append(asyncio.create_task(asyncio.sleep(0.05)))  # 50ms data fetch
 
                 # Simulate cache lookups
                 for j in range(5):
@@ -641,9 +612,7 @@ class PerformanceTester:
                         advanced_cache.set(cache_key, test_data, 300)
 
                 # Simulate chart generation
-                tasks.append(
-                    asyncio.create_task(asyncio.sleep(0.03))
-                )  # 30ms chart render
+                tasks.append(asyncio.create_task(asyncio.sleep(0.03)))  # 30ms chart render
 
                 # Simulate callback processing
                 tasks.append(asyncio.create_task(asyncio.sleep(0.02)))  # 20ms callbacks
@@ -662,9 +631,7 @@ class PerformanceTester:
             p95_response_time = np.percentile(response_times, 95)
 
             # Check if sub-second target is met
-            sub_second_achieved = (
-                avg_response_time <= self.targets["dashboard_response_time_ms"]
-            )
+            sub_second_achieved = avg_response_time <= self.targets["dashboard_response_time_ms"]
 
             return TestResult(
                 test_name="Dashboard Response Time",
@@ -678,8 +645,7 @@ class PerformanceTester:
                     "min_response_time_ms": min(response_times),
                     "max_response_time_ms": max(response_times),
                     "p95_response_time_ms": p95_response_time,
-                    "sub_second_rate": sum(1 for t in response_times if t <= 500)
-                    / len(response_times),
+                    "sub_second_rate": sum(1 for t in response_times if t <= 500) / len(response_times),
                 },
                 timestamp=datetime.now(),
             )
@@ -697,9 +663,7 @@ class PerformanceTester:
                 timestamp=datetime.now(),
             )
 
-    def _generate_test_report(
-        self, test_results: List[TestResult], total_time: float
-    ) -> Dict[str, Any]:
+    def _generate_test_report(self, test_results: List[TestResult], total_time: float) -> Dict[str, Any]:
         """Generate comprehensive test report"""
         passed_tests = sum(1 for r in test_results if r.passed)
         total_tests = len(test_results)
@@ -745,21 +709,13 @@ class PerformanceTester:
                 report["target_achievement"]["compression_efficiency"] = True
 
         # Generate performance summary
-        response_time_results = [
-            r for r in test_results if r.test_name == "Dashboard Response Time"
-        ]
+        response_time_results = [r for r in test_results if r.test_name == "Dashboard Response Time"]
         if response_time_results:
-            report["performance_summary"]["avg_response_time_ms"] = (
-                response_time_results[0].actual_value
-            )
+            report["performance_summary"]["avg_response_time_ms"] = response_time_results[0].actual_value
 
-        sensor_load_results = [
-            r for r in test_results if r.test_name == "80-Sensor Load Test"
-        ]
+        sensor_load_results = [r for r in test_results if r.test_name == "80-Sensor Load Test"]
         if sensor_load_results:
-            report["performance_summary"]["sensor_processing_rate"] = (
-                sensor_load_results[0].actual_value
-            )
+            report["performance_summary"]["sensor_processing_rate"] = sensor_load_results[0].actual_value
 
         # Generate recommendations
         for result in test_results:
@@ -789,9 +745,7 @@ class PerformanceTester:
             "optimization_level": (
                 "excellent"
                 if passed_tests == total_tests
-                else (
-                    "good" if passed_tests >= total_tests * 0.8 else "needs_improvement"
-                )
+                else ("good" if passed_tests >= total_tests * 0.8 else "needs_improvement")
             ),
             "critical_issues": [
                 r.test_name
@@ -845,31 +799,15 @@ async def main():
         print("\n🎯 TARGET ACHIEVEMENT")
         print("=" * 60)
         achievements = report["target_achievement"]
-        print(
-            f"✅ Sub-second Response: {'PASS' if achievements['sub_second_response'] else 'FAIL'}"
-        )
-        print(
-            f"✅ 80-Sensor Processing: {'PASS' if achievements['80_sensor_processing'] else 'FAIL'}"
-        )
-        print(
-            f"✅ Memory Efficiency: {'PASS' if achievements['memory_efficiency'] else 'FAIL'}"
-        )
-        print(
-            f"✅ Cache Performance: {'PASS' if achievements['cache_performance'] else 'FAIL'}"
-        )
-        print(
-            f"✅ Async Reliability: {'PASS' if achievements['async_reliability'] else 'FAIL'}"
-        )
-        print(
-            f"✅ Compression Efficiency: {'PASS' if achievements['compression_efficiency'] else 'FAIL'}"
-        )
+        print(f"✅ Sub-second Response: {'PASS' if achievements['sub_second_response'] else 'FAIL'}")
+        print(f"✅ 80-Sensor Processing: {'PASS' if achievements['80_sensor_processing'] else 'FAIL'}")
+        print(f"✅ Memory Efficiency: {'PASS' if achievements['memory_efficiency'] else 'FAIL'}")
+        print(f"✅ Cache Performance: {'PASS' if achievements['cache_performance'] else 'FAIL'}")
+        print(f"✅ Async Reliability: {'PASS' if achievements['async_reliability'] else 'FAIL'}")
+        print(f"✅ Compression Efficiency: {'PASS' if achievements['compression_efficiency'] else 'FAIL'}")
 
-        print(
-            f"\n🏆 OVERALL ASSESSMENT: {report['overall_assessment']['optimization_level'].upper()}"
-        )
-        print(
-            f"🎯 80-Sensor Ready: {'YES' if report['overall_assessment']['ready_for_80_sensors'] else 'NO'}"
-        )
+        print(f"\n🏆 OVERALL ASSESSMENT: {report['overall_assessment']['optimization_level'].upper()}")
+        print(f"🎯 80-Sensor Ready: {'YES' if report['overall_assessment']['ready_for_80_sensors'] else 'NO'}")
 
         if report["recommendations"]:
             print("\n💡 RECOMMENDATIONS")

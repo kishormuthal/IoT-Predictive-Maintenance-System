@@ -205,9 +205,7 @@ class EvaluationMetricsCalculator:
         try:
             # Basic metrics
             accuracy = accuracy_score(y_true, y_pred)
-            precision = precision_score(
-                y_true, y_pred, average=average, zero_division=0
-            )
+            precision = precision_score(y_true, y_pred, average=average, zero_division=0)
             recall = recall_score(y_true, y_pred, average=average, zero_division=0)
             f1 = f1_score(y_true, y_pred, average=average, zero_division=0)
 
@@ -240,9 +238,7 @@ class EvaluationMetricsCalculator:
                     roc_auc = auc(fpr, tpr)
 
                     # Precision-Recall curve
-                    precision_curve, recall_curve, pr_thresholds = (
-                        precision_recall_curve(y_true, y_prob)
-                    )
+                    precision_curve, recall_curve, pr_thresholds = precision_recall_curve(y_true, y_prob)
                     pr_auc = auc(recall_curve, precision_curve)
 
                 except Exception as e:
@@ -274,9 +270,7 @@ class EvaluationMetricsCalculator:
             raise
 
     @staticmethod
-    def compute_regression_metrics(
-        y_true: np.ndarray, y_pred: np.ndarray
-    ) -> RegressionMetrics:
+    def compute_regression_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> RegressionMetrics:
         """
         Compute comprehensive regression metrics
 
@@ -304,9 +298,7 @@ class EvaluationMetricsCalculator:
             median_absolute_error = float(np.median(errors))
 
             # Explained variance
-            explained_variance = 1 - (
-                np.var(y_true - y_pred) / (np.var(y_true) + epsilon)
-            )
+            explained_variance = 1 - (np.var(y_true - y_pred) / (np.var(y_true) + epsilon))
 
             return RegressionMetrics(
                 mae=mae,
@@ -344,18 +336,14 @@ class EvaluationMetricsCalculator:
         """
         try:
             # Classification metrics
-            classification_metrics = (
-                EvaluationMetricsCalculator.compute_classification_metrics(
-                    y_true=y_true, y_pred=y_pred, y_prob=y_prob
-                )
+            classification_metrics = EvaluationMetricsCalculator.compute_classification_metrics(
+                y_true=y_true, y_pred=y_pred, y_prob=y_prob
             )
 
             # Anomaly-specific metrics
             num_anomalies_detected = int(np.sum(y_pred == 1))
             total_samples = len(y_pred)
-            anomaly_rate = (
-                num_anomalies_detected / total_samples if total_samples > 0 else 0
-            )
+            anomaly_rate = num_anomalies_detected / total_samples if total_samples > 0 else 0
 
             mean_anomaly_score = float(np.mean(anomaly_scores))
             max_anomaly_score = float(np.max(anomaly_scores))
@@ -363,9 +351,7 @@ class EvaluationMetricsCalculator:
             # For labeled data
             true_anomalies = int(np.sum(y_true == 1))
             detected_true_anomalies = int(np.sum((y_true == 1) & (y_pred == 1)))
-            detection_rate = (
-                detected_true_anomalies / true_anomalies if true_anomalies > 0 else 0
-            )
+            detection_rate = detected_true_anomalies / true_anomalies if true_anomalies > 0 else 0
 
             return AnomalyDetectionMetrics(
                 classification_metrics=classification_metrics,
@@ -422,13 +408,7 @@ class EvaluationMetricsCalculator:
 
                         epsilon = 1e-10
                         step_mape = (
-                            np.mean(
-                                np.abs(
-                                    (y_true[:, step] - y_pred[:, step])
-                                    / (y_true[:, step] + epsilon)
-                                )
-                            )
-                            * 100
+                            np.mean(np.abs((y_true[:, step] - y_pred[:, step]) / (y_true[:, step] + epsilon))) * 100
                         )
 
                         mae_by_step.append(step_mae)
@@ -461,9 +441,7 @@ class EvaluationMetricsCalculator:
             raise
 
     @staticmethod
-    def plot_confusion_matrix(
-        cm: np.ndarray, class_names: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+    def plot_confusion_matrix(cm: np.ndarray, class_names: Optional[List[str]] = None) -> Dict[str, Any]:
         """
         Generate confusion matrix plot data
 
@@ -488,9 +466,7 @@ class EvaluationMetricsCalculator:
         }
 
     @staticmethod
-    def plot_roc_curve(
-        fpr: np.ndarray, tpr: np.ndarray, roc_auc: float
-    ) -> Dict[str, Any]:
+    def plot_roc_curve(fpr: np.ndarray, tpr: np.ndarray, roc_auc: float) -> Dict[str, Any]:
         """
         Generate ROC curve plot data
 
@@ -510,9 +486,7 @@ class EvaluationMetricsCalculator:
         }
 
     @staticmethod
-    def plot_precision_recall_curve(
-        precision: np.ndarray, recall: np.ndarray, pr_auc: float
-    ) -> Dict[str, Any]:
+    def plot_precision_recall_curve(precision: np.ndarray, recall: np.ndarray, pr_auc: float) -> Dict[str, Any]:
         """
         Generate Precision-Recall curve plot data
 

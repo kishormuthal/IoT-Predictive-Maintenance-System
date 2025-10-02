@@ -49,9 +49,7 @@ def main():
 
     # Generate SMAP sample data (25 features as per NASA SMAP)
     print("Generating SMAP sample data...")
-    smap_train_data, smap_train_labels, smap_anomalies = generate_time_series(
-        5000, 25, 0.03
-    )
+    smap_train_data, smap_train_labels, smap_anomalies = generate_time_series(5000, 25, 0.03)
     smap_test_data, smap_test_labels, _ = generate_time_series(2000, 25, 0.05)
 
     # Save as .npy files
@@ -60,15 +58,11 @@ def main():
     np.save("data/raw/smap/test.npy", smap_test_data)
     np.save("data/raw/smap/test_labels.npy", smap_test_labels)
 
-    print(
-        f"[OK] SMAP data saved - Train: {smap_train_data.shape}, Test: {smap_test_data.shape}"
-    )
+    print(f"[OK] SMAP data saved - Train: {smap_train_data.shape}, Test: {smap_test_data.shape}")
 
     # Generate MSL sample data (55 features as per NASA MSL)
     print("Generating MSL sample data...")
-    msl_train_data, msl_train_labels, msl_anomalies = generate_time_series(
-        5000, 55, 0.04
-    )
+    msl_train_data, msl_train_labels, msl_anomalies = generate_time_series(5000, 55, 0.04)
     msl_test_data, msl_test_labels, _ = generate_time_series(2000, 55, 0.06)
 
     # Save as .npy files (using .npy instead of .h5 to avoid h5py dependency issues)
@@ -77,9 +71,7 @@ def main():
     np.save("data/raw/msl/test.npy", msl_test_data)
     np.save("data/raw/msl/test_labels.npy", msl_test_labels)
 
-    print(
-        f"[OK] MSL data saved - Train: {msl_train_data.shape}, Test: {msl_test_data.shape}"
-    )
+    print(f"[OK] MSL data saved - Train: {msl_train_data.shape}, Test: {msl_test_data.shape}")
 
     # Create a simple labels CSV
     print("Creating labels CSV...")

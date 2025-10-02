@@ -81,18 +81,10 @@ def create_layout():
                 [
                     html.Div(
                         [
-                            create_stat_card(
-                                "total-orders", "Total Work Orders", "0", "primary"
-                            ),
-                            create_stat_card(
-                                "pending-orders", "Pending", "0", "warning"
-                            ),
-                            create_stat_card(
-                                "in-progress-orders", "In Progress", "0", "info"
-                            ),
-                            create_stat_card(
-                                "completed-orders", "Completed Today", "0", "success"
-                            ),
+                            create_stat_card("total-orders", "Total Work Orders", "0", "primary"),
+                            create_stat_card("pending-orders", "Pending", "0", "warning"),
+                            create_stat_card("in-progress-orders", "In Progress", "0", "info"),
+                            create_stat_card("completed-orders", "Completed Today", "0", "success"),
                         ],
                         className="stat-cards-row",
                     )
@@ -110,9 +102,7 @@ def create_layout():
                                     html.Label("Date Range:", className="filter-label"),
                                     dcc.DatePickerRange(
                                         id="work-order-date-range",
-                                        start_date=(
-                                            datetime.now() - timedelta(days=7)
-                                        ).date(),
+                                        start_date=(datetime.now() - timedelta(days=7)).date(),
                                         end_date=datetime.now().date(),
                                         display_format="YYYY-MM-DD",
                                         className="date-picker",
@@ -273,9 +263,7 @@ def create_layout():
                             # Work Order Details Panel
                             html.Div(
                                 [
-                                    html.H4(
-                                        "Work Order Details", className="section-title"
-                                    ),
+                                    html.H4("Work Order Details", className="section-title"),
                                     html.Div(
                                         id="work-order-details",
                                         className="details-panel",
@@ -286,9 +274,7 @@ def create_layout():
                             # Timeline Chart
                             html.Div(
                                 [
-                                    html.H4(
-                                        "Work Order Timeline", className="section-title"
-                                    ),
+                                    html.H4("Work Order Timeline", className="section-title"),
                                     dcc.Graph(
                                         id="work-order-timeline",
                                         className="timeline-chart",
@@ -330,9 +316,7 @@ def create_layout():
                             ),
                             html.Div(
                                 [
-                                    html.H4(
-                                        "Technician Workload", className="section-title"
-                                    ),
+                                    html.H4("Technician Workload", className="section-title"),
                                     dcc.Graph(id="technician-workload-chart"),
                                 ],
                                 className="chart-container",
@@ -346,9 +330,7 @@ def create_layout():
             # Hidden components for state management
             dcc.Store(id="work-orders-data-store"),
             dcc.Store(id="selected-work-order-store"),
-            dcc.Interval(
-                id="work-orders-interval", interval=30000
-            ),  # Update every 30 seconds
+            dcc.Interval(id="work-orders-interval", interval=30000),  # Update every 30 seconds
             # Modal for Work Order Updates
             html.Div(
                 [
@@ -356,9 +338,7 @@ def create_layout():
                         [
                             html.Div(
                                 [
-                                    html.H3(
-                                        "Update Work Order", className="modal-title"
-                                    ),
+                                    html.H3("Update Work Order", className="modal-title"),
                                     html.Button(
                                         "×",
                                         id="close-modal-btn",
@@ -415,9 +395,7 @@ def create_stat_card(card_id: str, title: str, value: str, card_type: str) -> ht
     )
 
 
-def fetch_work_orders(
-    start_date: str, end_date: str, status: str, priority: str, technician: str
-) -> pd.DataFrame:
+def fetch_work_orders(start_date: str, end_date: str, status: str, priority: str, technician: str) -> pd.DataFrame:
     """Fetch work orders from database based on filters"""
     try:
         # Build query based on filters
@@ -536,11 +514,7 @@ def generate_status_chart(work_orders_df: pd.DataFrame) -> go.Figure:
                 labels=status_counts.index,
                 values=status_counts.values,
                 hole=0.4,
-                marker=dict(
-                    colors=[
-                        STATUS_COLORS.get(s, "#cccccc") for s in status_counts.index
-                    ]
-                ),
+                marker=dict(colors=[STATUS_COLORS.get(s, "#cccccc") for s in status_counts.index]),
             )
         ]
     )
@@ -562,9 +536,7 @@ def generate_priority_chart(work_orders_df: pd.DataFrame) -> go.Figure:
             go.Bar(
                 x=priority_counts.index,
                 y=priority_counts.values,
-                marker_color=[
-                    PRIORITY_COLORS.get(p, "#cccccc") for p in priority_counts.index
-                ],
+                marker_color=[PRIORITY_COLORS.get(p, "#cccccc") for p in priority_counts.index],
                 text=priority_counts.values,
                 textposition="auto",
             )
@@ -588,9 +560,7 @@ def generate_workload_chart(work_orders_df: pd.DataFrame) -> go.Figure:
         return go.Figure()
 
     # Filter only active work orders
-    active_df = work_orders_df[
-        work_orders_df["status"].isin(["ASSIGNED", "IN_PROGRESS"])
-    ]
+    active_df = work_orders_df[work_orders_df["status"].isin(["ASSIGNED", "IN_PROGRESS"])]
 
     if active_df.empty:
         return go.Figure()
@@ -675,11 +645,7 @@ def format_work_order_details(work_order: pd.Series) -> html.Div:
                             html.P(
                                 [
                                     html.Strong("Equipment: "),
-                                    html.Span(
-                                        work_order.get(
-                                            "equipment_name", work_order["equipment_id"]
-                                        )
-                                    ),
+                                    html.Span(work_order.get("equipment_name", work_order["equipment_id"])),
                                 ]
                             ),
                             html.P(
@@ -700,9 +666,7 @@ def format_work_order_details(work_order: pd.Series) -> html.Div:
                     # Work Order Details
                     html.Div(
                         [
-                            html.H6(
-                                "Work Order Details", className="detail-section-title"
-                            ),
+                            html.H6("Work Order Details", className="detail-section-title"),
                             html.P(
                                 [
                                     html.Strong("Priority: "),
@@ -715,20 +679,14 @@ def format_work_order_details(work_order: pd.Series) -> html.Div:
                             html.P(
                                 [
                                     html.Strong("Created: "),
-                                    html.Span(
-                                        pd.to_datetime(
-                                            work_order["created_at"]
-                                        ).strftime("%Y-%m-%d %H:%M")
-                                    ),
+                                    html.Span(pd.to_datetime(work_order["created_at"]).strftime("%Y-%m-%d %H:%M")),
                                 ]
                             ),
                             html.P(
                                 [
                                     html.Strong("Due Date: "),
                                     html.Span(
-                                        pd.to_datetime(work_order["due_date"]).strftime(
-                                            "%Y-%m-%d %H:%M"
-                                        )
+                                        pd.to_datetime(work_order["due_date"]).strftime("%Y-%m-%d %H:%M")
                                         if pd.notna(work_order["due_date"])
                                         else "N/A"
                                     ),
@@ -737,9 +695,7 @@ def format_work_order_details(work_order: pd.Series) -> html.Div:
                             html.P(
                                 [
                                     html.Strong("Estimated Duration: "),
-                                    html.Span(
-                                        f"{work_order.get('estimated_duration', 0)} minutes"
-                                    ),
+                                    html.Span(f"{work_order.get('estimated_duration', 0)} minutes"),
                                 ]
                             ),
                         ],
@@ -752,11 +708,7 @@ def format_work_order_details(work_order: pd.Series) -> html.Div:
                             html.P(
                                 [
                                     html.Strong("Technician: "),
-                                    html.Span(
-                                        work_order.get(
-                                            "assigned_technician", "Unassigned"
-                                        )
-                                    ),
+                                    html.Span(work_order.get("assigned_technician", "Unassigned")),
                                 ]
                             ),
                             html.P(
@@ -772,11 +724,7 @@ def format_work_order_details(work_order: pd.Series) -> html.Div:
                     html.Div(
                         [
                             html.H6("Description", className="detail-section-title"),
-                            html.P(
-                                work_order.get(
-                                    "description", "No description available"
-                                )
-                            ),
+                            html.P(work_order.get("description", "No description available")),
                         ],
                         className="detail-section",
                     ),
@@ -843,12 +791,7 @@ def get_available_technicians() -> List[Dict[str, str]]:
 
         technicians = [{"label": "All", "value": "ALL"}]
         if not result.empty:
-            technicians.extend(
-                [
-                    {"label": tech, "value": tech}
-                    for tech in result["assigned_technician"].tolist()
-                ]
-            )
+            technicians.extend([{"label": tech, "value": tech} for tech in result["assigned_technician"].tolist()])
 
         return technicians
 
@@ -857,9 +800,7 @@ def get_available_technicians() -> List[Dict[str, str]]:
         return [{"label": "All", "value": "ALL"}]
 
 
-def update_work_order_status(
-    work_order_id: str, new_status: str, notes: Optional[str] = None
-) -> bool:
+def update_work_order_status(work_order_id: str, new_status: str, notes: Optional[str] = None) -> bool:
     """Update work order status in database"""
     try:
         query = """
@@ -957,15 +898,11 @@ def register_callbacks(app, data_service=None):
             State("work-order-technician-filter", "value"),
         ],
     )
-    def update_work_orders_dashboard(
-        n_clicks, n_intervals, start_date, end_date, status, priority, technician
-    ):
+    def update_work_orders_dashboard(n_clicks, n_intervals, start_date, end_date, status, priority, technician):
         """Update all work orders dashboard components"""
         try:
             # Fetch work orders
-            work_orders_df = fetch_work_orders(
-                start_date, end_date, status, priority, technician
-            )
+            work_orders_df = fetch_work_orders(start_date, end_date, status, priority, technician)
 
             # Calculate statistics
             stats = calculate_statistics(work_orders_df)
@@ -1020,9 +957,7 @@ def register_callbacks(app, data_service=None):
     def display_work_order_details(selected_rows, data_json):
         """Display details for selected work order"""
         if not selected_rows or not data_json:
-            return html.Div(
-                "Select a work order to view details", className="no-selection"
-            )
+            return html.Div("Select a work order to view details", className="no-selection")
 
         try:
             work_orders_df = pd.read_json(data_json, orient="split")
@@ -1031,9 +966,7 @@ def register_callbacks(app, data_service=None):
 
         except Exception as e:
             logger.error(f"Error displaying work order details: {str(e)}")
-            return html.Div(
-                "Error loading work order details", className="error-message"
-            )
+            return html.Div("Error loading work order details", className="error-message")
 
     @app.callback(
         [
@@ -1070,11 +1003,7 @@ def register_callbacks(app, data_service=None):
         if trigger_id in ["close-modal-btn", "cancel-work-order-btn"]:
             return {"display": "none"}, ""
 
-        if (
-            trigger_id in ["update-status-btn", "reassign-btn"]
-            and selected_rows
-            and data_json
-        ):
+        if trigger_id in ["update-status-btn", "reassign-btn"] and selected_rows and data_json:
             try:
                 work_orders_df = pd.read_json(data_json, orient="split")
                 selected_order = work_orders_df.iloc[selected_rows[0]]

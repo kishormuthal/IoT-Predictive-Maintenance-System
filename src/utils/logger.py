@@ -184,18 +184,12 @@ class LoggerManager:
                     if "logging" in yaml_config:
                         logging_config = yaml_config["logging"]
                         # Handle nested file config
-                        if "file" in logging_config and isinstance(
-                            logging_config["file"], dict
-                        ):
+                        if "file" in logging_config and isinstance(logging_config["file"], dict):
                             if "path" in logging_config["file"]:
                                 config["file"] = logging_config["file"]["path"]
                             # Update other file settings
-                            config["max_bytes"] = logging_config["file"].get(
-                                "max_bytes", config["max_bytes"]
-                            )
-                            config["backup_count"] = logging_config["file"].get(
-                                "backup_count", config["backup_count"]
-                            )
+                            config["max_bytes"] = logging_config["file"].get("max_bytes", config["max_bytes"])
+                            config["backup_count"] = logging_config["file"].get("backup_count", config["backup_count"])
 
                         # Update other logging settings
                         for key in ["level", "enable_console", "enable_file"]:
@@ -263,9 +257,7 @@ class LoggerManager:
                 },
             )
         else:
-            formatter = logging.Formatter(
-                self.config["format"], datefmt="%Y-%m-%d %H:%M:%S"
-            )
+            formatter = logging.Formatter(self.config["format"], datefmt="%Y-%m-%d %H:%M:%S")
 
         console_handler.setFormatter(formatter)
         console_handler.setLevel(getattr(logging, self.config["level"]))
@@ -280,9 +272,7 @@ class LoggerManager:
             backupCount=self.config["backup_count"],
         )
 
-        formatter = logging.Formatter(
-            self.config["format"], datefmt="%Y-%m-%d %H:%M:%S"
-        )
+        formatter = logging.Formatter(self.config["format"], datefmt="%Y-%m-%d %H:%M:%S")
 
         file_handler.setFormatter(formatter)
         file_handler.setLevel(getattr(logging, self.config["level"]))
@@ -312,9 +302,7 @@ class LoggerManager:
             address=(self.config["syslog_host"], self.config["syslog_port"])
         )
 
-        formatter = logging.Formatter(
-            "iot_system: " + self.config["format"], datefmt="%Y-%m-%d %H:%M:%S"
-        )
+        formatter = logging.Formatter("iot_system: " + self.config["format"], datefmt="%Y-%m-%d %H:%M:%S")
 
         syslog_handler.setFormatter(formatter)
         syslog_handler.setLevel(getattr(logging, self.config["level"]))
@@ -457,9 +445,7 @@ def log_execution_time(func):
 
         except Exception as e:
             execution_time = (datetime.now() - start_time).total_seconds()
-            logger.error(
-                f"{func.__name__} failed after {execution_time:.3f} seconds: {str(e)}"
-            )
+            logger.error(f"{func.__name__} failed after {execution_time:.3f} seconds: {str(e)}")
             raise
 
     return wrapper
@@ -514,9 +500,7 @@ def log_api_call(service: str):
 
             except Exception as e:
                 execution_time = (datetime.now() - start_time).total_seconds()
-                logger.error(
-                    f"{service} API call failed: {execution_time:.3f}s - {str(e)}"
-                )
+                logger.error(f"{service} API call failed: {execution_time:.3f}s - {str(e)}")
                 raise
 
         return wrapper
@@ -548,21 +532,15 @@ def log_database_operation(operation: str):
 
                 # Log result count for SELECT operations
                 if operation == "SELECT" and hasattr(result, "__len__"):
-                    logger.info(
-                        f"Database {operation} completed: {len(result)} rows in {execution_time:.3f}s"
-                    )
+                    logger.info(f"Database {operation} completed: {len(result)} rows in {execution_time:.3f}s")
                 else:
-                    logger.info(
-                        f"Database {operation} completed in {execution_time:.3f}s"
-                    )
+                    logger.info(f"Database {operation} completed in {execution_time:.3f}s")
 
                 return result
 
             except Exception as e:
                 execution_time = (datetime.now() - start_time).total_seconds()
-                logger.error(
-                    f"Database {operation} failed: {execution_time:.3f}s - {str(e)}"
-                )
+                logger.error(f"Database {operation} failed: {execution_time:.3f}s - {str(e)}")
                 raise
 
         return wrapper
@@ -584,9 +562,7 @@ class LogContext:
 
     def __enter__(self):
         """Enter context"""
-        self.previous_context = (
-            getattr(context, "extra", {}).copy() if hasattr(context, "extra") else {}
-        )
+        self.previous_context = getattr(context, "extra", {}).copy() if hasattr(context, "extra") else {}
         add_context(**self.context_data)
         return self
 
@@ -653,9 +629,7 @@ class MetricsLogger:
         """
         self.log_metric(f"counter.{name}", increment, tags=tags)
 
-    def log_gauge(
-        self, name: str, value: Union[int, float], tags: Dict[str, str] = None
-    ):
+    def log_gauge(self, name: str, value: Union[int, float], tags: Dict[str, str] = None):
         """Log a gauge value
 
         Args:
@@ -665,9 +639,7 @@ class MetricsLogger:
         """
         self.log_metric(f"gauge.{name}", value, tags=tags)
 
-    def log_histogram(
-        self, name: str, value: Union[int, float], tags: Dict[str, str] = None
-    ):
+    def log_histogram(self, name: str, value: Union[int, float], tags: Dict[str, str] = None):
         """Log a histogram value
 
         Args:

@@ -99,9 +99,7 @@ class TrainingUseCase:
                 "model_registered": True,
             }
 
-            logger.info(
-                f"Anomaly detection training completed for {sensor_id}, version: {version_id}"
-            )
+            logger.info(f"Anomaly detection training completed for {sensor_id}, version: {version_id}")
             return training_result
 
         except Exception as e:
@@ -157,9 +155,7 @@ class TrainingUseCase:
                 "model_registered": True,
             }
 
-            logger.info(
-                f"Forecasting training completed for {sensor_id}, version: {version_id}"
-            )
+            logger.info(f"Forecasting training completed for {sensor_id}, version: {version_id}")
             return training_result
 
         except Exception as e:
@@ -198,15 +194,11 @@ class TrainingUseCase:
 
                 # Register successful models
                 registered_count = 0
-                for sensor_id, result in telemanom_results.get(
-                    "individual_results", {}
-                ).items():
+                for sensor_id, result in telemanom_results.get("individual_results", {}).items():
                     if result.get("success", False):
                         try:
                             equipment = get_equipment_by_id(sensor_id)
-                            model_path = (
-                                pipeline.get_model_save_path("telemanom") / sensor_id
-                            )
+                            model_path = pipeline.get_model_save_path("telemanom") / sensor_id
 
                             version_id = self.model_registry.register_model(
                                 sensor_id=sensor_id,
@@ -215,9 +207,7 @@ class TrainingUseCase:
                                 training_config=result.get("config_used", {}),
                                 training_metrics=result.get("training_results", {}),
                                 validation_metrics=result.get("validation_results", {}),
-                                training_time_seconds=result.get(
-                                    "training_time_seconds", 0
-                                ),
+                                training_time_seconds=result.get("training_time_seconds", 0),
                                 description=f"Batch trained Telemanom model for {equipment.equipment_type.value}",
                                 tags=[
                                     "anomaly_detection",
@@ -231,9 +221,7 @@ class TrainingUseCase:
                             }
                             registered_count += 1
                         except Exception as e:
-                            logger.error(
-                                f"Error registering Telemanom model for {sensor_id}: {e}"
-                            )
+                            logger.error(f"Error registering Telemanom model for {sensor_id}: {e}")
 
                 telemanom_results["models_registered"] = registered_count
                 results["results"]["telemanom"] = telemanom_results
@@ -246,15 +234,11 @@ class TrainingUseCase:
 
                 # Register successful models
                 registered_count = 0
-                for sensor_id, result in transformer_results.get(
-                    "individual_results", {}
-                ).items():
+                for sensor_id, result in transformer_results.get("individual_results", {}).items():
                     if result.get("success", False):
                         try:
                             equipment = get_equipment_by_id(sensor_id)
-                            model_path = (
-                                pipeline.get_model_save_path("transformer") / sensor_id
-                            )
+                            model_path = pipeline.get_model_save_path("transformer") / sensor_id
 
                             version_id = self.model_registry.register_model(
                                 sensor_id=sensor_id,
@@ -263,9 +247,7 @@ class TrainingUseCase:
                                 training_config=result.get("config_used", {}),
                                 training_metrics=result.get("training_results", {}),
                                 validation_metrics=result.get("validation_results", {}),
-                                training_time_seconds=result.get(
-                                    "training_time_seconds", 0
-                                ),
+                                training_time_seconds=result.get("training_time_seconds", 0),
                                 description=f"Batch trained Transformer model for {equipment.equipment_type.value}",
                                 tags=[
                                     "forecasting",
@@ -279,9 +261,7 @@ class TrainingUseCase:
                             }
                             registered_count += 1
                         except Exception as e:
-                            logger.error(
-                                f"Error registering Transformer model for {sensor_id}: {e}"
-                            )
+                            logger.error(f"Error registering Transformer model for {sensor_id}: {e}")
 
                 transformer_results["models_registered"] = registered_count
                 results["results"]["transformer"] = transformer_results
@@ -301,17 +281,13 @@ class TrainingUseCase:
                 "total_failed": total_failed,
                 "total_registered": total_registered,
                 "success_rate": (
-                    total_successful / (total_successful + total_failed)
-                    if (total_successful + total_failed) > 0
-                    else 0
+                    total_successful / (total_successful + total_failed) if (total_successful + total_failed) > 0 else 0
                 ),
             }
 
             results["end_time"] = datetime.now().isoformat()
 
-            logger.info(
-                f"Batch training completed: {total_successful} successful, {total_registered} registered"
-            )
+            logger.info(f"Batch training completed: {total_successful} successful, {total_registered} registered")
             return results
 
         except Exception as e:
@@ -341,24 +317,16 @@ class TrainingUseCase:
                 sensor_id = equipment.equipment_id
 
                 # Check for anomaly detection model
-                telemanom_version = self.model_registry.get_active_model_version(
-                    sensor_id, "telemanom"
-                )
+                telemanom_version = self.model_registry.get_active_model_version(sensor_id, "telemanom")
                 telemanom_metadata = None
                 if telemanom_version:
-                    telemanom_metadata = self.model_registry.get_model_metadata(
-                        telemanom_version
-                    )
+                    telemanom_metadata = self.model_registry.get_model_metadata(telemanom_version)
 
                 # Check for forecasting model
-                transformer_version = self.model_registry.get_active_model_version(
-                    sensor_id, "transformer"
-                )
+                transformer_version = self.model_registry.get_active_model_version(sensor_id, "transformer")
                 transformer_metadata = None
                 if transformer_version:
-                    transformer_metadata = self.model_registry.get_model_metadata(
-                        transformer_version
-                    )
+                    transformer_metadata = self.model_registry.get_model_metadata(transformer_version)
 
                 status["equipment_status"][sensor_id] = {
                     "equipment_type": equipment.equipment_type.value,
@@ -366,30 +334,14 @@ class TrainingUseCase:
                     "anomaly_detection": {
                         "trained": telemanom_version is not None,
                         "version": telemanom_version,
-                        "performance_score": (
-                            telemanom_metadata.performance_score
-                            if telemanom_metadata
-                            else 0
-                        ),
-                        "last_trained": (
-                            telemanom_metadata.created_at
-                            if telemanom_metadata
-                            else None
-                        ),
+                        "performance_score": (telemanom_metadata.performance_score if telemanom_metadata else 0),
+                        "last_trained": (telemanom_metadata.created_at if telemanom_metadata else None),
                     },
                     "forecasting": {
                         "trained": transformer_version is not None,
                         "version": transformer_version,
-                        "performance_score": (
-                            transformer_metadata.performance_score
-                            if transformer_metadata
-                            else 0
-                        ),
-                        "last_trained": (
-                            transformer_metadata.created_at
-                            if transformer_metadata
-                            else None
-                        ),
+                        "performance_score": (transformer_metadata.performance_score if transformer_metadata else 0),
+                        "last_trained": (transformer_metadata.created_at if transformer_metadata else None),
                     },
                 }
 
@@ -399,9 +351,7 @@ class TrainingUseCase:
             logger.error(f"Error getting training status: {e}")
             return {"error": str(e), "generated_at": datetime.now().isoformat()}
 
-    def validate_models(
-        self, sensor_id: str = None, model_type: str = None
-    ) -> Dict[str, Any]:
+    def validate_models(self, sensor_id: str = None, model_type: str = None) -> Dict[str, Any]:
         """
         Validate trained models
 

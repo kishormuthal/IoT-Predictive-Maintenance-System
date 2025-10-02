@@ -137,17 +137,13 @@ class ConfigManagerDashboard:
                                             [
                                                 html.H5(
                                                     [
-                                                        html.I(
-                                                            className="fas fa-info-circle me-2"
-                                                        ),
+                                                        html.I(className="fas fa-info-circle me-2"),
                                                         "Configuration Overview",
                                                     ]
                                                 )
                                             ]
                                         ),
-                                        dbc.CardBody(
-                                            [html.Div(id="config-overview-content")]
-                                        ),
+                                        dbc.CardBody([html.Div(id="config-overview-content")]),
                                     ],
                                     className="metric-card mb-4",
                                 ),
@@ -178,9 +174,7 @@ class ConfigManagerDashboard:
                                             [
                                                 html.H5(
                                                     [
-                                                        html.I(
-                                                            className="fas fa-edit me-2"
-                                                        ),
+                                                        html.I(className="fas fa-edit me-2"),
                                                         "Edit Configuration Section",
                                                     ]
                                                 )
@@ -192,9 +186,7 @@ class ConfigManagerDashboard:
                                                     [
                                                         dbc.Col(
                                                             [
-                                                                dbc.Label(
-                                                                    "Configuration Section"
-                                                                ),
+                                                                dbc.Label("Configuration Section"),
                                                                 dcc.Dropdown(
                                                                     id="config-section-selector",
                                                                     options=[
@@ -212,9 +204,7 @@ class ConfigManagerDashboard:
                                                         ),
                                                         dbc.Col(
                                                             [
-                                                                dbc.Label(
-                                                                    "Configuration Profile"
-                                                                ),
+                                                                dbc.Label("Configuration Profile"),
                                                                 dcc.Dropdown(
                                                                     id="config-profile-selector",
                                                                     options=[
@@ -255,9 +245,7 @@ class ConfigManagerDashboard:
                                                     [
                                                         dbc.Button(
                                                             [
-                                                                html.I(
-                                                                    className="fas fa-check me-2"
-                                                                ),
+                                                                html.I(className="fas fa-check me-2"),
                                                                 "Validate Configuration",
                                                             ],
                                                             id="validate-config-btn",
@@ -266,9 +254,7 @@ class ConfigManagerDashboard:
                                                         ),
                                                         dbc.Button(
                                                             [
-                                                                html.I(
-                                                                    className="fas fa-save me-2"
-                                                                ),
+                                                                html.I(className="fas fa-save me-2"),
                                                                 "Save Configuration",
                                                             ],
                                                             id="save-config-btn",
@@ -276,9 +262,7 @@ class ConfigManagerDashboard:
                                                         ),
                                                         dbc.Button(
                                                             [
-                                                                html.I(
-                                                                    className="fas fa-undo me-2"
-                                                                ),
+                                                                html.I(className="fas fa-undo me-2"),
                                                                 "Reset to Default",
                                                             ],
                                                             id="reset-config-btn",
@@ -318,9 +302,7 @@ class ConfigManagerDashboard:
                                             [
                                                 html.H5(
                                                     [
-                                                        html.I(
-                                                            className="fas fa-history me-2"
-                                                        ),
+                                                        html.I(className="fas fa-history me-2"),
                                                         "Configuration History",
                                                     ]
                                                 )
@@ -332,9 +314,7 @@ class ConfigManagerDashboard:
                                                     [
                                                         dbc.Col(
                                                             [
-                                                                dbc.Label(
-                                                                    "Filter by Section"
-                                                                ),
+                                                                dbc.Label("Filter by Section"),
                                                                 dcc.Dropdown(
                                                                     id="history-section-filter",
                                                                     options=[
@@ -375,9 +355,7 @@ class ConfigManagerDashboard:
                                                                     [
                                                                         dbc.Button(
                                                                             [
-                                                                                html.I(
-                                                                                    className="fas fa-search me-2"
-                                                                                ),
+                                                                                html.I(className="fas fa-search me-2"),
                                                                                 "Search",
                                                                             ],
                                                                             id="search-history-btn",
@@ -386,9 +364,7 @@ class ConfigManagerDashboard:
                                                                         ),
                                                                         dbc.Button(
                                                                             [
-                                                                                html.I(
-                                                                                    className="fas fa-trash me-2"
-                                                                                ),
+                                                                                html.I(className="fas fa-trash me-2"),
                                                                                 "Clear History",
                                                                             ],
                                                                             id="clear-history-btn",
@@ -437,9 +413,7 @@ class ConfigManagerDashboard:
                                             [
                                                 html.H5(
                                                     [
-                                                        html.I(
-                                                            className="fas fa-download me-2"
-                                                        ),
+                                                        html.I(className="fas fa-download me-2"),
                                                         "Export Configuration",
                                                     ]
                                                 )
@@ -451,9 +425,7 @@ class ConfigManagerDashboard:
                                                     [
                                                         dbc.Col(
                                                             [
-                                                                dbc.Label(
-                                                                    "Export Format"
-                                                                ),
+                                                                dbc.Label("Export Format"),
                                                                 dcc.Dropdown(
                                                                     id="export-format-selector",
                                                                     options=[
@@ -478,9 +450,7 @@ class ConfigManagerDashboard:
                                                         ),
                                                         dbc.Col(
                                                             [
-                                                                dbc.Label(
-                                                                    "Sections to Export"
-                                                                ),
+                                                                dbc.Label("Sections to Export"),
                                                                 dcc.Dropdown(
                                                                     id="export-sections-selector",
                                                                     options=[
@@ -511,9 +481,7 @@ class ConfigManagerDashboard:
                                                             [
                                                                 dbc.Button(
                                                                     [
-                                                                        html.I(
-                                                                            className="fas fa-download me-2"
-                                                                        ),
+                                                                        html.I(className="fas fa-download me-2"),
                                                                         "Export Configuration",
                                                                     ],
                                                                     id="export-config-btn",
@@ -541,9 +509,7 @@ class ConfigManagerDashboard:
                                             [
                                                 html.H5(
                                                     [
-                                                        html.I(
-                                                            className="fas fa-upload me-2"
-                                                        ),
+                                                        html.I(className="fas fa-upload me-2"),
                                                         "Import Configuration",
                                                     ]
                                                 )
@@ -555,9 +521,7 @@ class ConfigManagerDashboard:
                                                     id="config-upload",
                                                     children=html.Div(
                                                         [
-                                                            html.I(
-                                                                className="fas fa-cloud-upload-alt fa-2x mb-2"
-                                                            ),
+                                                            html.I(className="fas fa-cloud-upload-alt fa-2x mb-2"),
                                                             html.Br(),
                                                             "Drag and Drop or Click to Select Configuration File",
                                                         ]
@@ -575,18 +539,14 @@ class ConfigManagerDashboard:
                                                     },
                                                     multiple=False,
                                                 ),
-                                                html.Div(
-                                                    id="upload-status", className="mt-2"
-                                                ),
+                                                html.Div(id="upload-status", className="mt-2"),
                                                 dbc.Row(
                                                     [
                                                         dbc.Col(
                                                             [
                                                                 dbc.Button(
                                                                     [
-                                                                        html.I(
-                                                                            className="fas fa-upload me-2"
-                                                                        ),
+                                                                        html.I(className="fas fa-upload me-2"),
                                                                         "Import Configuration",
                                                                     ],
                                                                     id="import-config-btn",
@@ -636,9 +596,7 @@ class ConfigManagerDashboard:
                 for section_key, section_name in self.config_sections.items():
                     if section_key in current_config:
                         config_data = current_config[section_key]
-                        param_count = (
-                            len(config_data) if isinstance(config_data, dict) else 0
-                        )
+                        param_count = len(config_data) if isinstance(config_data, dict) else 0
 
                         overview_cards.append(
                             dbc.Col(
@@ -669,9 +627,7 @@ class ConfigManagerDashboard:
 
             except Exception as e:
                 logger.error(f"Error loading config overview: {e}")
-                return dbc.Alert(
-                    f"Error loading configuration: {str(e)}", color="danger"
-                )
+                return dbc.Alert(f"Error loading configuration: {str(e)}", color="danger")
 
         @app.callback(
             Output("config-sections-display", "children"),
@@ -703,9 +659,7 @@ class ConfigManagerDashboard:
                             sections.append(
                                 dbc.Card(
                                     [
-                                        dbc.CardHeader(
-                                            [html.H6(section_name, className="mb-0")]
-                                        ),
+                                        dbc.CardHeader([html.H6(section_name, className="mb-0")]),
                                         dbc.CardBody(
                                             [
                                                 dash_table.DataTable(
@@ -736,9 +690,7 @@ class ConfigManagerDashboard:
 
             except Exception as e:
                 logger.error(f"Error loading config sections: {e}")
-                return dbc.Alert(
-                    f"Error loading configuration sections: {str(e)}", color="danger"
-                )
+                return dbc.Alert(f"Error loading configuration sections: {str(e)}", color="danger")
 
         @app.callback(
             Output("config-editor-content", "children"),
@@ -769,9 +721,7 @@ class ConfigManagerDashboard:
                                 dbc.Col(
                                     [
                                         dbc.Label(key.replace("_", " ").title()),
-                                        self._create_config_input(
-                                            f"config-input-{key}", value
-                                        ),
+                                        self._create_config_input(f"config-input-{key}", value),
                                     ],
                                     width=12,
                                 )
@@ -797,9 +747,7 @@ class ConfigManagerDashboard:
 
             except Exception as e:
                 logger.error(f"Error loading config editor: {e}")
-                return dbc.Alert(
-                    f"Error loading configuration editor: {str(e)}", color="danger"
-                )
+                return dbc.Alert(f"Error loading configuration editor: {str(e)}", color="danger")
 
         @app.callback(
             Output("config-status-messages", "children"),
@@ -813,9 +761,7 @@ class ConfigManagerDashboard:
                 State("config-profile-selector", "value"),
             ],
         )
-        def handle_config_actions(
-            validate_clicks, save_clicks, reset_clicks, section, profile
-        ):
+        def handle_config_actions(validate_clicks, save_clicks, reset_clicks, section, profile):
             ctx = dash.callback_context
             if not ctx.triggered:
                 return []
@@ -825,13 +771,9 @@ class ConfigManagerDashboard:
             try:
                 if button_id == "validate-config-btn" and validate_clicks:
                     # Validate configuration
-                    validation_result = self.config_validator.validate_section(
-                        section, profile
-                    )
+                    validation_result = self.config_validator.validate_section(section, profile)
                     if validation_result["valid"]:
-                        return dbc.Alert(
-                            "Configuration is valid!", color="success", dismissable=True
-                        )
+                        return dbc.Alert("Configuration is valid!", color="success", dismissable=True)
                     else:
                         return dbc.Alert(
                             f"Validation errors: {validation_result['errors']}",

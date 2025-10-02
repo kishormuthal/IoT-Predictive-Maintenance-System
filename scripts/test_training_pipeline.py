@@ -59,9 +59,7 @@ class TrainingPipelineValidator:
         self.data_loader = NASADataLoader("data/raw")
 
         # Initialize services (these will try to load models from registry)
-        self.anomaly_service = AnomalyDetectionService(
-            registry_path=str(self.models_dir)
-        )
+        self.anomaly_service = AnomalyDetectionService(registry_path=str(self.models_dir))
         self.forecasting_service = ForecastingService(str(self.models_dir))
 
         self.test_results = {}
@@ -85,12 +83,8 @@ class TrainingPipelineValidator:
 
             for sensor_id in sample_sensors:
                 health_checks[sensor_id] = {
-                    "telemanom": self.model_registry.get_model_health_status(
-                        sensor_id, "telemanom"
-                    ),
-                    "transformer": self.model_registry.get_model_health_status(
-                        sensor_id, "transformer"
-                    ),
+                    "telemanom": self.model_registry.get_model_health_status(sensor_id, "telemanom"),
+                    "transformer": self.model_registry.get_model_health_status(sensor_id, "transformer"),
                 }
 
             result = {
@@ -103,9 +97,7 @@ class TrainingPipelineValidator:
             logger.info(f"Registry health test passed")
             logger.info(f"Total models: {registry_stats.get('total_models', 0)}")
             logger.info(f"Total versions: {registry_stats.get('total_versions', 0)}")
-            logger.info(
-                f"Coverage: {availability_report['availability_summary'].get('coverage_percentage', 0):.1f}%"
-            )
+            logger.info(f"Coverage: {availability_report['availability_summary'].get('coverage_percentage', 0):.1f}%")
 
             return result
 
@@ -127,17 +119,13 @@ class TrainingPipelineValidator:
             timestamps = sensor_data["timestamps"]
 
             # Test anomaly detection
-            detection_result = self.anomaly_service.detect_anomalies(
-                test_sensor, data, timestamps
-            )
+            detection_result = self.anomaly_service.detect_anomalies(test_sensor, data, timestamps)
 
             # Test service methods
             is_trained = self.anomaly_service.is_model_trained(test_sensor)
             model_status = self.anomaly_service.get_model_status()
             detection_summary = self.anomaly_service.get_detection_summary()
-            training_recommendations = (
-                self.anomaly_service.get_training_recommendations()
-            )
+            training_recommendations = self.anomaly_service.get_training_recommendations()
 
             result = {
                 "detection_result": {
@@ -148,19 +136,11 @@ class TrainingPipelineValidator:
                 },
                 "is_trained": is_trained,
                 "model_status_count": len(model_status),
-                "detection_summary_anomalies": detection_summary.get(
-                    "total_anomalies", 0
-                ),
+                "detection_summary_anomalies": detection_summary.get("total_anomalies", 0),
                 "training_recommendations": {
-                    "sensors_needing_training": len(
-                        training_recommendations.get("sensors_needing_training", [])
-                    ),
-                    "sensors_needing_retraining": len(
-                        training_recommendations.get("sensors_needing_retraining", [])
-                    ),
-                    "well_performing_sensors": len(
-                        training_recommendations.get("well_performing_sensors", [])
-                    ),
+                    "sensors_needing_training": len(training_recommendations.get("sensors_needing_training", [])),
+                    "sensors_needing_retraining": len(training_recommendations.get("sensors_needing_retraining", [])),
+                    "well_performing_sensors": len(training_recommendations.get("well_performing_sensors", [])),
                 },
                 "status": "passed",
             }
@@ -189,15 +169,11 @@ class TrainingPipelineValidator:
             data = np.array(sensor_data["values"])
 
             # Test forecasting
-            forecast_result = self.forecasting_service.generate_forecast(
-                test_sensor, data, horizon_hours=24
-            )
+            forecast_result = self.forecasting_service.generate_forecast(test_sensor, data, horizon_hours=24)
 
             # Test service methods
             is_trained = self.forecasting_service.is_model_trained(test_sensor)
-            forecast_accuracy = self.forecasting_service.get_forecast_accuracy(
-                test_sensor
-            )
+            forecast_accuracy = self.forecasting_service.get_forecast_accuracy(test_sensor)
             forecast_summary = self.forecasting_service.get_forecast_summary()
             model_status = self.forecasting_service.get_model_status()
 
@@ -210,9 +186,7 @@ class TrainingPipelineValidator:
                 },
                 "is_trained": is_trained,
                 "forecast_accuracy": forecast_accuracy,
-                "forecast_summary_sensors": forecast_summary.get(
-                    "total_sensors_forecasted", 0
-                ),
+                "forecast_summary_sensors": forecast_summary.get("total_sensors_forecasted", 0),
                 "model_status_count": len(model_status),
                 "status": "passed",
             }
@@ -278,17 +252,13 @@ class TrainingPipelineValidator:
         self.test_results["data_loader"] = self.test_data_loader_integration()
         self.test_results["model_registry"] = self.test_model_registry_health()
         self.test_results["anomaly_service"] = self.test_anomaly_service_integration()
-        self.test_results["forecasting_service"] = (
-            self.test_forecasting_service_integration()
-        )
+        self.test_results["forecasting_service"] = self.test_forecasting_service_integration()
 
         end_time = datetime.now()
         total_time = (end_time - start_time).total_seconds()
 
         # Calculate overall results
-        passed_tests = sum(
-            1 for result in self.test_results.values() if result["status"] == "passed"
-        )
+        passed_tests = sum(1 for result in self.test_results.values() if result["status"] == "passed")
         total_tests = len(self.test_results)
 
         overall_result = {
@@ -301,25 +271,18 @@ class TrainingPipelineValidator:
                 "total_tests": total_tests,
                 "passed_tests": passed_tests,
                 "failed_tests": total_tests - passed_tests,
-                "success_rate": (
-                    (passed_tests / total_tests) * 100 if total_tests > 0 else 0
-                ),
+                "success_rate": ((passed_tests / total_tests) * 100 if total_tests > 0 else 0),
             },
             "detailed_results": self.test_results,
             "overall_status": "passed" if passed_tests == total_tests else "failed",
         }
 
         # Save test results
-        results_file = (
-            self.models_dir
-            / f"pipeline_test_results_{start_time.strftime('%Y%m%d_%H%M%S')}.json"
-        )
+        results_file = self.models_dir / f"pipeline_test_results_{start_time.strftime('%Y%m%d_%H%M%S')}.json"
         with open(results_file, "w") as f:
             json.dump(overall_result, f, indent=2, default=str)
 
-        logger.info(
-            f"Pipeline test completed: {passed_tests}/{total_tests} tests passed"
-        )
+        logger.info(f"Pipeline test completed: {passed_tests}/{total_tests} tests passed")
         logger.info(f"Results saved: {results_file}")
 
         return overall_result
@@ -361,9 +324,7 @@ def main():
         # Print individual test results
         for test_name, result in results["detailed_results"].items():
             status_symbol = "✓" if result["status"] == "passed" else "✗"
-            print(
-                f"{status_symbol} {test_name.replace('_', ' ').title()}: {result['status']}"
-            )
+            print(f"{status_symbol} {test_name.replace('_', ' ').title()}: {result['status']}")
             if result["status"] == "failed" and "error" in result:
                 print(f"   Error: {result['error']}")
 

@@ -81,9 +81,7 @@ def test_server_startup():
     # Results
     print(f"\n=== SERVER TEST RESULTS ===")
     print(f"Dashboard created: [OK] YES")
-    print(
-        f"Server started: {'[OK] YES' if not server_result['error'] else '[FAIL] NO'}"
-    )
+    print(f"Server started: {'[OK] YES' if not server_result['error'] else '[FAIL] NO'}")
     print(f"Server responsive: {'[OK] YES' if server_responsive else '[FAIL] NO'}")
 
     if server_result["error"]:

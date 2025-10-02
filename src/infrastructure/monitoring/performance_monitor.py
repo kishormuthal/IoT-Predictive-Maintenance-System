@@ -102,9 +102,7 @@ class PerformanceMonitor:
         # Performance context tracking
         self.active_contexts: Dict[str, Dict[str, Any]] = {}
 
-        logger.info(
-            f"Performance monitor initialized - metrics dir: {self.metrics_dir}"
-        )
+        logger.info(f"Performance monitor initialized - metrics dir: {self.metrics_dir}")
 
     def start_monitoring(self, interval: int = 5):
         """Start continuous system monitoring"""
@@ -116,9 +114,7 @@ class PerformanceMonitor:
             self.monitoring_interval = interval
             self.monitoring_active = True
 
-            self.monitoring_thread = threading.Thread(
-                target=self._monitoring_loop, daemon=True
-            )
+            self.monitoring_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
             self.monitoring_thread.start()
 
             logger.info(f"Started performance monitoring (interval: {interval}s)")
@@ -242,9 +238,7 @@ class PerformanceMonitor:
                 current_memory = process.memory_info().rss / (1024 * 1024)
                 current_cpu = psutil.cpu_percent()
 
-                context["peak_memory_mb"] = max(
-                    context["peak_memory_mb"], current_memory
-                )
+                context["peak_memory_mb"] = max(context["peak_memory_mb"], current_memory)
                 context["cpu_samples"].append(current_cpu)
                 context["memory_samples"].append(current_memory)
 
@@ -278,11 +272,7 @@ class PerformanceMonitor:
             training_time = end_time - context["start_time"]
 
             # Calculate averages
-            avg_cpu = (
-                sum(context["cpu_samples"]) / len(context["cpu_samples"])
-                if context["cpu_samples"]
-                else 0
-            )
+            avg_cpu = sum(context["cpu_samples"]) / len(context["cpu_samples"]) if context["cpu_samples"] else 0
             peak_memory = context["peak_memory_mb"]
 
             # Create training metrics
@@ -305,9 +295,7 @@ class PerformanceMonitor:
             # Remove context
             del self.active_contexts[context_id]
 
-            logger.info(
-                f"Ended training context: {context_id} (time: {training_time:.2f}s)"
-            )
+            logger.info(f"Ended training context: {context_id} (time: {training_time:.2f}s)")
             return metrics
 
         except Exception as e:
@@ -333,9 +321,7 @@ class PerformanceMonitor:
                 memory_used = 0.0
 
             # Calculate throughput
-            throughput = (
-                (batch_size * 1000) / inference_time_ms if inference_time_ms > 0 else 0
-            )
+            throughput = (batch_size * 1000) / inference_time_ms if inference_time_ms > 0 else 0
 
             metrics = InferenceMetrics(
                 timestamp=datetime.now().isoformat(),
@@ -354,9 +340,7 @@ class PerformanceMonitor:
         except Exception as e:
             logger.error(f"Error recording inference metrics: {e}")
 
-    def record_custom_metric(
-        self, name: str, value: float, unit: str = "", tags: Dict[str, str] = None
-    ):
+    def record_custom_metric(self, name: str, value: float, unit: str = "", tags: Dict[str, str] = None):
         """Record custom metric"""
         try:
             metric = PerformanceMetric(
@@ -377,11 +361,7 @@ class PerformanceMonitor:
         try:
             cutoff_time = datetime.now() - timedelta(hours=hours_back)
 
-            recent_metrics = [
-                m
-                for m in self.system_metrics
-                if datetime.fromisoformat(m.timestamp) >= cutoff_time
-            ]
+            recent_metrics = [m for m in self.system_metrics if datetime.fromisoformat(m.timestamp) >= cutoff_time]
 
             if not recent_metrics:
                 return {"error": "No recent system metrics available"}
@@ -401,18 +381,12 @@ class PerformanceMonitor:
                 },
                 "memory": {
                     "current_percent": memory_values[-1] if memory_values else 0,
-                    "average_percent": (
-                        sum(memory_values) / len(memory_values) if memory_values else 0
-                    ),
+                    "average_percent": (sum(memory_values) / len(memory_values) if memory_values else 0),
                     "max_percent": max(memory_values) if memory_values else 0,
-                    "available_mb": (
-                        recent_metrics[-1].memory_available_mb if recent_metrics else 0
-                    ),
+                    "available_mb": (recent_metrics[-1].memory_available_mb if recent_metrics else 0),
                 },
                 "disk": {
-                    "usage_percent": (
-                        recent_metrics[-1].disk_usage_percent if recent_metrics else 0
-                    ),
+                    "usage_percent": (recent_metrics[-1].disk_usage_percent if recent_metrics else 0),
                     "free_gb": recent_metrics[-1].disk_free_gb if recent_metrics else 0,
                 },
             }
@@ -426,11 +400,7 @@ class PerformanceMonitor:
         try:
             cutoff_time = datetime.now() - timedelta(hours=hours_back)
 
-            recent_metrics = [
-                m
-                for m in self.training_metrics
-                if datetime.fromisoformat(m.timestamp) >= cutoff_time
-            ]
+            recent_metrics = [m for m in self.training_metrics if datetime.fromisoformat(m.timestamp) >= cutoff_time]
 
             if not recent_metrics:
                 return {"training_sessions": 0, "time_range_hours": hours_back}
@@ -452,8 +422,7 @@ class PerformanceMonitor:
 
                 summary["by_model_type"][model_type] = {
                     "sessions": len(metrics),
-                    "avg_training_time_seconds": sum(training_times)
-                    / len(training_times),
+                    "avg_training_time_seconds": sum(training_times) / len(training_times),
                     "total_training_time_seconds": sum(training_times),
                     "avg_memory_peak_mb": sum(memory_peaks) / len(memory_peaks),
                     "max_memory_peak_mb": max(memory_peaks),
@@ -471,11 +440,7 @@ class PerformanceMonitor:
         try:
             cutoff_time = datetime.now() - timedelta(hours=hours_back)
 
-            recent_metrics = [
-                m
-                for m in self.inference_metrics
-                if datetime.fromisoformat(m.timestamp) >= cutoff_time
-            ]
+            recent_metrics = [m for m in self.inference_metrics if datetime.fromisoformat(m.timestamp) >= cutoff_time]
 
             if not recent_metrics:
                 return {"inference_requests": 0, "time_range_hours": hours_back}
@@ -498,14 +463,11 @@ class PerformanceMonitor:
 
                 summary["by_model_type"][model_type] = {
                     "requests": len(metrics),
-                    "avg_inference_time_ms": sum(inference_times)
-                    / len(inference_times),
+                    "avg_inference_time_ms": sum(inference_times) / len(inference_times),
                     "max_inference_time_ms": max(inference_times),
                     "min_inference_time_ms": min(inference_times),
                     "avg_throughput": sum(throughputs) / len(throughputs),
-                    "avg_accuracy": (
-                        sum(accuracies) / len(accuracies) if accuracies else 0
-                    ),
+                    "avg_accuracy": (sum(accuracies) / len(accuracies) if accuracies else 0),
                     "unique_sensors": len(set(m.sensor_id for m in metrics)),
                 }
 
@@ -558,12 +520,8 @@ class PerformanceMonitor:
                     )
 
             # Check recent training performance
-            recent_training = (
-                list(self.training_metrics)[-10:] if self.training_metrics else []
-            )
-            slow_training = [
-                m for m in recent_training if m.training_time_seconds > 300
-            ]  # 5 minutes
+            recent_training = list(self.training_metrics)[-10:] if self.training_metrics else []
+            slow_training = [m for m in recent_training if m.training_time_seconds > 300]  # 5 minutes
 
             if len(slow_training) > 3:
                 alerts.append(
@@ -576,12 +534,8 @@ class PerformanceMonitor:
                 )
 
             # Check recent inference performance
-            recent_inference = (
-                list(self.inference_metrics)[-50:] if self.inference_metrics else []
-            )
-            slow_inference = [
-                m for m in recent_inference if m.inference_time_ms > 1000
-            ]  # 1 second
+            recent_inference = list(self.inference_metrics)[-50:] if self.inference_metrics else []
+            slow_inference = [m for m in recent_inference if m.inference_time_ms > 1000]  # 1 second
 
             if len(slow_inference) > 10:
                 alerts.append(
@@ -610,10 +564,7 @@ class PerformanceMonitor:
                 "system_metrics": [asdict(m) for m in self.system_metrics],
                 "training_metrics": [asdict(m) for m in self.training_metrics],
                 "inference_metrics": [asdict(m) for m in self.inference_metrics],
-                "custom_metrics": {
-                    name: [asdict(m) for m in metrics]
-                    for name, metrics in self.custom_metrics.items()
-                },
+                "custom_metrics": {name: [asdict(m) for m in metrics] for name, metrics in self.custom_metrics.items()},
             }
 
             if format == "json":
@@ -636,42 +587,26 @@ class PerformanceMonitor:
 
             # Clear old system metrics
             self.system_metrics = deque(
-                [
-                    m
-                    for m in self.system_metrics
-                    if datetime.fromisoformat(m.timestamp) >= cutoff_time
-                ],
+                [m for m in self.system_metrics if datetime.fromisoformat(m.timestamp) >= cutoff_time],
                 maxlen=self.system_metrics.maxlen,
             )
 
             # Clear old training metrics
             self.training_metrics = deque(
-                [
-                    m
-                    for m in self.training_metrics
-                    if datetime.fromisoformat(m.timestamp) >= cutoff_time
-                ],
+                [m for m in self.training_metrics if datetime.fromisoformat(m.timestamp) >= cutoff_time],
                 maxlen=self.training_metrics.maxlen,
             )
 
             # Clear old inference metrics
             self.inference_metrics = deque(
-                [
-                    m
-                    for m in self.inference_metrics
-                    if datetime.fromisoformat(m.timestamp) >= cutoff_time
-                ],
+                [m for m in self.inference_metrics if datetime.fromisoformat(m.timestamp) >= cutoff_time],
                 maxlen=self.inference_metrics.maxlen,
             )
 
             # Clear old custom metrics
             for name, metrics in self.custom_metrics.items():
                 self.custom_metrics[name] = deque(
-                    [
-                        m
-                        for m in metrics
-                        if datetime.fromisoformat(m.timestamp) >= cutoff_time
-                    ],
+                    [m for m in metrics if datetime.fromisoformat(m.timestamp) >= cutoff_time],
                     maxlen=metrics.maxlen,
                 )
 

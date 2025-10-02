@@ -12,9 +12,7 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -75,9 +73,7 @@ def train_all_models():
 
         try:
             # Get sensor data
-            data_dict = data_loader.get_sensor_data(
-                sensor_id, hours_back=744
-            )  # 1 month
+            data_dict = data_loader.get_sensor_data(sensor_id, hours_back=744)  # 1 month
 
             if data_dict is None or len(data_dict.get("values", [])) == 0:
                 logger.warning(f"  ⚠ No data available for {sensor_id}, skipping")

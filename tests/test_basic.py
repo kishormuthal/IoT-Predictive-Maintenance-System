@@ -177,9 +177,7 @@ class TestServices:
             service = AnomalyDetectionService()
             assert service is not None
         except Exception as e:
-            pytest.skip(
-                f"Anomaly service init failed (may be due to missing models): {e}"
-            )
+            pytest.skip(f"Anomaly service init failed (may be due to missing models): {e}")
 
     def test_forecasting_service_init(self):
         """Test forecasting service can be initialized"""
@@ -189,9 +187,7 @@ class TestServices:
             service = ForecastingService()
             assert service is not None
         except Exception as e:
-            pytest.skip(
-                f"Forecasting service init failed (may be due to missing models): {e}"
-            )
+            pytest.skip(f"Forecasting service init failed (may be due to missing models): {e}")
 
 
 class TestAdvancedAlgorithms:
@@ -221,9 +217,7 @@ class TestAdvancedAlgorithms:
         data = np.random.normal(100, 10, 1000)
 
         # Calculate threshold
-        result = AdaptiveThresholdCalculator.zscore_threshold(
-            data, confidence_level=0.99
-        )
+        result = AdaptiveThresholdCalculator.zscore_threshold(data, confidence_level=0.99)
 
         assert result is not None, "Should return threshold result"
         assert hasattr(result, "threshold"), "Should have threshold attribute"
@@ -255,9 +249,7 @@ class TestDashboardLayouts:
 # Pytest configuration
 def pytest_configure(config):
     """Configure pytest"""
-    config.addinivalue_line(
-        "markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')"
-    )
+    config.addinivalue_line("markers", "slow: marks tests as slow (deselect with '-m \"not slow\"')")
     config.addinivalue_line("markers", "integration: marks tests as integration tests")
 
 

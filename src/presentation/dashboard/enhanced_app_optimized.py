@@ -176,29 +176,19 @@ class OptimizedIoTDashboard:
             logger.info("Initializing services with optimization...")
 
             # Core services
-            self.data_loader = (
-                safe_service_init(NASADataLoader, "Data loader", 8) or NASADataLoader()
-            )
+            self.data_loader = safe_service_init(NASADataLoader, "Data loader", 8) or NASADataLoader()
             self.anomaly_service = (
-                safe_service_init(AnomalyDetectionService, "Anomaly service", 8)
-                or AnomalyDetectionService()
+                safe_service_init(AnomalyDetectionService, "Anomaly service", 8) or AnomalyDetectionService()
             )
             self.forecasting_service = (
-                safe_service_init(ForecastingService, "Forecasting service", 8)
-                or ForecastingService()
+                safe_service_init(ForecastingService, "Forecasting service", 8) or ForecastingService()
             )
 
             # Optional services
-            self.training_use_case = safe_service_init(
-                TrainingUseCase, "Training use case", 3
-            )
-            self.config_manager = safe_service_init(
-                TrainingConfigManager, "Config manager", 3
-            )
+            self.training_use_case = safe_service_init(TrainingUseCase, "Training use case", 3)
+            self.config_manager = safe_service_init(TrainingConfigManager, "Config manager", 3)
             self.model_registry = safe_service_init(ModelRegistry, "Model registry", 3)
-            self.performance_monitor = safe_service_init(
-                PerformanceMonitor, "Performance monitor", 3
-            )
+            self.performance_monitor = safe_service_init(PerformanceMonitor, "Performance monitor", 3)
 
             logger.info("Services initialized with optimization")
 
@@ -224,9 +214,7 @@ class OptimizedIoTDashboard:
         """Start performance monitoring safely"""
         try:
             if self.performance_monitor:
-                self.performance_monitor.start_monitoring(
-                    interval=10
-                )  # Longer interval
+                self.performance_monitor.start_monitoring(interval=10)  # Longer interval
                 logger.info("Performance monitoring started safely")
         except Exception as e:
             logger.warning(f"Performance monitoring start failed: {e}")
@@ -250,15 +238,11 @@ class OptimizedIoTDashboard:
                     "type": "model_availability",
                     "report": availability_report,
                     "total_sensors": len(self.sensor_ids),
-                    "telemanom_available": availability_report[
-                        "availability_summary"
-                    ].get("telemanom_available", 0),
-                    "transformer_available": availability_report[
-                        "availability_summary"
-                    ].get("transformer_available", 0),
-                    "coverage_percentage": availability_report[
-                        "availability_summary"
-                    ].get("coverage_percentage", 0),
+                    "telemanom_available": availability_report["availability_summary"].get("telemanom_available", 0),
+                    "transformer_available": availability_report["availability_summary"].get(
+                        "transformer_available", 0
+                    ),
+                    "coverage_percentage": availability_report["availability_summary"].get("coverage_percentage", 0),
                 },
             )
 
@@ -290,9 +274,7 @@ class OptimizedIoTDashboard:
                             [
                                 html.H1(
                                     [
-                                        html.I(
-                                            className="fas fa-cogs me-3 text-primary"
-                                        ),
+                                        html.I(className="fas fa-cogs me-3 text-primary"),
                                         "IoT Predictive Maintenance",
                                     ],
                                     className="mb-1",
@@ -321,9 +303,7 @@ class OptimizedIoTDashboard:
                             [
                                 html.Div(
                                     [
-                                        html.Div(
-                                            id="alert-notifications", className="mb-2"
-                                        ),
+                                        html.Div(id="alert-notifications", className="mb-2"),
                                         html.Div(id="optimized-status-panel"),
                                     ],
                                     className="text-end",
@@ -446,12 +426,8 @@ class OptimizedIoTDashboard:
                 header,
                 nav_tabs,
                 html.Div(id="optimized-tab-content", className="mt-4"),
-                dcc.Interval(
-                    id="optimized-refresh", interval=60 * 1000, n_intervals=0
-                ),  # 1 minute refresh
-                dcc.Interval(
-                    id="global-refresh", interval=30 * 1000, n_intervals=0
-                ),  # Global refresh for callbacks
+                dcc.Interval(id="optimized-refresh", interval=60 * 1000, n_intervals=0),  # 1 minute refresh
+                dcc.Interval(id="global-refresh", interval=30 * 1000, n_intervals=0),  # Global refresh for callbacks
             ],
             fluid=True,
         )
@@ -479,9 +455,7 @@ class OptimizedIoTDashboard:
                                         "Operational",
                                         className="mb-0 text-success fw-bold",
                                     ),
-                                    html.Small(
-                                        f"Last update: {datetime.now().strftime('%H:%M:%S')}"
-                                    ),
+                                    html.Small(f"Last update: {datetime.now().strftime('%H:%M:%S')}"),
                                 ]
                             )
                         ],
@@ -497,9 +471,7 @@ class OptimizedIoTDashboard:
                 ]
             except Exception as e:
                 logger.error(f"Error updating status: {e}")
-                return [
-                    dbc.Alert("Status update error", color="warning", className="p-2")
-                ]
+                return [dbc.Alert("Status update error", color="warning", className="p-2")]
 
         # Single callback to handle all tab clicks
         @self.app.callback(
@@ -567,9 +539,7 @@ class OptimizedIoTDashboard:
                     }
 
                     # Try named mapping first, then numbered mapping
-                    active_tab = named_tab_mapping.get(
-                        button_id
-                    ) or numbered_tab_mapping.get(button_id, "overview")
+                    active_tab = named_tab_mapping.get(button_id) or numbered_tab_mapping.get(button_id, "overview")
 
                     # Log the tab navigation for debugging
                     logger.info(f"Tab navigation: {button_id} -> {active_tab}")
@@ -617,9 +587,7 @@ class OptimizedIoTDashboard:
             except Exception as e:
                 logger.error(f"Error in tab navigation: {e}")
                 return (
-                    ["overview", dbc.Alert(f"Error: {str(e)}", color="danger")]
-                    + ["nav-link active"]
-                    + ["nav-link"] * 6
+                    ["overview", dbc.Alert(f"Error: {str(e)}", color="danger")] + ["nav-link active"] + ["nav-link"] * 6
                 )
 
         # Additional callback to handle DBC Tab clicks (numbered tabs)
@@ -742,9 +710,7 @@ class OptimizedIoTDashboard:
                 return [html.I(className="fas fa-check me-1 text-success"), "Refreshed"]
             elif ctx.triggered_id == "overview-time-range":
                 # Update time range across components
-                self.time_control_manager.global_time_state["current_range"] = (
-                    time_range
-                )
+                self.time_control_manager.global_time_state["current_range"] = time_range
                 self.event_bus.emit(
                     EventType.TIME_RANGE_CHANGED,
                     "overview_controls",
@@ -819,11 +785,7 @@ class OptimizedIoTDashboard:
                 self.alert_manager.create_alert(
                     f"Anomaly Detected: {sensor_id}",
                     f"Anomaly score: {score:.2f} - Severity: {severity}",
-                    (
-                        AlertSeverity.WARNING
-                        if severity == "medium"
-                        else AlertSeverity.ERROR
-                    ),
+                    (AlertSeverity.WARNING if severity == "medium" else AlertSeverity.ERROR),
                     AlertCategory.ANOMALY,
                     event.source_component,
                 )
@@ -865,15 +827,9 @@ class OptimizedIoTDashboard:
                 logger.error(f"Error handling sensor selection event: {e}")
 
         # Subscribe to events
-        self.event_bus.subscribe(
-            EventType.ANOMALY_DETECTED, handle_anomaly_detection, "alert_manager"
-        )
-        self.event_bus.subscribe(
-            EventType.FORECAST_GENERATED, handle_forecast_generation, "alert_manager"
-        )
-        self.event_bus.subscribe(
-            EventType.SENSOR_SELECTED, handle_sensor_selection, "alert_manager"
-        )
+        self.event_bus.subscribe(EventType.ANOMALY_DETECTED, handle_anomaly_detection, "alert_manager")
+        self.event_bus.subscribe(EventType.FORECAST_GENERATED, handle_forecast_generation, "alert_manager")
+        self.event_bus.subscribe(EventType.SENSOR_SELECTED, handle_sensor_selection, "alert_manager")
 
         logger.info("Alert manager subscribed to component events")
 
@@ -982,9 +938,7 @@ class OptimizedIoTDashboard:
                                             [
                                                 dbc.Button(
                                                     [
-                                                        html.I(
-                                                            className="fas fa-sync-alt me-1"
-                                                        ),
+                                                        html.I(className="fas fa-sync-alt me-1"),
                                                         "Refresh",
                                                     ],
                                                     id="overview-refresh-btn",
@@ -1011,9 +965,7 @@ class OptimizedIoTDashboard:
                                     [
                                         dbc.CardHeader(
                                             [
-                                                html.I(
-                                                    className="fas fa-tachometer-alt me-2"
-                                                ),
+                                                html.I(className="fas fa-tachometer-alt me-2"),
                                                 "System Overview",
                                             ]
                                         ),
@@ -1024,9 +976,7 @@ class OptimizedIoTDashboard:
                                                         dbc.Col(
                                                             [
                                                                 html.H3(
-                                                                    len(
-                                                                        self.equipment_list
-                                                                    ),
+                                                                    len(self.equipment_list),
                                                                     className="text-primary",
                                                                 ),
                                                                 html.P(
@@ -1119,8 +1069,7 @@ class OptimizedIoTDashboard:
                                                                     ],
                                                                     color=(
                                                                         "success"
-                                                                        if telemanom_available
-                                                                        > 0
+                                                                        if telemanom_available > 0
                                                                         else "warning"
                                                                     ),
                                                                 )
@@ -1142,8 +1091,7 @@ class OptimizedIoTDashboard:
                                                                     ],
                                                                     color=(
                                                                         "info"
-                                                                        if transformer_available
-                                                                        > 0
+                                                                        if transformer_available > 0
                                                                         else "warning"
                                                                     ),
                                                                 )
@@ -1179,9 +1127,7 @@ class OptimizedIoTDashboard:
                                                             className="me-2 mb-2",
                                                         )
                                                         for eq in self.equipment_list
-                                                        if eq.equipment_id.startswith(
-                                                            "SMAP"
-                                                        )
+                                                        if eq.equipment_id.startswith("SMAP")
                                                     ]
                                                 )
                                             ]
@@ -1206,9 +1152,7 @@ class OptimizedIoTDashboard:
                                                             className="me-2 mb-2",
                                                         )
                                                         for eq in self.equipment_list
-                                                        if eq.equipment_id.startswith(
-                                                            "MSL"
-                                                        )
+                                                        if eq.equipment_id.startswith("MSL")
                                                     ]
                                                 )
                                             ]
@@ -1258,9 +1202,7 @@ class OptimizedIoTDashboard:
                                                         ),
                                                         dbc.ListGroupItem(
                                                             [
-                                                                html.I(
-                                                                    className="fas fa-cog text-info me-2"
-                                                                ),
+                                                                html.I(className="fas fa-cog text-info me-2"),
                                                                 f"Training System: {'Available' if self.training_use_case else 'Unavailable'}",
                                                             ]
                                                         ),
@@ -1341,14 +1283,10 @@ class OptimizedIoTDashboard:
                             [
                                 dbc.Card(
                                     [
-                                        dbc.CardHeader(
-                                            "NASA Telemanom Anomaly Detection"
-                                        ),
+                                        dbc.CardHeader("NASA Telemanom Anomaly Detection"),
                                         dbc.CardBody(
                                             [
-                                                html.H5(
-                                                    "Advanced Anomaly Detection System"
-                                                ),
+                                                html.H5("Advanced Anomaly Detection System"),
                                                 html.P(
                                                     "Using NASA's Telemanom LSTM-based algorithm for spacecraft telemetry anomaly detection"
                                                 ),
@@ -1360,9 +1298,7 @@ class OptimizedIoTDashboard:
                                                                     "0",
                                                                     className="text-success",
                                                                 ),
-                                                                html.P(
-                                                                    "Current Anomalies"
-                                                                ),
+                                                                html.P("Current Anomalies"),
                                                             ],
                                                             width=4,
                                                         ),
@@ -1372,9 +1308,7 @@ class OptimizedIoTDashboard:
                                                                     "12",
                                                                     className="text-info",
                                                                 ),
-                                                                html.P(
-                                                                    "Sensors Monitored"
-                                                                ),
+                                                                html.P("Sensors Monitored"),
                                                             ],
                                                             width=4,
                                                         ),
@@ -1384,9 +1318,7 @@ class OptimizedIoTDashboard:
                                                                     "99.8%",
                                                                     className="text-primary",
                                                                 ),
-                                                                html.P(
-                                                                    "Detection Accuracy"
-                                                                ),
+                                                                html.P("Detection Accuracy"),
                                                             ],
                                                             width=4,
                                                         ),
@@ -1429,9 +1361,7 @@ class OptimizedIoTDashboard:
                                                                     "24h",
                                                                     className="text-primary",
                                                                 ),
-                                                                html.P(
-                                                                    "Forecast Horizon"
-                                                                ),
+                                                                html.P("Forecast Horizon"),
                                                             ],
                                                             width=4,
                                                         ),
@@ -1441,9 +1371,7 @@ class OptimizedIoTDashboard:
                                                                     "95%",
                                                                     className="text-success",
                                                                 ),
-                                                                html.P(
-                                                                    "Prediction Accuracy"
-                                                                ),
+                                                                html.P("Prediction Accuracy"),
                                                             ],
                                                             width=4,
                                                         ),
@@ -1481,12 +1409,8 @@ class OptimizedIoTDashboard:
                         dbc.CardBody(
                             [
                                 html.H5("Maintenance Planning"),
-                                html.P(
-                                    "Automated maintenance scheduling based on sensor data and predictions"
-                                ),
-                                dbc.Alert(
-                                    "No pending maintenance tasks", color="success"
-                                ),
+                                html.P("Automated maintenance scheduling based on sensor data and predictions"),
+                                dbc.Alert("No pending maintenance tasks", color="success"),
                                 dbc.Button("Schedule Maintenance", color="primary"),
                             ]
                         ),
@@ -1525,9 +1449,7 @@ class OptimizedIoTDashboard:
                         dbc.CardBody(
                             [
                                 html.H5("Consolidated System Management"),
-                                html.P(
-                                    "Training Hub, Model Registry, ML Pipeline, and System Administration"
-                                ),
+                                html.P("Training Hub, Model Registry, ML Pipeline, and System Administration"),
                                 html.Div(
                                     [
                                         create_training_hub_layout(),

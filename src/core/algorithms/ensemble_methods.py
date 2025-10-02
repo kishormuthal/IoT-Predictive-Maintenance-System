@@ -77,9 +77,7 @@ class EnsembleAggregator:
         )
 
     @staticmethod
-    def weighted_average(
-        predictions: List[float], weights: List[float], **kwargs
-    ) -> EnsembleResult:
+    def weighted_average(predictions: List[float], weights: List[float], **kwargs) -> EnsembleResult:
         """
         Weighted average of predictions
 
@@ -176,9 +174,7 @@ class EnsembleAggregator:
         )
 
     @staticmethod
-    def trimmed_mean(
-        predictions: List[float], trim_percent: float = 0.2, **kwargs
-    ) -> EnsembleResult:
+    def trimmed_mean(predictions: List[float], trim_percent: float = 0.2, **kwargs) -> EnsembleResult:
         """
         Trimmed mean (remove extreme predictions)
 
@@ -253,9 +249,7 @@ class EnsembleAggregator:
         )
 
     @staticmethod
-    def inverse_variance_weighting(
-        predictions: List[float], variances: List[float], **kwargs
-    ) -> EnsembleResult:
+    def inverse_variance_weighting(predictions: List[float], variances: List[float], **kwargs) -> EnsembleResult:
         """
         Weight by inverse variance (precision weighting)
 
@@ -472,9 +466,7 @@ class AdaptiveEnsembleSelector:
         # If have performance scores, use them
         if performance_scores is not None:
             logger.info("Using performance-weighted average")
-            return EnsembleAggregator.performance_weighted_average(
-                predictions, performance_scores
-            )
+            return EnsembleAggregator.performance_weighted_average(predictions, performance_scores)
 
         # If have variances, use inverse variance weighting
         if variances is not None:

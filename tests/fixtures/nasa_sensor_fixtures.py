@@ -231,23 +231,16 @@ def nasa_sensor_info_objects(nasa_sensor_configs):
 def sample_time_series_data():
     """Fixture providing sample time series data for testing"""
     base_time = datetime.now() - timedelta(hours=24)
-    timestamps = [
-        base_time + timedelta(minutes=i) for i in range(1440)
-    ]  # 24 hours of minute data
+    timestamps = [base_time + timedelta(minutes=i) for i in range(1440)]  # 24 hours of minute data
 
     return {
         "timestamps": timestamps,
-        "normal_pattern": np.sin(np.linspace(0, 4 * np.pi, 1440)) * 10
-        + 50,  # Sinusoidal pattern
-        "trending_up": np.linspace(40, 60, 1440)
-        + np.random.normal(0, 2, 1440),  # Upward trend
-        "trending_down": np.linspace(60, 40, 1440)
-        + np.random.normal(0, 2, 1440),  # Downward trend
+        "normal_pattern": np.sin(np.linspace(0, 4 * np.pi, 1440)) * 10 + 50,  # Sinusoidal pattern
+        "trending_up": np.linspace(40, 60, 1440) + np.random.normal(0, 2, 1440),  # Upward trend
+        "trending_down": np.linspace(60, 40, 1440) + np.random.normal(0, 2, 1440),  # Downward trend
         "with_anomalies": np.sin(np.linspace(0, 4 * np.pi, 1440)) * 10
         + 50
-        + np.where(
-            np.random.random(1440) < 0.02, np.random.normal(0, 20, 1440), 0
-        ),  # Normal pattern with 2% anomalies
+        + np.where(np.random.random(1440) < 0.02, np.random.normal(0, 20, 1440), 0),  # Normal pattern with 2% anomalies
         "stable": np.random.normal(50, 1, 1440),  # Stable pattern
     }
 
@@ -310,9 +303,7 @@ def nasa_anomaly_examples(nasa_sensor_configs):
                 # High anomaly
                 anomaly_value = max_val + (max_val - min_val) * 0.1
                 severity = (
-                    AnomalySeverity.HIGH
-                    if anomaly_value < config["critical_threshold"]
-                    else AnomalySeverity.CRITICAL
+                    AnomalySeverity.HIGH if anomaly_value < config["critical_threshold"] else AnomalySeverity.CRITICAL
                 )
             else:
                 # Low anomaly
@@ -353,18 +344,12 @@ def nasa_forecast_examples(nasa_sensor_configs):
         range_val = (max_val - min_val) / 6
 
         # Historical data (last 24 hours)
-        historical_timestamps = [
-            base_time - timedelta(hours=i) for i in range(24, 0, -1)
-        ]
+        historical_timestamps = [base_time - timedelta(hours=i) for i in range(24, 0, -1)]
         historical_values = np.random.normal(center_val, range_val, 24)
 
         # Forecast data (next 12 hours)
-        forecast_timestamps = [
-            base_time + timedelta(hours=i) for i in range(1, forecast_horizon + 1)
-        ]
-        forecast_values = np.random.normal(
-            center_val, range_val * 0.8, forecast_horizon
-        )
+        forecast_timestamps = [base_time + timedelta(hours=i) for i in range(1, forecast_horizon + 1)]
+        forecast_values = np.random.normal(center_val, range_val * 0.8, forecast_horizon)
 
         # Confidence intervals
         confidence_width = range_val * 0.3
@@ -391,16 +376,8 @@ def nasa_forecast_examples(nasa_sensor_configs):
         risk_assessment = {
             "overall_risk": risk_level,
             "mission": config["data_source"].upper(),
-            "risk_factors": (
-                ["normal_operation"]
-                if risk_level == "LOW"
-                else ["threshold_approaching"]
-            ),
-            "recommendations": (
-                ["continue_monitoring"]
-                if risk_level == "LOW"
-                else ["increase_monitoring_frequency"]
-            ),
+            "risk_factors": (["normal_operation"] if risk_level == "LOW" else ["threshold_approaching"]),
+            "recommendations": (["continue_monitoring"] if risk_level == "LOW" else ["increase_monitoring_frequency"]),
         }
 
         forecast = ForecastResult(
@@ -432,9 +409,7 @@ def nasa_sensor_readings_batch(nasa_sensor_info_objects, nasa_historical_data):
 
         # Create individual sensor readings
         readings = []
-        for timestamp, value in zip(
-            historical["timestamps"][:100], historical["values"][:100]
-        ):  # First 100 points
+        for timestamp, value in zip(historical["timestamps"][:100], historical["values"][:100]):  # First 100 points
             reading = SensorReading(
                 sensor_id=sensor_id,
                 timestamp=timestamp,

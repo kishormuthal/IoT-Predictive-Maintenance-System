@@ -90,9 +90,7 @@ class DVCManager:
     def _check_dvc_installed(self) -> bool:
         """Check if DVC is installed and initialized"""
         try:
-            result = subprocess.run(
-                ["dvc", "version"], capture_output=True, text=True, timeout=5
-            )
+            result = subprocess.run(["dvc", "version"], capture_output=True, text=True, timeout=5)
             if result.returncode == 0:
                 logger.info(f"DVC is available: {result.stdout.strip()}")
                 return True
@@ -195,9 +193,7 @@ class DVCManager:
                 with open(self.registry_file, "r") as f:
                     registry_data = json.load(f)
                     for dataset_id, versions in registry_data.items():
-                        self.versions[dataset_id] = [
-                            DatasetVersion.from_dict(v) for v in versions
-                        ]
+                        self.versions[dataset_id] = [DatasetVersion.from_dict(v) for v in versions]
                 logger.info(f"Loaded {len(self.versions)} dataset registries")
         except Exception as e:
             logger.warning(f"Could not load dataset registry: {e}")
@@ -206,8 +202,7 @@ class DVCManager:
         """Save dataset version registry"""
         try:
             registry_data = {
-                dataset_id: [v.to_dict() for v in versions]
-                for dataset_id, versions in self.versions.items()
+                dataset_id: [v.to_dict() for v in versions] for dataset_id, versions in self.versions.items()
             }
             with open(self.registry_file, "w") as f:
                 json.dump(registry_data, f, indent=2)
@@ -259,13 +254,9 @@ class DVCManager:
 
             # Check if this exact version already exists
             if dataset_id in self.versions:
-                existing = [
-                    v for v in self.versions[dataset_id] if v.data_hash == data_hash
-                ]
+                existing = [v for v in self.versions[dataset_id] if v.data_hash == data_hash]
                 if existing:
-                    logger.info(
-                        f"Dataset {dataset_id} with hash {data_hash[:8]} already versioned"
-                    )
+                    logger.info(f"Dataset {dataset_id} with hash {data_hash[:8]} already versioned")
                     return existing[0]
 
             # Get file stats
@@ -400,9 +391,7 @@ class DVCManager:
         except ValueError:
             return f"v{len(self.versions[dataset_id]) + 1}"
 
-    def get_dataset_version(
-        self, dataset_id: str, version: Optional[str] = None
-    ) -> Optional[DatasetVersion]:
+    def get_dataset_version(self, dataset_id: str, version: Optional[str] = None) -> Optional[DatasetVersion]:
         """
         Get specific dataset version (latest if version not specified)
 
@@ -427,9 +416,7 @@ class DVCManager:
 
         return None
 
-    def get_dataset_lineage(
-        self, dataset_id: str, version: str
-    ) -> List[DatasetVersion]:
+    def get_dataset_lineage(self, dataset_id: str, version: str) -> List[DatasetVersion]:
         """
         Get full lineage (ancestry chain) of a dataset version
 
@@ -478,9 +465,7 @@ class DVCManager:
             return False
 
         if not dataset_version.dvc_tracked:
-            logger.warning(
-                f"Dataset {dataset_id} v{dataset_version.version} is not DVC tracked"
-            )
+            logger.warning(f"Dataset {dataset_id} v{dataset_version.version} is not DVC tracked")
             return False
 
         if not self.dvc_available:
@@ -509,9 +494,7 @@ class DVCManager:
             logger.error(f"Error pulling dataset: {e}")
             return False
 
-    def link_dataset_to_model(
-        self, dataset_id: str, dataset_version: str, model_id: str, model_version: str
-    ):
+    def link_dataset_to_model(self, dataset_id: str, dataset_version: str, model_id: str, model_version: str):
         """
         Create linkage between dataset version and model version
 
@@ -535,7 +518,4 @@ class DVCManager:
         with open(linkage_file, "w") as f:
             json.dump(linkage, f, indent=2)
 
-        logger.info(
-            f"Linked model {model_id} v{model_version} to "
-            f"dataset {dataset_id} v{dataset_version}"
-        )
+        logger.info(f"Linked model {model_id} v{model_version} to " f"dataset {dataset_id} v{dataset_version}")

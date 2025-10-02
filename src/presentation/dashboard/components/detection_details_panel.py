@@ -131,14 +131,10 @@ class EnhancedDetectionDetailsPanel:
             overall_metrics = self._calculate_overall_metrics(sensor_details)
 
             # Perform pattern analysis
-            pattern_analysis = self._perform_pattern_analysis(
-                equipment_id, sensor_details
-            )
+            pattern_analysis = self._perform_pattern_analysis(equipment_id, sensor_details)
 
             # Generate recommendations
-            recommendations = self._generate_recommendations(
-                equipment, sensor_details, pattern_analysis
-            )
+            recommendations = self._generate_recommendations(equipment, sensor_details, pattern_analysis)
 
             # Create comprehensive summary
             summary = EquipmentDetectionSummary(
@@ -146,18 +142,12 @@ class EnhancedDetectionDetailsPanel:
                 equipment_name=getattr(equipment, "equipment_name", equipment_id),
                 equipment_type=getattr(equipment, "equipment_type", "Unknown"),
                 subsystem=getattr(equipment, "subsystem", "Unknown"),
-                overall_anomaly_score=(
-                    anomaly_result.anomaly_score if anomaly_result else 0.0
-                ),
+                overall_anomaly_score=(anomaly_result.anomaly_score if anomaly_result else 0.0),
                 overall_confidence=anomaly_result.confidence if anomaly_result else 0.0,
                 is_anomaly=anomaly_result.is_anomaly if anomaly_result else False,
-                severity_level=(
-                    anomaly_result.severity_level if anomaly_result else "NORMAL"
-                ),
+                severity_level=(anomaly_result.severity_level if anomaly_result else "NORMAL"),
                 sensor_count=len(sensor_details),
-                anomalous_sensor_count=sum(
-                    1 for s in sensor_details if s.anomaly_score > 0.5
-                ),
+                anomalous_sensor_count=sum(1 for s in sensor_details if s.anomaly_score > 0.5),
                 sensor_details=sensor_details,
                 model_performance=overall_metrics["model_performance"],
                 reconstruction_quality=overall_metrics["reconstruction_quality"],
@@ -171,9 +161,7 @@ class EnhancedDetectionDetailsPanel:
             logger.error(f"Error analyzing equipment detection for {equipment_id}: {e}")
             return self._create_empty_summary(equipment_id)
 
-    def _analyze_sensors_detailed(
-        self, equipment, anomaly_result: AnomalyResult
-    ) -> List[SensorAnomalyDetail]:
+    def _analyze_sensors_detailed(self, equipment, anomaly_result: AnomalyResult) -> List[SensorAnomalyDetail]:
         """Analyze each sensor in detail"""
         sensor_details = []
 
@@ -181,9 +169,7 @@ class EnhancedDetectionDetailsPanel:
             # Get sensor specifications from equipment
             sensors = getattr(equipment, "sensors", [])
             sensor_values = anomaly_result.sensor_values if anomaly_result else {}
-            anomalous_sensors = (
-                anomaly_result.anomalous_sensors if anomaly_result else []
-            )
+            anomalous_sensors = anomaly_result.anomalous_sensors if anomaly_result else []
 
             for i, sensor in enumerate(sensors):
                 sensor_name = sensor.name if hasattr(sensor, "name") else f"Sensor_{i}"
@@ -221,22 +207,14 @@ class EnhancedDetectionDetailsPanel:
             is_anomalous = sensor_name in anomalous_sensors
 
             # Get historical data for this sensor
-            historical_data = self._get_sensor_historical_data(
-                equipment_id, sensor_name
-            )
+            historical_data = self._get_sensor_historical_data(equipment_id, sensor_name)
 
             # Calculate statistical metrics
             if historical_data:
                 historical_mean = np.mean(historical_data)
                 historical_std = np.std(historical_data)
-                z_score = (
-                    (current_value - historical_mean) / historical_std
-                    if historical_std > 0
-                    else 0
-                )
-                percentile_rank = (
-                    stats.percentileofscore(historical_data, current_value) / 100.0
-                )
+                z_score = (current_value - historical_mean) / historical_std if historical_std > 0 else 0
+                percentile_rank = stats.percentileofscore(historical_data, current_value) / 100.0
             else:
                 historical_mean = getattr(sensor_spec, "nominal_value", current_value)
                 historical_std = 1.0
@@ -249,25 +227,17 @@ class EnhancedDetectionDetailsPanel:
             )
 
             # Calculate confidence
-            confidence = self._calculate_sensor_confidence(
-                sensor_anomaly_score, z_score, percentile_rank
-            )
+            confidence = self._calculate_sensor_confidence(sensor_anomaly_score, z_score, percentile_rank)
 
             # Calculate reconstruction error
-            expected_value = self._calculate_expected_value(
-                sensor_spec, historical_mean
-            )
+            expected_value = self._calculate_expected_value(sensor_spec, historical_mean)
             reconstruction_error = abs(current_value - expected_value)
 
             # Determine severity
-            severity_level = self._determine_sensor_severity(
-                sensor_anomaly_score, confidence
-            )
+            severity_level = self._determine_sensor_severity(sensor_anomaly_score, confidence)
 
             # Check threshold exceeded
-            threshold_exceeded = self._check_threshold_exceeded(
-                current_value, sensor_spec
-            )
+            threshold_exceeded = self._check_threshold_exceeded(current_value, sensor_spec)
 
             # Analyze trend
             trend_direction = self._analyze_sensor_trend(equipment_id, sensor_name)
@@ -298,9 +268,7 @@ class EnhancedDetectionDetailsPanel:
             logger.error(f"Error calculating sensor detail for {sensor_name}: {e}")
             return self._create_default_sensor_detail(sensor_name)
 
-    def create_detection_details_layout(
-        self, equipment_summary: EquipmentDetectionSummary
-    ) -> html.Div:
+    def create_detection_details_layout(self, equipment_summary: EquipmentDetectionSummary) -> html.Div:
         """Create the detection details layout for dashboard"""
         return html.Div(
             [
@@ -379,9 +347,7 @@ class EnhancedDetectionDetailsPanel:
                                             f"{summary.overall_anomaly_score:.3f}",
                                             className="text-danger",
                                         ),
-                                        html.P(
-                                            "Anomaly Score", className="text-muted mb-0"
-                                        ),
+                                        html.P("Anomaly Score", className="text-muted mb-0"),
                                     ]
                                 )
                             ]
@@ -399,9 +365,7 @@ class EnhancedDetectionDetailsPanel:
                                             f"{summary.overall_confidence:.1%}",
                                             className="text-info",
                                         ),
-                                        html.P(
-                                            "Confidence", className="text-muted mb-0"
-                                        ),
+                                        html.P("Confidence", className="text-muted mb-0"),
                                     ]
                                 )
                             ]
@@ -415,9 +379,7 @@ class EnhancedDetectionDetailsPanel:
                             [
                                 dbc.CardBody(
                                     [
-                                        html.H5(
-                                            f"{summary.anomalous_sensor_count}/{summary.sensor_count}"
-                                        ),
+                                        html.H5(f"{summary.anomalous_sensor_count}/{summary.sensor_count}"),
                                         html.P(
                                             "Anomalous Sensors",
                                             className="text-muted mb-0",
@@ -472,9 +434,7 @@ class EnhancedDetectionDetailsPanel:
             className="mb-4",
         )
 
-    def _create_sensor_details_table(
-        self, sensor_details: List[SensorAnomalyDetail]
-    ) -> dbc.Card:
+    def _create_sensor_details_table(self, sensor_details: List[SensorAnomalyDetail]) -> dbc.Card:
         """Create detailed sensor information table"""
         # Prepare data for table
         table_data = []
@@ -547,9 +507,7 @@ class EnhancedDetectionDetailsPanel:
             className="mb-4",
         )
 
-    def _create_detection_visualizations(
-        self, summary: EquipmentDetectionSummary
-    ) -> dbc.Card:
+    def _create_detection_visualizations(self, summary: EquipmentDetectionSummary) -> dbc.Card:
         """Create detection visualization charts"""
         return dbc.Card(
             [
@@ -567,23 +525,17 @@ class EnhancedDetectionDetailsPanel:
                 dbc.CardBody(
                     [
                         dcc.Graph(
-                            figure=self._create_sensor_anomaly_chart(
-                                summary.sensor_details
-                            ),
+                            figure=self._create_sensor_anomaly_chart(summary.sensor_details),
                             id="sensor-anomaly-chart",
                         ),
                         html.Hr(),
                         dcc.Graph(
-                            figure=self._create_confidence_distribution_chart(
-                                summary.sensor_details
-                            ),
+                            figure=self._create_confidence_distribution_chart(summary.sensor_details),
                             id="confidence-distribution-chart",
                         ),
                         html.Hr(),
                         dcc.Graph(
-                            figure=self._create_reconstruction_error_chart(
-                                summary.sensor_details
-                            ),
+                            figure=self._create_reconstruction_error_chart(summary.sensor_details),
                             id="reconstruction-error-chart",
                         ),
                     ]
@@ -592,9 +544,7 @@ class EnhancedDetectionDetailsPanel:
             className="mb-4",
         )
 
-    def _create_sensor_anomaly_chart(
-        self, sensor_details: List[SensorAnomalyDetail]
-    ) -> go.Figure:
+    def _create_sensor_anomaly_chart(self, sensor_details: List[SensorAnomalyDetail]) -> go.Figure:
         """Create sensor anomaly score chart"""
         sensor_names = [s.sensor_name for s in sensor_details]
         anomaly_scores = [s.anomaly_score for s in sensor_details]
@@ -621,19 +571,11 @@ class EnhancedDetectionDetailsPanel:
 
         return fig
 
-    def _create_confidence_distribution_chart(
-        self, sensor_details: List[SensorAnomalyDetail]
-    ) -> go.Figure:
+    def _create_confidence_distribution_chart(self, sensor_details: List[SensorAnomalyDetail]) -> go.Figure:
         """Create confidence distribution chart"""
         confidences = [s.confidence for s in sensor_details]
 
-        fig = go.Figure(
-            data=[
-                go.Histogram(
-                    x=confidences, nbinsx=10, marker_color="lightblue", opacity=0.7
-                )
-            ]
-        )
+        fig = go.Figure(data=[go.Histogram(x=confidences, nbinsx=10, marker_color="lightblue", opacity=0.7)])
 
         fig.update_layout(
             title="Confidence Score Distribution",
@@ -644,9 +586,7 @@ class EnhancedDetectionDetailsPanel:
 
         return fig
 
-    def _create_reconstruction_error_chart(
-        self, sensor_details: List[SensorAnomalyDetail]
-    ) -> go.Figure:
+    def _create_reconstruction_error_chart(self, sensor_details: List[SensorAnomalyDetail]) -> go.Figure:
         """Create reconstruction error vs anomaly score scatter plot"""
         anomaly_scores = [s.anomaly_score for s in sensor_details]
         reconstruction_errors = [s.reconstruction_error for s in sensor_details]
@@ -726,9 +666,7 @@ class EnhancedDetectionDetailsPanel:
         # This would integrate with the anomaly engine to get latest results
         return None
 
-    def _get_sensor_historical_data(
-        self, equipment_id: str, sensor_name: str
-    ) -> List[float]:
+    def _get_sensor_historical_data(self, equipment_id: str, sensor_name: str) -> List[float]:
         """Get historical data for sensor"""
         # This would get historical sensor data from database
         return []
@@ -747,9 +685,7 @@ class EnhancedDetectionDetailsPanel:
         z_score = abs(current_value - historical_mean) / historical_std
         return min(1.0, z_score / 3.0)  # Normalize to 0-1 range
 
-    def _calculate_sensor_confidence(
-        self, anomaly_score: float, z_score: float, percentile_rank: float
-    ) -> float:
+    def _calculate_sensor_confidence(self, anomaly_score: float, z_score: float, percentile_rank: float) -> float:
         """Calculate confidence for sensor anomaly detection"""
         # Combine multiple factors for confidence calculation
         score_confidence = anomaly_score
@@ -758,15 +694,11 @@ class EnhancedDetectionDetailsPanel:
 
         return (score_confidence + z_confidence + percentile_confidence) / 3.0
 
-    def _calculate_expected_value(
-        self, sensor_spec: SensorSpec, historical_mean: float
-    ) -> float:
+    def _calculate_expected_value(self, sensor_spec: SensorSpec, historical_mean: float) -> float:
         """Calculate expected value for sensor"""
         return getattr(sensor_spec, "nominal_value", historical_mean)
 
-    def _determine_sensor_severity(
-        self, anomaly_score: float, confidence: float
-    ) -> str:
+    def _determine_sensor_severity(self, anomaly_score: float, confidence: float) -> str:
         """Determine severity level for sensor"""
         if anomaly_score > 0.8 and confidence > 0.7:
             return "CRITICAL"
@@ -779,9 +711,7 @@ class EnhancedDetectionDetailsPanel:
         else:
             return "NORMAL"
 
-    def _check_threshold_exceeded(
-        self, current_value: float, sensor_spec: SensorSpec
-    ) -> bool:
+    def _check_threshold_exceeded(self, current_value: float, sensor_spec: SensorSpec) -> bool:
         """Check if sensor value exceeds thresholds"""
         critical_threshold = getattr(sensor_spec, "critical_threshold", None)
         if critical_threshold is not None:
@@ -793,9 +723,7 @@ class EnhancedDetectionDetailsPanel:
         # This would analyze historical data for trends
         return "stable"
 
-    def _find_last_normal_value(
-        self, equipment_id: str, sensor_name: str
-    ) -> Dict[str, Any]:
+    def _find_last_normal_value(self, equipment_id: str, sensor_name: str) -> Dict[str, Any]:
         """Find last normal value and time for sensor"""
         return {"value": None, "time_minutes": None}
 
@@ -818,9 +746,7 @@ class EnhancedDetectionDetailsPanel:
             trend_direction="stable",
         )
 
-    def _calculate_overall_metrics(
-        self, sensor_details: List[SensorAnomalyDetail]
-    ) -> Dict[str, Any]:
+    def _calculate_overall_metrics(self, sensor_details: List[SensorAnomalyDetail]) -> Dict[str, Any]:
         """Calculate overall metrics from sensor details"""
         if not sensor_details:
             return {
@@ -829,9 +755,7 @@ class EnhancedDetectionDetailsPanel:
             }
 
         avg_confidence = np.mean([s.confidence for s in sensor_details])
-        avg_reconstruction_error = np.mean(
-            [s.reconstruction_error for s in sensor_details]
-        )
+        avg_reconstruction_error = np.mean([s.reconstruction_error for s in sensor_details])
         reconstruction_quality = max(0.0, 1.0 - avg_reconstruction_error)
 
         return {
@@ -843,9 +767,7 @@ class EnhancedDetectionDetailsPanel:
             "reconstruction_quality": reconstruction_quality,
         }
 
-    def _perform_pattern_analysis(
-        self, equipment_id: str, sensor_details: List[SensorAnomalyDetail]
-    ) -> Dict[str, Any]:
+    def _perform_pattern_analysis(self, equipment_id: str, sensor_details: List[SensorAnomalyDetail]) -> Dict[str, Any]:
         """Perform pattern analysis on sensor data"""
         return {
             "correlation_detected": False,
@@ -866,29 +788,21 @@ class EnhancedDetectionDetailsPanel:
         # Check for critical sensors
         critical_sensors = [s for s in sensor_details if s.severity_level == "CRITICAL"]
         if critical_sensors:
-            recommendations.append(
-                f"Immediate attention required for {len(critical_sensors)} critical sensors"
-            )
+            recommendations.append(f"Immediate attention required for {len(critical_sensors)} critical sensors")
 
         # Check for threshold violations
         threshold_violations = [s for s in sensor_details if s.threshold_exceeded]
         if threshold_violations:
-            recommendations.append(
-                f"Investigate {len(threshold_violations)} sensors exceeding thresholds"
-            )
+            recommendations.append(f"Investigate {len(threshold_violations)} sensors exceeding thresholds")
 
         # Check for poor reconstruction quality
         high_error_sensors = [s for s in sensor_details if s.reconstruction_error > 0.5]
         if high_error_sensors:
-            recommendations.append(
-                "Consider model retraining - high reconstruction errors detected"
-            )
+            recommendations.append("Consider model retraining - high reconstruction errors detected")
 
         # Default recommendation
         if not recommendations:
-            recommendations.append(
-                "Continue monitoring - system operating within normal parameters"
-            )
+            recommendations.append("Continue monitoring - system operating within normal parameters")
 
         return recommendations
 

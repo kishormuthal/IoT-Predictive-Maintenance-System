@@ -112,9 +112,7 @@ def add_health_check(app):
         # Simple check - if this endpoint responds, app is alive
         return {"status": "alive", "timestamp": datetime.now().isoformat()}, 200
 
-    logger.info(
-        "✓ Health check endpoints registered: /health, /health/ready, /health/live"
-    )
+    logger.info("✓ Health check endpoints registered: /health, /health/ready, /health/live")
 
 
 def add_metrics_endpoint(app):

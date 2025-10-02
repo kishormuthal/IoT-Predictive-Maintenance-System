@@ -178,9 +178,7 @@ class InteractiveAlertActionManager:
                             [
                                 html.H5(
                                     [
-                                        html.I(
-                                            className="fas fa-exclamation-triangle me-2"
-                                        ),
+                                        html.I(className="fas fa-exclamation-triangle me-2"),
                                         alert.title,
                                     ],
                                     className="mb-0",
@@ -307,10 +305,7 @@ class InteractiveAlertActionManager:
                         dbc.Label("Dismissal Reason:"),
                         dcc.Dropdown(
                             id=f"dismiss-reason-{alert_id}",
-                            options=[
-                                {"label": reason, "value": reason}
-                                for reason in self.dismissal_reasons
-                            ],
+                            options=[{"label": reason, "value": reason} for reason in self.dismissal_reasons],
                             placeholder="Select a reason...",
                             className="mb-3",
                         ),
@@ -330,9 +325,7 @@ class InteractiveAlertActionManager:
                             color="secondary",
                             className="me-2",
                         ),
-                        dbc.Button(
-                            "Dismiss", id=f"dismiss-confirm-{alert_id}", color="warning"
-                        ),
+                        dbc.Button("Dismiss", id=f"dismiss-confirm-{alert_id}", color="warning"),
                     ]
                 ),
             ],
@@ -343,12 +336,8 @@ class InteractiveAlertActionManager:
     def _create_work_order_modal(self, alert_id: str, alert: Alert) -> dbc.Modal:
         """Create work order creation modal"""
         # Get equipment subsystem for template selection
-        equipment_subsystem = self._determine_equipment_subsystem(
-            alert.affected_equipment
-        )
-        template = self.work_order_templates.get(
-            equipment_subsystem, self.work_order_templates["DEFAULT"]
-        )
+        equipment_subsystem = self._determine_equipment_subsystem(alert.affected_equipment)
+        template = self.work_order_templates.get(equipment_subsystem, self.work_order_templates["DEFAULT"])
 
         return dbc.Modal(
             [
@@ -570,9 +559,7 @@ class InteractiveAlertActionManager:
             className="mt-3",
         )
 
-    def acknowledge_alert(
-        self, alert_id: str, user_id: str, notes: Optional[str] = None
-    ) -> AlertActionResult:
+    def acknowledge_alert(self, alert_id: str, user_id: str, notes: Optional[str] = None) -> AlertActionResult:
         """
         Acknowledge an alert
 
@@ -645,9 +632,7 @@ class InteractiveAlertActionManager:
                 errors=[str(e)],
             )
 
-    def dismiss_alert(
-        self, alert_id: str, user_id: str, reason: str, notes: Optional[str] = None
-    ) -> AlertActionResult:
+    def dismiss_alert(self, alert_id: str, user_id: str, reason: str, notes: Optional[str] = None) -> AlertActionResult:
         """
         Dismiss an alert
 
@@ -696,9 +681,7 @@ class InteractiveAlertActionManager:
             # Update alert in manager
             self.alert_manager.update_alert(alert)
 
-            logger.info(
-                f"Alert {alert_id} dismissed by user {user_id} - Reason: {reason}"
-            )
+            logger.info(f"Alert {alert_id} dismissed by user {user_id} - Reason: {reason}")
 
             return AlertActionResult(
                 success=True,
@@ -747,11 +730,7 @@ class InteractiveAlertActionManager:
 
             work_order = WorkOrder(
                 order_id=work_order_id,
-                equipment_id=(
-                    alert.affected_equipment[0]
-                    if alert.affected_equipment
-                    else "UNKNOWN"
-                ),
+                equipment_id=(alert.affected_equipment[0] if alert.affected_equipment else "UNKNOWN"),
                 anomaly_id=alert_id,
                 type=MaintenanceType(work_order_params.get("type", "CORRECTIVE")),
                 priority=WorkOrderPriority[work_order_params.get("priority", "MEDIUM")],
@@ -793,9 +772,7 @@ class InteractiveAlertActionManager:
             # Update alert in manager
             self.alert_manager.update_alert(alert)
 
-            logger.info(
-                f"Work order {work_order_id} created from alert {alert_id} by user {user_id}"
-            )
+            logger.info(f"Work order {work_order_id} created from alert {alert_id} by user {user_id}")
 
             return AlertActionResult(
                 success=True,
@@ -867,9 +844,7 @@ class InteractiveAlertActionManager:
             # Update alert in manager
             self.alert_manager.update_alert(alert)
 
-            logger.info(
-                f"Alert {alert_id} escalated to level {new_escalation_level} by user {user_id}"
-            )
+            logger.info(f"Alert {alert_id} escalated to level {new_escalation_level} by user {user_id}")
 
             return AlertActionResult(
                 success=True,

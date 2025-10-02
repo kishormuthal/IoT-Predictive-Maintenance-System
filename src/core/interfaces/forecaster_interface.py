@@ -13,9 +13,7 @@ class ForecasterInterface(ABC):
     """Abstract base class for all forecasters"""
 
     @abstractmethod
-    def generate_forecast(
-        self, sensor_id: str, data: np.ndarray, horizon_hours: int = 24
-    ) -> Dict[str, Any]:
+    def generate_forecast(self, sensor_id: str, data: np.ndarray, horizon_hours: int = 24) -> Dict[str, Any]:
         """
         Generate forecast for sensor data
 

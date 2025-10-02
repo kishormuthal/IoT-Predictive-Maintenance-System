@@ -81,9 +81,7 @@ class ServiceInitializationProfiler:
                 result["timed_out"] = True
                 result["init_time"] = timeout
             else:
-                result["init_time"] = init_result.get(
-                    "init_time", time.time() - init_start
-                )
+                result["init_time"] = init_result.get("init_time", time.time() - init_start)
                 result["success"] = init_result["success"]
                 result["error"] = init_result.get("error")
 
@@ -122,9 +120,7 @@ class ServiceInitializationProfiler:
             "timed_out": timed_out,
             "success_rate": successful / total_services if total_services > 0 else 0,
             "total_init_time": total_time,
-            "average_init_time": (
-                total_time / total_services if total_services > 0 else 0
-            ),
+            "average_init_time": (total_time / total_services if total_services > 0 else 0),
             "total_memory_increase": total_memory,
             "slowest_service": {
                 "name": slowest["service_name"],
@@ -164,22 +160,16 @@ class TestServiceInitializationPerformance:
         ]
 
         for service_name, service_path in core_services:
-            result = profiler.profile_service_init(
-                service_name, service_path, timeout=15
-            )
+            result = profiler.profile_service_init(service_name, service_path, timeout=15)
 
             # Core services should initialize within reasonable time
             if result["success"]:
-                assert (
-                    result["total_time"] < 10.0
-                ), f"{service_name} too slow: {result['total_time']}s"
+                assert result["total_time"] < 10.0, f"{service_name} too slow: {result['total_time']}s"
                 assert (
                     result["memory_increase"] < 100
                 ), f"{service_name} uses too much memory: {result['memory_increase']}MB"
             else:
-                print(
-                    f"Warning: {service_name} failed to initialize: {result['error']}"
-                )
+                print(f"Warning: {service_name} failed to initialize: {result['error']}")
 
     def test_optional_services_initialization(self, profiler):
         """Test optional services initialization timing"""
@@ -201,21 +191,15 @@ class TestServiceInitializationPerformance:
         ]
 
         for service_name, service_path in optional_services:
-            result = profiler.profile_service_init(
-                service_name, service_path, timeout=10
-            )
+            result = profiler.profile_service_init(service_name, service_path, timeout=10)
 
             # Optional services are allowed to fail, but if they succeed, should be reasonable
             if result["success"]:
-                assert (
-                    result["total_time"] < 8.0
-                ), f"{service_name} too slow: {result['total_time']}s"
+                assert result["total_time"] < 8.0, f"{service_name} too slow: {result['total_time']}s"
             elif result["timed_out"]:
                 print(f"Warning: {service_name} timed out during initialization")
             else:
-                print(
-                    f"Note: {service_name} failed (acceptable for optional service): {result['error']}"
-                )
+                print(f"Note: {service_name} failed (acceptable for optional service): {result['error']}")
 
     def test_nasa_data_loader_performance(self, profiler):
         """Detailed analysis of NASA data loader performance"""
@@ -229,9 +213,7 @@ class TestServiceInitializationPerformance:
 
         if result["success"]:
             # Data loader is critical but may be slow due to data loading
-            assert (
-                result["total_time"] < 15.0
-            ), f"NASA Data Loader too slow: {result['total_time']}s"
+            assert result["total_time"] < 15.0, f"NASA Data Loader too slow: {result['total_time']}s"
 
             # Memory usage analysis
             assert (
@@ -292,9 +274,7 @@ class TestServiceInitializationPerformance:
         print(f"Total initialization time: {summary['total_init_time']:.2f}s")
         print(f"Average per service: {summary['average_init_time']:.2f}s")
         print(f"Total memory increase: {summary['total_memory_increase']:.2f}MB")
-        print(
-            f"Slowest service: {summary['slowest_service']['name']} ({summary['slowest_service']['time']:.2f}s)"
-        )
+        print(f"Slowest service: {summary['slowest_service']['name']} ({summary['slowest_service']['time']:.2f}s)")
         print(
             f"Most memory: {summary['most_memory_service']['name']} ({summary['most_memory_service']['memory']:.2f}MB)"
         )
@@ -362,12 +342,8 @@ class TestDashboardCreationAnalysis:
         from src.presentation.dashboard.enhanced_app import EnhancedIoTDashboard
 
         # Test class attributes
-        assert hasattr(
-            EnhancedIoTDashboard, "__init__"
-        ), "Dashboard class missing __init__"
-        assert hasattr(
-            EnhancedIoTDashboard, "_initialize_services"
-        ), "Dashboard class missing _initialize_services"
+        assert hasattr(EnhancedIoTDashboard, "__init__"), "Dashboard class missing __init__"
+        assert hasattr(EnhancedIoTDashboard, "_initialize_services"), "Dashboard class missing _initialize_services"
 
         # The bottleneck is likely in service initialization during __init__
         print("Bottleneck identified: Service initialization during dashboard __init__")
@@ -402,9 +378,7 @@ class TestServiceOptimizationStrategies:
         lazy_anomaly = LazyService(AnomalyDetectionService)
 
         lazy_creation_time = time.time() - start_time
-        assert (
-            lazy_creation_time < 0.1
-        ), f"Lazy wrapper creation too slow: {lazy_creation_time}s"
+        assert lazy_creation_time < 0.1, f"Lazy wrapper creation too slow: {lazy_creation_time}s"
 
         # Actual service creation happens on first access
         access_start = time.time()
@@ -432,9 +406,7 @@ class TestServiceOptimizationStrategies:
 
             # If it takes too long, it's our bottleneck
             if init_time > 5.0:
-                print(
-                    f"BOTTLENECK IDENTIFIED: NASA Data Loader takes {init_time:.2f}s to initialize"
-                )
+                print(f"BOTTLENECK IDENTIFIED: NASA Data Loader takes {init_time:.2f}s to initialize")
 
         except Exception as e:
             print(f"NASA Data Loader initialization failed: {e}")

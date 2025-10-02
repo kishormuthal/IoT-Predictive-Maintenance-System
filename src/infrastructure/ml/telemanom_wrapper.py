@@ -67,18 +67,14 @@ def _setup_mock_implementations():
         class Sequential:
             def __init__(self, layers=None):
                 self.layers = layers or []
-                logger.warning(
-                    "[MOCK] Using mock Keras Sequential - TensorFlow not available"
-                )
+                logger.warning("[MOCK] Using mock Keras Sequential - TensorFlow not available")
 
             def compile(self, **kwargs):
                 logger.debug("[MOCK] Mock compile called - no actual compilation")
                 pass
 
             def fit(self, X, y, **kwargs):
-                logger.warning(
-                    "[MOCK] Mock training - returning dummy history without actual training"
-                )
+                logger.warning("[MOCK] Mock training - returning dummy history without actual training")
                 return type(
                     "MockHistory",
                     (),
@@ -91,9 +87,7 @@ def _setup_mock_implementations():
                 )()
 
             def predict(self, X):
-                logger.warning(
-                    "[MOCK] Mock prediction - returning zeros (no actual prediction)"
-                )
+                logger.warning("[MOCK] Mock prediction - returning zeros (no actual prediction)")
                 return np.zeros((len(X), 1, 1))
 
             def count_params(self):
@@ -182,19 +176,13 @@ class Telemanom_Config:
 
         # Validate ranges
         if not 0 <= self.dropout_rate <= 1:
-            raise ValueError(
-                f"dropout_rate must be between 0 and 1, got {self.dropout_rate}"
-            )
+            raise ValueError(f"dropout_rate must be between 0 and 1, got {self.dropout_rate}")
 
         if self.sequence_length <= 0:
-            raise ValueError(
-                f"sequence_length must be positive, got {self.sequence_length}"
-            )
+            raise ValueError(f"sequence_length must be positive, got {self.sequence_length}")
 
         if self.prediction_length <= 0:
-            raise ValueError(
-                f"prediction_length must be positive, got {self.prediction_length}"
-            )
+            raise ValueError(f"prediction_length must be positive, got {self.prediction_length}")
 
         if self.epochs <= 0:
             raise ValueError(f"epochs must be positive, got {self.epochs}")
@@ -203,22 +191,16 @@ class Telemanom_Config:
             raise ValueError(f"batch_size must be positive, got {self.batch_size}")
 
         if not 0 < self.validation_split < 1:
-            raise ValueError(
-                f"validation_split must be between 0 and 1, got {self.validation_split}"
-            )
+            raise ValueError(f"validation_split must be between 0 and 1, got {self.validation_split}")
 
         if not 0 <= self.contamination <= 1:
-            raise ValueError(
-                f"contamination must be between 0 and 1, got {self.contamination}"
-            )
+            raise ValueError(f"contamination must be between 0 and 1, got {self.contamination}")
 
         if self.error_buffer <= 0:
             raise ValueError(f"error_buffer must be positive, got {self.error_buffer}")
 
         if self.smoothing_window <= 0:
-            raise ValueError(
-                f"smoothing_window must be positive, got {self.smoothing_window}"
-            )
+            raise ValueError(f"smoothing_window must be positive, got {self.smoothing_window}")
 
 
 class NASATelemanom:
@@ -275,11 +257,7 @@ class NASATelemanom:
                 ),
                 # Second LSTM layer (if specified)
                 layers.LSTM(
-                    units=(
-                        self.config.lstm_units[1]
-                        if len(self.config.lstm_units) > 1
-                        else self.config.lstm_units[0]
-                    ),
+                    units=(self.config.lstm_units[1] if len(self.config.lstm_units) > 1 else self.config.lstm_units[0]),
                     return_sequences=False,
                     dropout=self.config.dropout_rate,
                     recurrent_dropout=self.config.dropout_rate,
@@ -318,9 +296,7 @@ class NASATelemanom:
 
         return np.array(sequences), np.array(targets)
 
-    def _calculate_prediction_errors(
-        self, y_true: np.ndarray, y_pred: np.ndarray
-    ) -> np.ndarray:
+    def _calculate_prediction_errors(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
         """Calculate prediction errors for anomaly detection
 
         Args:
@@ -359,10 +335,7 @@ class NASATelemanom:
             smoothed: Smoothed errors with same shape as input
         """
         smoothed = (
-            pd.Series(errors)
-            .rolling(window=self.config.smoothing_window, center=True, min_periods=1)
-            .mean()
-            .values
+            pd.Series(errors).rolling(window=self.config.smoothing_window, center=True, min_periods=1).mean().values
         )
         return smoothed
 
@@ -426,9 +399,7 @@ class NASATelemanom:
         self.n_features = training_data.shape[1]
 
         # Pre-check: Ensure minimum data length
-        min_required_length = (
-            self.config.sequence_length + self.config.prediction_length
-        )
+        min_required_length = self.config.sequence_length + self.config.prediction_length
         if len(training_data) < min_required_length:
             raise InsufficientDataError(
                 f"Insufficient training data for sensor {self.sensor_id}. "
@@ -442,21 +413,15 @@ class NASATelemanom:
         X, y = self._create_sequences(scaled_data)
 
         if len(X) == 0:
-            raise InsufficientDataError(
-                f"Not enough data to create sequences for sensor {self.sensor_id}"
-            )
+            raise InsufficientDataError(f"Not enough data to create sequences for sensor {self.sensor_id}")
 
         # Build and train model
         self.model = self._build_model()
 
         # Training callbacks
         callbacks = [
-            keras.callbacks.EarlyStopping(
-                monitor="val_loss", patience=10, restore_best_weights=True
-            ),
-            keras.callbacks.ReduceLROnPlateau(
-                monitor="val_loss", factor=0.5, patience=5, min_lr=1e-6
-            ),
+            keras.callbacks.EarlyStopping(monitor="val_loss", patience=10, restore_best_weights=True),
+            keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=5, min_lr=1e-6),
         ]
 
         # Train model with configurable verbosity
@@ -480,11 +445,7 @@ class NASATelemanom:
 
         # Convert NumPy arrays to lists for JSON serialization
         self.training_history = {
-            key: (
-                [float(v) for v in values]
-                if isinstance(values, (list, np.ndarray))
-                else values
-            )
+            key: ([float(v) for v in values] if isinstance(values, (list, np.ndarray)) else values)
             for key, values in history.history.items()
         }
 
@@ -493,14 +454,8 @@ class NASATelemanom:
         logger.info(f"Error threshold: {self.error_threshold:.4f}")
 
         # Robust history access with fallbacks
-        final_loss = (
-            history.history.get("loss", [0])[-1] if history.history.get("loss") else 0
-        )
-        final_val_loss = (
-            history.history.get("val_loss", [0])[-1]
-            if history.history.get("val_loss")
-            else 0
-        )
+        final_loss = history.history.get("loss", [0])[-1] if history.history.get("loss") else 0
+        final_val_loss = history.history.get("val_loss", [0])[-1] if history.history.get("val_loss") else 0
 
         return {
             "sensor_id": self.sensor_id,
@@ -531,13 +486,9 @@ class NASATelemanom:
             data = data.reshape(-1, 1)
 
         # Pre-check for minimum data length
-        min_required_length = (
-            self.config.sequence_length + self.config.prediction_length
-        )
+        min_required_length = self.config.sequence_length + self.config.prediction_length
         if len(data) < min_required_length:
-            logger.warning(
-                f"Insufficient data for anomaly detection on sensor {self.sensor_id}"
-            )
+            logger.warning(f"Insufficient data for anomaly detection on sensor {self.sensor_id}")
             return {
                 "sensor_id": self.sensor_id,
                 "anomalies": [],
@@ -595,9 +546,7 @@ class NASATelemanom:
             "anomaly_count": len(anomaly_indices),
         }
 
-        logger.info(
-            f"Detected {len(anomaly_indices)} anomalies for sensor {self.sensor_id}"
-        )
+        logger.info(f"Detected {len(anomaly_indices)} anomalies for sensor {self.sensor_id}")
 
         return results
 
@@ -623,9 +572,7 @@ class NASATelemanom:
                 self.model.save(model_dir / "model.h5")
                 logger.debug(f"Saved Keras model for sensor {self.sensor_id}")
             else:
-                logger.warning(
-                    f"TensorFlow not available - Keras model not saved for {self.sensor_id}"
-                )
+                logger.warning(f"TensorFlow not available - Keras model not saved for {self.sensor_id}")
 
             # Save scaler
             with open(model_dir / "scaler.pkl", "wb") as f:
@@ -635,14 +582,8 @@ class NASATelemanom:
             metadata = {
                 "sensor_id": self.sensor_id,
                 "config": self.config.__dict__,
-                "error_threshold": (
-                    float(self.error_threshold)
-                    if self.error_threshold is not None
-                    else None
-                ),
-                "n_features": (
-                    int(self.n_features) if self.n_features is not None else None
-                ),
+                "error_threshold": (float(self.error_threshold) if self.error_threshold is not None else None),
+                "n_features": (int(self.n_features) if self.n_features is not None else None),
                 "is_trained": self.is_trained,
                 "training_history": self.training_history,
                 "tensorflow_available": TENSORFLOW_AVAILABLE,
@@ -657,17 +598,13 @@ class NASATelemanom:
             if self.smoothed_errors is not None:
                 np.save(model_dir / "smoothed_errors.npy", self.smoothed_errors)
 
-            logger.info(
-                f"Model saved successfully for sensor {self.sensor_id} at {model_dir}"
-            )
+            logger.info(f"Model saved successfully for sensor {self.sensor_id} at {model_dir}")
 
         except IOError as e:
             logger.error(f"Failed to save model for sensor {self.sensor_id}: {e}")
             raise
         except Exception as e:
-            logger.error(
-                f"Unexpected error saving model for sensor {self.sensor_id}: {e}"
-            )
+            logger.error(f"Unexpected error saving model for sensor {self.sensor_id}: {e}")
             raise
 
     def load_model(self, model_path: Path) -> bool:
@@ -756,9 +693,7 @@ class NASATelemanom:
             return True
 
         except FileNotFoundError as e:
-            logger.error(
-                f"File not found while loading model for sensor {self.sensor_id}: {e}"
-            )
+            logger.error(f"File not found while loading model for sensor {self.sensor_id}: {e}")
             self.is_trained = False
             return False
         except (KeyError, json.JSONDecodeError) as e:
@@ -766,8 +701,6 @@ class NASATelemanom:
             self.is_trained = False
             return False
         except Exception as e:
-            logger.error(
-                f"Unexpected error loading model for sensor {self.sensor_id}: {e}"
-            )
+            logger.error(f"Unexpected error loading model for sensor {self.sensor_id}: {e}")
             self.is_trained = False
             return False

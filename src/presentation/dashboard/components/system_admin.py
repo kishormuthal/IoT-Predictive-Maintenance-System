@@ -33,9 +33,7 @@ def create_system_admin_layout():
                                         [
                                             html.H4(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-cogs me-3 text-secondary"
-                                                    ),
+                                                    html.I(className="fas fa-cogs me-3 text-secondary"),
                                                     "System Administration",
                                                 ],
                                                 className="mb-3",
@@ -74,9 +72,7 @@ def create_system_admin_layout():
                                                         [
                                                             dbc.Button(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-sync me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-sync me-2"),
                                                                     "System Health Check",
                                                                 ],
                                                                 id="health-check-btn",
@@ -95,9 +91,7 @@ def create_system_admin_layout():
                                                         [
                                                             dbc.Button(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-broom me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-broom me-2"),
                                                                     "Cleanup & Maintenance",
                                                                 ],
                                                                 id="cleanup-btn",
@@ -116,9 +110,7 @@ def create_system_admin_layout():
                                                         [
                                                             dbc.Button(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-download me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-download me-2"),
                                                                     "Backup System",
                                                                 ],
                                                                 id="backup-btn",
@@ -137,9 +129,7 @@ def create_system_admin_layout():
                                                         [
                                                             dbc.Button(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-chart-bar me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-chart-bar me-2"),
                                                                     "Generate Report",
                                                                 ],
                                                                 id="report-btn",
@@ -178,9 +168,7 @@ def create_system_admin_layout():
                                             "System Health Dashboard",
                                         ]
                                     ),
-                                    dbc.CardBody(
-                                        [html.Div(id="system-health-dashboard")]
-                                    ),
+                                    dbc.CardBody([html.Div(id="system-health-dashboard")]),
                                 ]
                             )
                         ],
@@ -242,9 +230,7 @@ def create_system_admin_layout():
                                                 id="config-tabs",
                                                 active_tab="general-config",
                                             ),
-                                            html.Div(
-                                                id="config-content", className="mt-3"
-                                            ),
+                                            html.Div(id="config-content", className="mt-3"),
                                         ]
                                     ),
                                 ]
@@ -376,9 +362,7 @@ def create_system_admin_layout():
                                                         [
                                                             dbc.Button(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-sync me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-sync me-2"),
                                                                     "Refresh Logs",
                                                                 ],
                                                                 id="refresh-logs-btn",
@@ -452,9 +436,7 @@ def create_system_admin_layout():
     )
 
 
-def register_system_admin_callbacks(
-    app, performance_monitor, config_manager, model_registry, training_use_case
-):
+def register_system_admin_callbacks(app, performance_monitor, config_manager, model_registry, training_use_case):
     """Register callbacks for system administration functionality"""
 
     @app.callback(
@@ -468,24 +450,18 @@ def register_system_admin_callbacks(
         """Update system health dashboard"""
         try:
             # Get system metrics
-            system_summary = performance_monitor.get_system_metrics_summary(
-                hours_back=1
-            )
+            system_summary = performance_monitor.get_system_metrics_summary(hours_back=1)
             alerts = performance_monitor.get_performance_alerts()
             training_status = training_use_case.get_training_status()
             registry_stats = model_registry.get_registry_stats()
 
             # Calculate health scores
             cpu_health = 100 - system_summary.get("cpu", {}).get("current", 0)
-            memory_health = 100 - system_summary.get("memory", {}).get(
-                "current_percent", 0
-            )
+            memory_health = 100 - system_summary.get("memory", {}).get("current_percent", 0)
             disk_health = 100 - system_summary.get("disk", {}).get("usage_percent", 0)
             alert_health = max(0, 100 - len(alerts) * 10)  # Reduce by 10 for each alert
 
-            overall_health = (
-                cpu_health + memory_health + disk_health + alert_health
-            ) / 4
+            overall_health = (cpu_health + memory_health + disk_health + alert_health) / 4
 
             # Create health dashboard
             health_components = dbc.Row(
@@ -520,39 +496,31 @@ def register_system_admin_callbacks(
                                 [
                                     dbc.CardBody(
                                         [
-                                            html.H5(
-                                                "Component Status", className="mb-3"
-                                            ),
+                                            html.H5("Component Status", className="mb-3"),
                                             dbc.ListGroup(
                                                 [
                                                     dbc.ListGroupItem(
                                                         [
                                                             html.Div(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-microchip me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-microchip me-2"),
                                                                     "CPU",
                                                                     dbc.Badge(
                                                                         (
                                                                             "Healthy"
-                                                                            if cpu_health
-                                                                            > 70
+                                                                            if cpu_health > 70
                                                                             else (
                                                                                 "Warning"
-                                                                                if cpu_health
-                                                                                > 50
+                                                                                if cpu_health > 50
                                                                                 else "Critical"
                                                                             )
                                                                         ),
                                                                         color=(
                                                                             "success"
-                                                                            if cpu_health
-                                                                            > 70
+                                                                            if cpu_health > 70
                                                                             else (
                                                                                 "warning"
-                                                                                if cpu_health
-                                                                                > 50
+                                                                                if cpu_health > 50
                                                                                 else "danger"
                                                                             )
                                                                         ),
@@ -567,30 +535,24 @@ def register_system_admin_callbacks(
                                                         [
                                                             html.Div(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-memory me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-memory me-2"),
                                                                     "Memory",
                                                                     dbc.Badge(
                                                                         (
                                                                             "Healthy"
-                                                                            if memory_health
-                                                                            > 70
+                                                                            if memory_health > 70
                                                                             else (
                                                                                 "Warning"
-                                                                                if memory_health
-                                                                                > 50
+                                                                                if memory_health > 50
                                                                                 else "Critical"
                                                                             )
                                                                         ),
                                                                         color=(
                                                                             "success"
-                                                                            if memory_health
-                                                                            > 70
+                                                                            if memory_health > 70
                                                                             else (
                                                                                 "warning"
-                                                                                if memory_health
-                                                                                > 50
+                                                                                if memory_health > 50
                                                                                 else "danger"
                                                                             )
                                                                         ),
@@ -605,30 +567,24 @@ def register_system_admin_callbacks(
                                                         [
                                                             html.Div(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-hdd me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-hdd me-2"),
                                                                     "Storage",
                                                                     dbc.Badge(
                                                                         (
                                                                             "Healthy"
-                                                                            if disk_health
-                                                                            > 70
+                                                                            if disk_health > 70
                                                                             else (
                                                                                 "Warning"
-                                                                                if disk_health
-                                                                                > 50
+                                                                                if disk_health > 50
                                                                                 else "Critical"
                                                                             )
                                                                         ),
                                                                         color=(
                                                                             "success"
-                                                                            if disk_health
-                                                                            > 70
+                                                                            if disk_health > 70
                                                                             else (
                                                                                 "warning"
-                                                                                if disk_health
-                                                                                > 50
+                                                                                if disk_health > 50
                                                                                 else "danger"
                                                                             )
                                                                         ),
@@ -643,9 +599,7 @@ def register_system_admin_callbacks(
                                                         [
                                                             html.Div(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-database me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-database me-2"),
                                                                     "Models",
                                                                     dbc.Badge(
                                                                         f"{registry_stats.get('total_models', 0)} Active",
@@ -705,12 +659,8 @@ def register_system_admin_callbacks(
                             f"{platform.system()} {platform.release()}",
                         ]
                     ),
-                    dbc.ListGroupItem(
-                        [html.Strong("Python: "), platform.python_version()]
-                    ),
-                    dbc.ListGroupItem(
-                        [html.Strong("CPU Cores: "), str(psutil.cpu_count())]
-                    ),
+                    dbc.ListGroupItem([html.Strong("Python: "), platform.python_version()]),
+                    dbc.ListGroupItem([html.Strong("CPU Cores: "), str(psutil.cpu_count())]),
                     dbc.ListGroupItem(
                         [
                             html.Strong("Total Memory: "),
@@ -723,9 +673,7 @@ def register_system_admin_callbacks(
                             f"{datetime.now() - datetime.fromtimestamp(psutil.boot_time())}",
                         ]
                     ),
-                    dbc.ListGroupItem(
-                        [html.Strong("Dashboard Version: "), "3.0.0-enhanced"]
-                    ),
+                    dbc.ListGroupItem([html.Strong("Dashboard Version: "), "3.0.0-enhanced"]),
                     dbc.ListGroupItem(
                         [
                             html.Strong("Last Updated: "),
@@ -742,9 +690,7 @@ def register_system_admin_callbacks(
             logger.error(f"Error updating system info: {e}")
             return dbc.Alert("Error loading system info", color="warning")
 
-    @app.callback(
-        Output("config-content", "children"), Input("config-tabs", "active_tab")
-    )
+    @app.callback(Output("config-content", "children"), Input("config-tabs", "active_tab"))
     def update_config_content(active_tab):
         """Update configuration content based on active tab"""
         try:
@@ -806,9 +752,7 @@ def register_system_admin_callbacks(
                                                 ),
                                                 dbc.Col(
                                                     [
-                                                        html.Label(
-                                                            "Refresh Interval (seconds):"
-                                                        ),
+                                                        html.Label("Refresh Interval (seconds):"),
                                                         dbc.Input(
                                                             id="refresh-interval-input",
                                                             type="number",
@@ -846,16 +790,12 @@ def register_system_admin_callbacks(
                             [
                                 dbc.CardBody(
                                     [
-                                        html.H6(
-                                            "Training Parameters", className="mb-3"
-                                        ),
+                                        html.H6("Training Parameters", className="mb-3"),
                                         dbc.Row(
                                             [
                                                 dbc.Col(
                                                     [
-                                                        html.Label(
-                                                            "Parallel Training:"
-                                                        ),
+                                                        html.Label("Parallel Training:"),
                                                         dbc.Switch(
                                                             id="parallel-training-switch",
                                                             value=False,
@@ -903,9 +843,7 @@ def register_system_admin_callbacks(
                             [
                                 dbc.CardBody(
                                     [
-                                        html.H6(
-                                            "Equipment Management", className="mb-3"
-                                        ),
+                                        html.H6("Equipment Management", className="mb-3"),
                                         html.Div(id="equipment-config-table"),
                                         dbc.Button(
                                             "Refresh Equipment",
@@ -932,16 +870,12 @@ def register_system_admin_callbacks(
                             [
                                 dbc.CardBody(
                                     [
-                                        html.H6(
-                                            "Monitoring Settings", className="mb-3"
-                                        ),
+                                        html.H6("Monitoring Settings", className="mb-3"),
                                         dbc.Row(
                                             [
                                                 dbc.Col(
                                                     [
-                                                        html.Label(
-                                                            "Performance Monitoring:"
-                                                        ),
+                                                        html.Label("Performance Monitoring:"),
                                                         dbc.Switch(
                                                             id="performance-monitoring-switch",
                                                             value=True,
@@ -951,9 +885,7 @@ def register_system_admin_callbacks(
                                                 ),
                                                 dbc.Col(
                                                     [
-                                                        html.Label(
-                                                            "Alert Threshold (CPU %):"
-                                                        ),
+                                                        html.Label("Alert Threshold (CPU %):"),
                                                         dbc.Input(
                                                             id="cpu-alert-threshold",
                                                             type="number",
@@ -1056,9 +988,7 @@ def register_system_admin_callbacks(
                 log_entries.append(log_entry)
 
             if not log_entries:
-                return dbc.Alert(
-                    "No logs found matching the selected filters", color="info"
-                )
+                return dbc.Alert("No logs found matching the selected filters", color="info")
 
             return dbc.ListGroup(log_entries[:20], flush=True)  # Show only first 20
 
@@ -1080,13 +1010,9 @@ def register_system_admin_callbacks(
                         [
                             html.Div(
                                 [
-                                    html.I(
-                                        className="fas fa-check-circle text-success me-2"
-                                    ),
+                                    html.I(className="fas fa-check-circle text-success me-2"),
                                     "Database Connection",
-                                    dbc.Badge(
-                                        "OK", color="success", className="ms-auto"
-                                    ),
+                                    dbc.Badge("OK", color="success", className="ms-auto"),
                                 ],
                                 className="d-flex justify-content-between align-items-center",
                             )
@@ -1096,13 +1022,9 @@ def register_system_admin_callbacks(
                         [
                             html.Div(
                                 [
-                                    html.I(
-                                        className="fas fa-check-circle text-success me-2"
-                                    ),
+                                    html.I(className="fas fa-check-circle text-success me-2"),
                                     "Model Registry",
-                                    dbc.Badge(
-                                        "OK", color="success", className="ms-auto"
-                                    ),
+                                    dbc.Badge("OK", color="success", className="ms-auto"),
                                 ],
                                 className="d-flex justify-content-between align-items-center",
                             )
@@ -1112,13 +1034,9 @@ def register_system_admin_callbacks(
                         [
                             html.Div(
                                 [
-                                    html.I(
-                                        className="fas fa-check-circle text-success me-2"
-                                    ),
+                                    html.I(className="fas fa-check-circle text-success me-2"),
                                     "Data Loader",
-                                    dbc.Badge(
-                                        "OK", color="success", className="ms-auto"
-                                    ),
+                                    dbc.Badge("OK", color="success", className="ms-auto"),
                                 ],
                                 className="d-flex justify-content-between align-items-center",
                             )
@@ -1128,13 +1046,9 @@ def register_system_admin_callbacks(
                         [
                             html.Div(
                                 [
-                                    html.I(
-                                        className="fas fa-exclamation-triangle text-warning me-2"
-                                    ),
+                                    html.I(className="fas fa-exclamation-triangle text-warning me-2"),
                                     "Performance Monitor",
-                                    dbc.Badge(
-                                        "WARNING", color="warning", className="ms-auto"
-                                    ),
+                                    dbc.Badge("WARNING", color="warning", className="ms-auto"),
                                 ],
                                 className="d-flex justify-content-between align-items-center",
                             )
@@ -1165,9 +1079,7 @@ def register_system_admin_callbacks(
                                 [
                                     dbc.CardBody(
                                         [
-                                            html.H6(
-                                                "System Maintenance", className="mb-3"
-                                            ),
+                                            html.H6("System Maintenance", className="mb-3"),
                                             dbc.ListGroup(
                                                 [
                                                     dbc.ListGroupItem(
@@ -1228,18 +1140,14 @@ def register_system_admin_callbacks(
                                 [
                                     dbc.CardBody(
                                         [
-                                            html.H6(
-                                                "Scheduled Tasks", className="mb-3"
-                                            ),
+                                            html.H6("Scheduled Tasks", className="mb-3"),
                                             dbc.ListGroup(
                                                 [
                                                     dbc.ListGroupItem(
                                                         [
                                                             html.Div(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-clock me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-clock me-2"),
                                                                     "Daily Backup",
                                                                     dbc.Badge(
                                                                         "Enabled",
@@ -1255,9 +1163,7 @@ def register_system_admin_callbacks(
                                                         [
                                                             html.Div(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-broom me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-broom me-2"),
                                                                     "Weekly Cleanup",
                                                                     dbc.Badge(
                                                                         "Enabled",
@@ -1273,9 +1179,7 @@ def register_system_admin_callbacks(
                                                         [
                                                             html.Div(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-sync me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-sync me-2"),
                                                                     "Model Validation",
                                                                     dbc.Badge(
                                                                         "Disabled",

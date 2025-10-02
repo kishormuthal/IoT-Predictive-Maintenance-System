@@ -174,31 +174,23 @@ class EquipmentSpecificThresholdManager:
                 config = self._create_threshold_configuration(equipment)
                 self.threshold_configs[equipment.equipment_id] = config
 
-            logger.info(
-                f"Initialized threshold configurations for {len(self.threshold_configs)} equipment"
-            )
+            logger.info(f"Initialized threshold configurations for {len(self.threshold_configs)} equipment")
 
         except Exception as e:
             logger.error(f"Error initializing threshold configurations: {e}")
 
-    def _create_threshold_configuration(
-        self, equipment: EquipmentComponent
-    ) -> ThresholdConfiguration:
+    def _create_threshold_configuration(self, equipment: EquipmentComponent) -> ThresholdConfiguration:
         """Create threshold configuration for specific equipment"""
         equipment_id = equipment.equipment_id
         subsystem = equipment.subsystem
         criticality = equipment.criticality
 
         # Get base thresholds for subsystem
-        subsystem_config = self.subsystem_configs.get(
-            subsystem, self.subsystem_configs["POWER"]
-        )
+        subsystem_config = self.subsystem_configs.get(subsystem, self.subsystem_configs["POWER"])
         base_thresholds = subsystem_config["base_thresholds"]
 
         # Get priority adjustments
-        priority_config = self.priority_configs.get(
-            criticality, self.priority_configs["MEDIUM"]
-        )
+        priority_config = self.priority_configs.get(criticality, self.priority_configs["MEDIUM"])
         sensitivity = priority_config["threshold_sensitivity"]
 
         # Calculate adjusted thresholds
@@ -525,9 +517,7 @@ class EquipmentSpecificThresholdManager:
                                             [
                                                 dbc.CardBody(
                                                     [
-                                                        html.H4(
-                                                            "3", className="text-danger"
-                                                        ),
+                                                        html.H4("3", className="text-danger"),
                                                         html.P(
                                                             "Need Attention",
                                                             className="text-muted mb-0",
@@ -719,20 +709,14 @@ class EquipmentSpecificThresholdManager:
             if optimization_type == "accuracy":
                 new_thresholds = self._optimize_for_accuracy(config, performance_data)
             elif optimization_type == "false_positive":
-                new_thresholds = self._optimize_for_false_positives(
-                    config, performance_data
-                )
+                new_thresholds = self._optimize_for_false_positives(config, performance_data)
             elif optimization_type == "sensitivity":
-                new_thresholds = self._optimize_for_sensitivity(
-                    config, performance_data
-                )
+                new_thresholds = self._optimize_for_sensitivity(config, performance_data)
             else:
                 new_thresholds = old_thresholds
 
             # Calculate improvement score
-            improvement_score = self._calculate_improvement_score(
-                old_thresholds, new_thresholds, performance_data
-            )
+            improvement_score = self._calculate_improvement_score(old_thresholds, new_thresholds, performance_data)
 
             # Generate justification
             justification = self._generate_optimization_justification(
@@ -740,9 +724,7 @@ class EquipmentSpecificThresholdManager:
             )
 
             # Calculate confidence
-            confidence = self._calculate_optimization_confidence(
-                performance_data, improvement_score
-            )
+            confidence = self._calculate_optimization_confidence(performance_data, improvement_score)
 
             result = ThresholdOptimizationResult(
                 equipment_id=equipment_id,
@@ -759,9 +741,7 @@ class EquipmentSpecificThresholdManager:
                 self.optimization_history[equipment_id] = []
             self.optimization_history[equipment_id].append(result)
 
-            logger.info(
-                f"Optimized thresholds for {equipment_id}: {improvement_score:.3f} improvement"
-            )
+            logger.info(f"Optimized thresholds for {equipment_id}: {improvement_score:.3f} improvement")
 
             return result
 
@@ -777,9 +757,7 @@ class EquipmentSpecificThresholdManager:
                 justification=f"Optimization failed: {str(e)}",
             )
 
-    def apply_threshold_optimization(
-        self, equipment_id: str, optimization_result: ThresholdOptimizationResult
-    ) -> bool:
+    def apply_threshold_optimization(self, equipment_id: str, optimization_result: ThresholdOptimizationResult) -> bool:
         """Apply threshold optimization result"""
         try:
             config = self.threshold_configs.get(equipment_id)
@@ -816,14 +794,10 @@ class EquipmentSpecificThresholdManager:
             return True
 
         except Exception as e:
-            logger.error(
-                f"Error applying threshold optimization for {equipment_id}: {e}"
-            )
+            logger.error(f"Error applying threshold optimization for {equipment_id}: {e}")
             return False
 
-    def get_threshold_recommendations(
-        self, equipment_filter: Dict[str, Any] = None
-    ) -> List[Dict[str, Any]]:
+    def get_threshold_recommendations(self, equipment_filter: Dict[str, Any] = None) -> List[Dict[str, Any]]:
         """Get threshold optimization recommendations"""
         recommendations = []
 
@@ -845,9 +819,7 @@ class EquipmentSpecificThresholdManager:
                         {
                             "equipment_id": equipment_id,
                             "type": "false_positive_reduction",
-                            "priority": (
-                                "HIGH" if config.criticality == "CRITICAL" else "MEDIUM"
-                            ),
+                            "priority": ("HIGH" if config.criticality == "CRITICAL" else "MEDIUM"),
                             "description": f"High false positive rate ({performance['false_positive_rate']:.1%})",
                             "suggested_action": "Increase threshold sensitivity",
                             "expected_improvement": 0.1,
@@ -937,9 +909,7 @@ class EquipmentSpecificThresholdManager:
                 col=2,
             )
 
-        fig.update_layout(
-            height=400, title_text="Threshold Distribution Analysis", showlegend=False
-        )
+        fig.update_layout(height=400, title_text="Threshold Distribution Analysis", showlegend=False)
 
         return fig
 
@@ -962,9 +932,7 @@ class EquipmentSpecificThresholdManager:
         # Accuracy trends
         accuracy_data = np.random.uniform(0.85, 0.98, len(dates))
         fig.add_trace(
-            go.Scatter(
-                x=dates, y=accuracy_data, name="Accuracy", line=dict(color="green")
-            ),
+            go.Scatter(x=dates, y=accuracy_data, name="Accuracy", line=dict(color="green")),
             row=1,
             col=1,
         )
@@ -972,9 +940,7 @@ class EquipmentSpecificThresholdManager:
         # False positive rates
         fp_data = np.random.uniform(0.02, 0.15, len(dates))
         fig.add_trace(
-            go.Scatter(
-                x=dates, y=fp_data, name="False Positive Rate", line=dict(color="red")
-            ),
+            go.Scatter(x=dates, y=fp_data, name="False Positive Rate", line=dict(color="red")),
             row=1,
             col=2,
         )
@@ -1084,9 +1050,7 @@ class EquipmentSpecificThresholdManager:
     ) -> float:
         """Calculate expected improvement score"""
         # Simplified improvement calculation
-        threshold_change = sum(
-            abs(new_thresholds[k] - old_thresholds[k]) for k in old_thresholds
-        )
+        threshold_change = sum(abs(new_thresholds[k] - old_thresholds[k]) for k in old_thresholds)
         base_improvement = min(0.20, threshold_change * 0.5)
 
         # Adjust based on current performance
@@ -1112,9 +1076,7 @@ class EquipmentSpecificThresholdManager:
         }
         return justifications.get(optimization_type, "Threshold optimization completed")
 
-    def _calculate_optimization_confidence(
-        self, performance_data: Dict[str, Any], improvement_score: float
-    ) -> float:
+    def _calculate_optimization_confidence(self, performance_data: Dict[str, Any], improvement_score: float) -> float:
         """Calculate confidence in optimization"""
         # Base confidence on data quality and expected improvement
         data_confidence = min(1.0, performance_data["detection_count"] / 100.0)
@@ -1122,9 +1084,7 @@ class EquipmentSpecificThresholdManager:
 
         return (data_confidence + improvement_confidence) / 2.0
 
-    def _update_anomaly_engine_thresholds(
-        self, equipment_id: str, config: ThresholdConfiguration
-    ):
+    def _update_anomaly_engine_thresholds(self, equipment_id: str, config: ThresholdConfiguration):
         """Update thresholds in the anomaly engine"""
         # This would update the actual anomaly engine with new thresholds
         pass
@@ -1137,9 +1097,7 @@ class EquipmentSpecificThresholdManager:
                 filtered.append(equipment_id)
         return filtered
 
-    def _equipment_matches_filter(
-        self, config: ThresholdConfiguration, filter_criteria: Dict[str, Any]
-    ) -> bool:
+    def _equipment_matches_filter(self, config: ThresholdConfiguration, filter_criteria: Dict[str, Any]) -> bool:
         """Check if equipment matches filter criteria"""
         for key, value in filter_criteria.items():
             if value == "all":

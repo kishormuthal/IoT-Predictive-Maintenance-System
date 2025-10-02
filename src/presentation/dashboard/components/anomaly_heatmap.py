@@ -159,15 +159,11 @@ class AnomalyHeatmapManager:
         for subsystem, equipment_list in smap_subsystems.items():
             col = 0
             for equipment in equipment_list[:8]:  # Max 8 per row
-                equipment_id = getattr(
-                    equipment, "equipment_id", f"SMAP_{subsystem}_{col}"
-                )
+                equipment_id = getattr(equipment, "equipment_id", f"SMAP_{subsystem}_{col}")
 
                 grid_data[equipment_id] = EquipmentHeatmapData(
                     equipment_id=equipment_id,
-                    equipment_name=getattr(
-                        equipment, "equipment_name", f"SMAP {subsystem} {col+1}"
-                    ),
+                    equipment_name=getattr(equipment, "equipment_name", f"SMAP {subsystem} {col+1}"),
                     equipment_type="SMAP",
                     subsystem=subsystem,
                     location="Satellite",
@@ -193,15 +189,11 @@ class AnomalyHeatmapManager:
         for subsystem, equipment_list in msl_subsystems.items():
             col = 0
             for equipment in equipment_list[:8]:  # Max 8 per row
-                equipment_id = getattr(
-                    equipment, "equipment_id", f"MSL_{subsystem}_{col}"
-                )
+                equipment_id = getattr(equipment, "equipment_id", f"MSL_{subsystem}_{col}")
 
                 grid_data[equipment_id] = EquipmentHeatmapData(
                     equipment_id=equipment_id,
-                    equipment_name=getattr(
-                        equipment, "equipment_name", f"MSL {subsystem} {col+1}"
-                    ),
+                    equipment_name=getattr(equipment, "equipment_name", f"MSL {subsystem} {col+1}"),
                     equipment_type="MSL",
                     subsystem=subsystem,
                     location="Mars Rover",
@@ -255,9 +247,7 @@ class AnomalyHeatmapManager:
                     criticality=["CRITICAL", "HIGH", "MEDIUM", "LOW"][j % 4],
                     anomaly_score=np.random.uniform(0.0, 0.3),
                     is_anomaly=np.random.choice([True, False], p=[0.1, 0.9]),
-                    status=np.random.choice(
-                        ["NORMAL", "WARNING", "CRITICAL"], p=[0.8, 0.15, 0.05]
-                    ),
+                    status=np.random.choice(["NORMAL", "WARNING", "CRITICAL"], p=[0.8, 0.15, 0.05]),
                     last_update=datetime.now(),
                     grid_row=smap_row,
                     grid_col=j,
@@ -281,9 +271,7 @@ class AnomalyHeatmapManager:
 
         equipment_count = 0
         for i, subsystem in enumerate(msl_subsystems):
-            items_in_subsystem = [8, 18, 12, 10, 6, 1][
-                i
-            ]  # Distribution matching NASA MSL
+            items_in_subsystem = [8, 18, 12, 10, 6, 1][i]  # Distribution matching NASA MSL
 
             for j in range(items_in_subsystem):
                 if equipment_count >= 55:  # Limit to 55 MSL equipment
@@ -300,9 +288,7 @@ class AnomalyHeatmapManager:
                     criticality=["CRITICAL", "HIGH", "MEDIUM", "LOW"][j % 4],
                     anomaly_score=np.random.uniform(0.0, 0.4),
                     is_anomaly=np.random.choice([True, False], p=[0.12, 0.88]),
-                    status=np.random.choice(
-                        ["NORMAL", "WARNING", "CRITICAL"], p=[0.75, 0.2, 0.05]
-                    ),
+                    status=np.random.choice(["NORMAL", "WARNING", "CRITICAL"], p=[0.75, 0.2, 0.05]),
                     last_update=datetime.now(),
                     grid_row=msl_row,
                     grid_col=j % 8,  # Max 8 per row
@@ -320,9 +306,7 @@ class AnomalyHeatmapManager:
                 msl_row += 1
 
         self.equipment_grid = grid_data
-        logger.info(
-            f"Created mock equipment grid with {len(grid_data)} equipment items"
-        )
+        logger.info(f"Created mock equipment grid with {len(grid_data)} equipment items")
 
     def update_real_time_data(self):
         """Update equipment data with real-time anomaly scores"""
@@ -336,18 +320,12 @@ class AnomalyHeatmapManager:
                         equipment = self.equipment_grid[equipment_id]
 
                         # Update anomaly scores from real data
-                        equipment.anomaly_score = status_data.get(
-                            "current_anomaly_score", 0.0
-                        )
-                        equipment.is_anomaly = status_data.get(
-                            "anomaly_detected", False
-                        )
+                        equipment.anomaly_score = status_data.get("current_anomaly_score", 0.0)
+                        equipment.is_anomaly = status_data.get("anomaly_detected", False)
                         equipment.last_update = datetime.now()
 
                         # Determine status based on anomaly score
-                        equipment.status = self._determine_status(
-                            equipment.anomaly_score
-                        )
+                        equipment.status = self._determine_status(equipment.anomaly_score)
             else:
                 # Simulate real-time updates
                 self._simulate_real_time_updates()
@@ -546,12 +524,8 @@ class AnomalyHeatmapManager:
         self.update_real_time_data()
 
         total_equipment = len(self.equipment_grid)
-        smap_count = sum(
-            1 for eq in self.equipment_grid.values() if eq.equipment_type == "SMAP"
-        )
-        msl_count = sum(
-            1 for eq in self.equipment_grid.values() if eq.equipment_type == "MSL"
-        )
+        smap_count = sum(1 for eq in self.equipment_grid.values() if eq.equipment_type == "SMAP")
+        msl_count = sum(1 for eq in self.equipment_grid.values() if eq.equipment_type == "MSL")
 
         # Status counts
         status_counts = {"NORMAL": 0, "WARNING": 0, "CRITICAL": 0, "OFFLINE": 0}
@@ -577,15 +551,11 @@ class AnomalyHeatmapManager:
             "critical_count": status_counts["CRITICAL"],
             "offline_count": status_counts.get("OFFLINE", 0),
             "anomaly_count": anomaly_count,
-            "anomaly_rate": (
-                (anomaly_count / total_equipment * 100) if total_equipment > 0 else 0
-            ),
+            "anomaly_rate": ((anomaly_count / total_equipment * 100) if total_equipment > 0 else 0),
             "total_sensors": total_sensors,
             "average_uptime": avg_uptime,
             "last_update": (
-                max([eq.last_update for eq in self.equipment_grid.values()])
-                if self.equipment_grid
-                else datetime.now()
+                max([eq.last_update for eq in self.equipment_grid.values()]) if self.equipment_grid else datetime.now()
             ),
         }
 

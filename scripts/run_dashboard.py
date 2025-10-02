@@ -38,9 +38,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.dashboard.callbacks.dashboard_callbacks import DashboardCallbacks
 from src.dashboard.layouts.anomaly_monitor import create_layout as create_anomaly_layout
 from src.dashboard.layouts.forecast_view import create_layout as create_forecast_layout
-from src.dashboard.layouts.maintenance_scheduler import (
-    create_layout as create_maintenance_layout,
-)
+from src.dashboard.layouts.maintenance_scheduler import create_layout as create_maintenance_layout
 
 # Import dashboard components
 from src.dashboard.layouts.overview import create_layout as create_overview_layout
@@ -106,9 +104,7 @@ class IoTDashboard:
 
         # Initialize Flask server
         self.server = Flask(__name__)
-        self.server.secret_key = os.environ.get(
-            "SECRET_KEY", "dev-secret-key-change-in-production"
-        )
+        self.server.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key-change-in-production")
 
         # Initialize Dash app
         self.app = dash.Dash(
@@ -119,9 +115,7 @@ class IoTDashboard:
                 "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css",
             ],
             suppress_callback_exceptions=True,
-            meta_tags=[
-                {"name": "viewport", "content": "width=device-width, initial-scale=1"}
-            ],
+            meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1"}],
         )
 
         # Set app title
@@ -165,9 +159,7 @@ class IoTDashboard:
 
         # Start background data monitoring thread
         if hasattr(self, "database_connected") and self.database_connected:
-            self.monitoring_thread = threading.Thread(
-                target=self._monitor_database_changes, daemon=True
-            )
+            self.monitoring_thread = threading.Thread(target=self._monitor_database_changes, daemon=True)
             self.monitoring_thread.start()
             logger.info("Real-time data monitoring started")
 
@@ -176,14 +168,10 @@ class IoTDashboard:
         while True:
             try:
                 # Check for new telemetry data
-                new_telemetry = self._check_for_new_data(
-                    "telemetry_data", "timestamp", "telemetry"
-                )
+                new_telemetry = self._check_for_new_data("telemetry_data", "timestamp", "telemetry")
                 if new_telemetry:
                     # Limit data size for performance
-                    limited_telemetry = (
-                        new_telemetry[:20] if len(new_telemetry) > 20 else new_telemetry
-                    )
+                    limited_telemetry = new_telemetry[:20] if len(new_telemetry) > 20 else new_telemetry
                     if not self.data_update_queue.full():
                         self.data_update_queue.put(
                             {
@@ -195,9 +183,7 @@ class IoTDashboard:
                         )
 
                 # Check for new anomalies
-                new_anomalies = self._check_for_new_data(
-                    "anomalies", "detected_at", "anomalies"
-                )
+                new_anomalies = self._check_for_new_data("anomalies", "detected_at", "anomalies")
                 if new_anomalies:
                     self.data_update_queue.put(
                         {
@@ -208,11 +194,7 @@ class IoTDashboard:
                     )
 
                     # Send alert if critical anomalies
-                    critical_anomalies = [
-                        a
-                        for a in new_anomalies
-                        if a.get("severity") in ["CRITICAL", "HIGH"]
-                    ]
+                    critical_anomalies = [a for a in new_anomalies if a.get("severity") in ["CRITICAL", "HIGH"]]
                     if critical_anomalies:
                         self.data_update_queue.put(
                             {
@@ -223,9 +205,7 @@ class IoTDashboard:
                         )
 
                 # Check for new work orders
-                new_work_orders = self._check_for_new_data(
-                    "work_orders", "created_at", "work_orders"
-                )
+                new_work_orders = self._check_for_new_data("work_orders", "created_at", "work_orders")
                 if new_work_orders:
                     self.data_update_queue.put(
                         {
@@ -363,9 +343,7 @@ class IoTDashboard:
                 if "telemetry_data" in query.lower():
                     # Return sample telemetry data
                     data = {
-                        "timestamp": pd.date_range(
-                            start="2024-01-01", periods=100, freq="H"
-                        ),
+                        "timestamp": pd.date_range(start="2024-01-01", periods=100, freq="H"),
                         "equipment_id": ["PUMP_001"] * 100,
                         "sensor_data": [{"temp": 25.5, "pressure": 101.3}] * 100,
                     }
@@ -388,9 +366,7 @@ class IoTDashboard:
                             0.87,
                             0.82,
                         ],
-                        "detected_at": pd.date_range(
-                            start="2024-01-01", periods=10, freq="H"
-                        ),
+                        "detected_at": pd.date_range(start="2024-01-01", periods=10, freq="H"),
                         "severity": [
                             "HIGH",
                             "CRITICAL",
@@ -413,9 +389,7 @@ class IoTDashboard:
                         "equipment_id": ["PUMP_001", "PUMP_002", "PUMP_001"],
                         "status": ["PENDING", "IN_PROGRESS", "COMPLETED"],
                         "priority": ["HIGH", "MEDIUM", "LOW"],
-                        "created_at": pd.date_range(
-                            start="2024-01-01", periods=3, freq="D"
-                        ),
+                        "created_at": pd.date_range(start="2024-01-01", periods=3, freq="D"),
                     }
                     return pd.DataFrame(data)
 
@@ -444,9 +418,7 @@ class IoTDashboard:
                             [
                                 html.Div(
                                     [
-                                        html.I(
-                                            className="fas fa-industry fa-2x text-primary"
-                                        ),
+                                        html.I(className="fas fa-industry fa-2x text-primary"),
                                         html.H1(
                                             "IoT Predictive Maintenance",
                                             className="d-inline-block ml-3 mb-0",
@@ -481,21 +453,9 @@ class IoTDashboard:
                 # Navigation Tabs
                 dbc.Nav(
                     [
-                        dbc.NavItem(
-                            dbc.NavLink(
-                                "Overview", href="/", id="overview-link", active=True
-                            )
-                        ),
-                        dbc.NavItem(
-                            dbc.NavLink(
-                                "Anomaly Monitor", href="/anomalies", id="anomaly-link"
-                            )
-                        ),
-                        dbc.NavItem(
-                            dbc.NavLink(
-                                "Forecasting", href="/forecast", id="forecast-link"
-                            )
-                        ),
+                        dbc.NavItem(dbc.NavLink("Overview", href="/", id="overview-link", active=True)),
+                        dbc.NavItem(dbc.NavLink("Anomaly Monitor", href="/anomalies", id="anomaly-link")),
+                        dbc.NavItem(dbc.NavLink("Forecasting", href="/forecast", id="forecast-link")),
                         dbc.NavItem(
                             dbc.NavLink(
                                 "Maintenance",
@@ -601,9 +561,7 @@ class IoTDashboard:
                         ),
                         dbc.ModalFooter(
                             [
-                                dbc.Button(
-                                    "Save", id="save-settings-btn", color="primary"
-                                ),
+                                dbc.Button("Save", id="save-settings-btn", color="primary"),
                                 dbc.Button(
                                     "Cancel",
                                     id="cancel-settings-btn",
@@ -833,9 +791,7 @@ class IoTDashboard:
             return [layout] + active_states
 
         # Clock update callback
-        @self.app.callback(
-            Output("current-time", "children"), [Input("clock-interval", "n_intervals")]
-        )
+        @self.app.callback(Output("current-time", "children"), [Input("clock-interval", "n_intervals")])
         def update_clock(n):
             """Update current time display"""
             return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -857,9 +813,7 @@ class IoTDashboard:
                         return "Database Connected", "badge badge-success"
                     else:
                         return "Database Error", "badge badge-warning"
-                elif (
-                    hasattr(self, "database_connected") and not self.database_connected
-                ):
+                elif hasattr(self, "database_connected") and not self.database_connected:
                     return "Demo Mode", "badge badge-info"
                 else:
                     return "Initializing", "badge badge-secondary"
@@ -906,9 +860,7 @@ class IoTDashboard:
                 State("user-settings-store", "data"),
             ],
         )
-        def save_settings(
-            n_clicks, refresh_interval, theme, notifications, current_settings
-        ):
+        def save_settings(n_clicks, refresh_interval, theme, notifications, current_settings):
             """Save user settings"""
             if not n_clicks:
                 raise PreventUpdate
@@ -917,8 +869,7 @@ class IoTDashboard:
             settings = current_settings or {}
             settings.update(
                 {
-                    "refresh_interval": refresh_interval
-                    * 1000,  # Convert to milliseconds
+                    "refresh_interval": refresh_interval * 1000,  # Convert to milliseconds
                     "theme": theme,
                     "notifications": notifications,
                 }
@@ -929,9 +880,7 @@ class IoTDashboard:
             return settings["refresh_interval"], settings
 
         # Real-time data update callback (cached)
-        @self.app.callback(
-            Output("cache-store", "data"), [Input("main-interval", "n_intervals")]
-        )
+        @self.app.callback(Output("cache-store", "data"), [Input("main-interval", "n_intervals")])
         @self.cache.memoize(timeout=5)
         def update_cache_data(n):
             """Update cached data for all components"""
@@ -967,40 +916,26 @@ class IoTDashboard:
 
                     # Execute queries (will return real or mock data)
                     telemetry_df = self.db_manager.execute_query(telemetry_query)
-                    data["telemetry"] = (
-                        telemetry_df.to_dict("records")
-                        if not telemetry_df.empty
-                        else []
-                    )
+                    data["telemetry"] = telemetry_df.to_dict("records") if not telemetry_df.empty else []
 
                     anomaly_df = self.db_manager.execute_query(anomaly_query)
-                    data["anomalies"] = (
-                        anomaly_df.to_dict("records") if not anomaly_df.empty else []
-                    )
+                    data["anomalies"] = anomaly_df.to_dict("records") if not anomaly_df.empty else []
 
                     wo_stats_df = self.db_manager.execute_query(wo_stats_query)
-                    data["work_order_stats"] = (
-                        wo_stats_df.to_dict("records") if not wo_stats_df.empty else []
-                    )
+                    data["work_order_stats"] = wo_stats_df.to_dict("records") if not wo_stats_df.empty else []
 
                     # Calculate system metrics
                     total_anomalies = len(data["anomalies"])
                     pending_work_orders = sum(
-                        stat["count"]
-                        for stat in data["work_order_stats"]
-                        if stat.get("status") == "PENDING"
+                        stat["count"] for stat in data["work_order_stats"] if stat.get("status") == "PENDING"
                     )
 
                     data["metrics"] = {
                         "total_equipment": 25,
                         "active_anomalies": total_anomalies,
                         "pending_work_orders": pending_work_orders,
-                        "system_health": max(
-                            50, 100 - (total_anomalies * 5) - (pending_work_orders * 2)
-                        ),
-                        "database_status": (
-                            "connected" if self.database_connected else "demo_mode"
-                        ),
+                        "system_health": max(50, 100 - (total_anomalies * 5) - (pending_work_orders * 2)),
+                        "database_status": ("connected" if self.database_connected else "demo_mode"),
                     }
 
                 else:
@@ -1043,9 +978,7 @@ class IoTDashboard:
         @self.server.route("/assets/<path:path>")
         def serve_assets(path):
             """Serve static assets"""
-            assets_folder = os.path.join(
-                os.path.dirname(__file__), "..", "src", "dashboard", "assets"
-            )
+            assets_folder = os.path.join(os.path.dirname(__file__), "..", "src", "dashboard", "assets")
             return send_from_directory(assets_folder, path)
 
         @self.server.route("/api/health")
@@ -1095,13 +1028,9 @@ class IoTDashboard:
             """Export data endpoint"""
             try:
                 if data_type == "anomalies":
-                    query = (
-                        "SELECT * FROM anomalies ORDER BY detected_at DESC LIMIT 10000"
-                    )
+                    query = "SELECT * FROM anomalies ORDER BY detected_at DESC LIMIT 10000"
                 elif data_type == "work_orders":
-                    query = (
-                        "SELECT * FROM work_orders ORDER BY created_at DESC LIMIT 10000"
-                    )
+                    query = "SELECT * FROM work_orders ORDER BY created_at DESC LIMIT 10000"
                 elif data_type == "telemetry":
                     query = "SELECT * FROM telemetry_data ORDER BY timestamp DESC LIMIT 50000"
                 else:
@@ -1185,18 +1114,14 @@ class IoTDashboard:
             """Get current pipeline status"""
             try:
                 # Check if pipeline is running by looking at recent data
-                recent_telemetry = self._check_for_new_data(
-                    "telemetry_data", "timestamp", "telemetry"
-                )
+                recent_telemetry = self._check_for_new_data("telemetry_data", "timestamp", "telemetry")
                 pipeline_active = len(recent_telemetry) > 0
 
                 status = {
                     "pipeline_active": pipeline_active,
                     "database_connected": self.database_connected,
                     "last_data_update": (
-                        max(self.last_data_timestamps.values()).isoformat()
-                        if self.last_data_timestamps
-                        else None
+                        max(self.last_data_timestamps.values()).isoformat() if self.last_data_timestamps else None
                     ),
                     "queue_size": self.data_update_queue.qsize(),
                     "timestamp": datetime.now().isoformat(),
@@ -1208,11 +1133,7 @@ class IoTDashboard:
                 logger.error(f"Error getting pipeline status: {e}")
                 return {
                     "pipeline_active": False,
-                    "database_connected": (
-                        self.database_connected
-                        if hasattr(self, "database_connected")
-                        else False
-                    ),
+                    "database_connected": (self.database_connected if hasattr(self, "database_connected") else False),
                     "error": str(e),
                     "timestamp": datetime.now().isoformat(),
                 }, 500
@@ -1260,12 +1181,8 @@ class IoTDashboard:
 def main():
     """Main execution function"""
     parser = argparse.ArgumentParser(description="Run IoT Anomaly Detection Dashboard")
-    parser.add_argument(
-        "--port", type=int, default=8050, help="Port to run dashboard on"
-    )
-    parser.add_argument(
-        "--host", type=str, default="0.0.0.0", help="Host to run dashboard on"
-    )
+    parser.add_argument("--port", type=int, default=8050, help="Port to run dashboard on")
+    parser.add_argument("--host", type=str, default="0.0.0.0", help="Host to run dashboard on")
     parser.add_argument(
         "--config",
         type=str,
@@ -1274,9 +1191,7 @@ def main():
     )
     parser.add_argument("--debug", action="store_true", help="Run in debug mode")
     parser.add_argument("--no-cache", action="store_true", help="Disable caching")
-    parser.add_argument(
-        "--demo", action="store_true", help="Run with demo data (no database required)"
-    )
+    parser.add_argument("--demo", action="store_true", help="Run with demo data (no database required)")
 
     args = parser.parse_args()
 
@@ -1291,9 +1206,7 @@ def main():
 
     # Initialize and run dashboard
     try:
-        dashboard = IoTDashboard(
-            config_path=args.config, debug=args.debug, port=args.port
-        )
+        dashboard = IoTDashboard(config_path=args.config, debug=args.debug, port=args.port)
 
         if args.demo:
             logger.info("Running in demo mode with sample data")

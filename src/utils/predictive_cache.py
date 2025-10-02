@@ -165,9 +165,7 @@ class PredictiveCacheManager:
             logger.error(f"Prediction error: {e}")
             return self._fallback_predictions(current_context, num_predictions)
 
-    def _fallback_predictions(
-        self, context: Dict[str, Any], num_predictions: int
-    ) -> List[Tuple[str, float]]:
+    def _fallback_predictions(self, context: Dict[str, Any], num_predictions: int) -> List[Tuple[str, float]]:
         """Fallback predictions based on simple patterns"""
         current_hour = datetime.now().hour
         current_page = context.get("page_context", "overview")
@@ -175,9 +173,7 @@ class PredictiveCacheManager:
         # Use time-based patterns
         with self.pattern_lock:
             if current_hour in self.time_based_patterns:
-                common_keys = list(self.time_based_patterns[current_hour])[
-                    :num_predictions
-                ]
+                common_keys = list(self.time_based_patterns[current_hour])[:num_predictions]
                 return [(key, 0.6) for key in common_keys]
 
             # Fallback to most common recent patterns
@@ -187,9 +183,7 @@ class PredictiveCacheManager:
                 for key in recent_keys:
                     key_counts[key] += 1
 
-                sorted_keys = sorted(
-                    key_counts.items(), key=lambda x: x[1], reverse=True
-                )
+                sorted_keys = sorted(key_counts.items(), key=lambda x: x[1], reverse=True)
                 return [(key, 0.5) for key, _ in sorted_keys[:num_predictions]]
 
         return []
@@ -264,9 +258,7 @@ class PredictiveCacheManager:
         # Group by session
         for session_id, session_patterns in self.user_sessions.items():
             if len(session_patterns) >= 3:
-                cache_keys = [
-                    p.cache_key for p in session_patterns[-10:]
-                ]  # Last 10 in session
+                cache_keys = [p.cache_key for p in session_patterns[-10:]]  # Last 10 in session
 
                 # Find common sequences
                 for i in range(len(cache_keys) - 1):
@@ -282,9 +274,7 @@ class PredictiveCacheManager:
                     key_counts[next_key] += 1
 
                 # Store most common next keys
-                sorted_next = sorted(
-                    key_counts.items(), key=lambda x: x[1], reverse=True
-                )
+                sorted_next = sorted(key_counts.items(), key=lambda x: x[1], reverse=True)
                 self.common_sequences[key] = [k for k, c in sorted_next[:5]]
 
     def _train_prediction_model(self):
@@ -297,9 +287,7 @@ class PredictiveCacheManager:
                 return
 
             # Train Random Forest model
-            self.prediction_model = RandomForestClassifier(
-                n_estimators=50, max_depth=10, random_state=42, n_jobs=-1
-            )
+            self.prediction_model = RandomForestClassifier(n_estimators=50, max_depth=10, random_state=42, n_jobs=-1)
 
             # Scale features
             features_scaled = self.feature_scaler.fit_transform(features)
@@ -413,15 +401,11 @@ class PredictiveCacheManager:
 
             # Update average response time
             alpha = 0.1
-            rules["avg_response_time"] = (
-                alpha * feedback["response_time"]
-                + (1 - alpha) * rules["avg_response_time"]
-            )
+            rules["avg_response_time"] = alpha * feedback["response_time"] + (1 - alpha) * rules["avg_response_time"]
 
             # Update cache hit rate
             rules["cache_hit_rate"] = (
-                alpha * (1.0 if feedback["cache_hit"] else 0.0)
-                + (1 - alpha) * rules["cache_hit_rate"]
+                alpha * (1.0 if feedback["cache_hit"] else 0.0) + (1 - alpha) * rules["cache_hit_rate"]
             )
 
             # Adjust priority based on performance
@@ -439,11 +423,7 @@ class PredictiveCacheManager:
         recommendations = []
 
         # Analyze high-priority cache keys
-        high_priority_keys = [
-            key
-            for key, rules in self.optimization_rules.items()
-            if rules["priority"] == "high"
-        ]
+        high_priority_keys = [key for key, rules in self.optimization_rules.items() if rules["priority"] == "high"]
 
         for cache_key in high_priority_keys:
             rules = self.optimization_rules[cache_key]
@@ -485,9 +465,7 @@ class PredictiveCacheManager:
             "sequence_patterns": len(self.common_sequences),
             "optimization_rules": len(self.optimization_rules),
             "last_model_update": (
-                self.metrics.last_model_update.isoformat()
-                if self.metrics.last_model_update
-                else None
+                self.metrics.last_model_update.isoformat() if self.metrics.last_model_update else None
             ),
         }
 

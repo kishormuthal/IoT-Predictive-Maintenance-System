@@ -203,12 +203,8 @@ class SystemMonitor:
         if self._last_network_stats:
             try:
                 current_network = psutil.net_io_counters()
-                net_sent_delta = (
-                    current_network.bytes_sent - self._last_network_stats.bytes_sent
-                )
-                net_recv_delta = (
-                    current_network.bytes_recv - self._last_network_stats.bytes_recv
-                )
+                net_sent_delta = current_network.bytes_sent - self._last_network_stats.bytes_sent
+                net_recv_delta = current_network.bytes_recv - self._last_network_stats.bytes_recv
                 self._last_network_stats = current_network
             except:
                 pass
@@ -242,15 +238,9 @@ class SystemMonitor:
             self.metrics_logger.log_gauge("cpu_percent", snapshot.cpu_percent)
             self.metrics_logger.log_gauge("memory_percent", snapshot.memory_percent)
             self.metrics_logger.log_gauge("memory_used_mb", snapshot.memory_used_mb)
-            self.metrics_logger.log_gauge(
-                "disk_usage_percent", snapshot.disk_usage_percent
-            )
-            self.metrics_logger.log_counter(
-                "network_bytes_sent", snapshot.network_bytes_sent
-            )
-            self.metrics_logger.log_counter(
-                "network_bytes_recv", snapshot.network_bytes_recv
-            )
+            self.metrics_logger.log_gauge("disk_usage_percent", snapshot.disk_usage_percent)
+            self.metrics_logger.log_counter("network_bytes_sent", snapshot.network_bytes_sent)
+            self.metrics_logger.log_counter("network_bytes_recv", snapshot.network_bytes_recv)
             self.metrics_logger.log_gauge("process_count", snapshot.process_count)
             self.metrics_logger.log_gauge("thread_count", snapshot.thread_count)
         except Exception as e:
@@ -284,15 +274,9 @@ class SystemMonitor:
 
         return {
             "cpu_percent": statistics.mean(s.cpu_percent for s in recent_snapshots),
-            "memory_percent": statistics.mean(
-                s.memory_percent for s in recent_snapshots
-            ),
-            "memory_used_mb": statistics.mean(
-                s.memory_used_mb for s in recent_snapshots
-            ),
-            "disk_usage_percent": statistics.mean(
-                s.disk_usage_percent for s in recent_snapshots
-            ),
+            "memory_percent": statistics.mean(s.memory_percent for s in recent_snapshots),
+            "memory_used_mb": statistics.mean(s.memory_used_mb for s in recent_snapshots),
+            "disk_usage_percent": statistics.mean(s.disk_usage_percent for s in recent_snapshots),
             "process_count": statistics.mean(s.process_count for s in recent_snapshots),
             "thread_count": statistics.mean(s.thread_count for s in recent_snapshots),
         }

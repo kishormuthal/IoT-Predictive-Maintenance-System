@@ -145,9 +145,7 @@ class QuickLSTMAutoencoder:
         # Encoder - optimized for speed
         x = input_layer
         for units in self.config.encoder_units:
-            x = layers.LSTM(
-                units, return_sequences=True, dropout=self.config.dropout_rate
-            )(x)
+            x = layers.LSTM(units, return_sequences=True, dropout=self.config.dropout_rate)(x)
             x = layers.BatchNormalization()(x)
 
         # Latent representation
@@ -158,20 +156,14 @@ class QuickLSTMAutoencoder:
 
         # Decoder - mirror encoder
         for units in reversed(self.config.encoder_units):
-            decoded = layers.LSTM(
-                units, return_sequences=True, dropout=self.config.dropout_rate
-            )(decoded)
+            decoded = layers.LSTM(units, return_sequences=True, dropout=self.config.dropout_rate)(decoded)
             decoded = layers.BatchNormalization()(decoded)
 
         # Output layer
-        output = layers.TimeDistributed(layers.Dense(n_features, activation="linear"))(
-            decoded
-        )
+        output = layers.TimeDistributed(layers.Dense(n_features, activation="linear"))(decoded)
 
         # Create model
-        model = keras.Model(
-            input_layer, output, name=f"quick_autoencoder_{self.equipment_id}"
-        )
+        model = keras.Model(input_layer, output, name=f"quick_autoencoder_{self.equipment_id}")
 
         # Compile with optimized settings
         model.compile(
@@ -205,9 +197,7 @@ class QuickLSTMAutoencoder:
                     restore_best_weights=True,
                     verbose=1,
                 ),
-                keras.callbacks.ReduceLROnPlateau(
-                    monitor="val_loss", factor=0.5, patience=3, min_lr=1e-6, verbose=1
-                ),
+                keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=3, min_lr=1e-6, verbose=1),
                 keras.callbacks.TerminateOnNaN(),
             ]
 
@@ -244,12 +234,8 @@ class QuickLSTMAutoencoder:
                 "validation_samples": len(X_val),
             }
 
-            logger.info(
-                f"Training completed for {self.equipment_id} in {training_time:.1f}s"
-            )
-            logger.info(
-                f"Final epoch: {final_epoch}, Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}"
-            )
+            logger.info(f"Training completed for {self.equipment_id} in {training_time:.1f}s")
+            logger.info(f"Final epoch: {final_epoch}, Train loss: {train_loss:.4f}, Val loss: {val_loss:.4f}")
 
             return self.metrics
 
@@ -285,26 +271,10 @@ class QuickLSTMAutoencoder:
                 "metrics": self.metrics,
                 "training_date": datetime.now().isoformat(),
                 "scaler_params": {
-                    "scale_": (
-                        self.scaler.scale_.tolist()
-                        if hasattr(self.scaler, "scale_")
-                        else None
-                    ),
-                    "min_": (
-                        self.scaler.min_.tolist()
-                        if hasattr(self.scaler, "min_")
-                        else None
-                    ),
-                    "data_min_": (
-                        self.scaler.data_min_.tolist()
-                        if hasattr(self.scaler, "data_min_")
-                        else None
-                    ),
-                    "data_max_": (
-                        self.scaler.data_max_.tolist()
-                        if hasattr(self.scaler, "data_max_")
-                        else None
-                    ),
+                    "scale_": (self.scaler.scale_.tolist() if hasattr(self.scaler, "scale_") else None),
+                    "min_": (self.scaler.min_.tolist() if hasattr(self.scaler, "min_") else None),
+                    "data_min_": (self.scaler.data_min_.tolist() if hasattr(self.scaler, "data_min_") else None),
+                    "data_max_": (self.scaler.data_max_.tolist() if hasattr(self.scaler, "data_max_") else None),
                 },
             }
 
@@ -374,39 +344,23 @@ class QuickTrainingManager:
             eq_type = "UNK"
 
         # Get equipment-specific settings
-        equipment_info = (
-            self.config.get("nasa_equipment", {}).get(dataset, {}).get(eq_type, {})
-        )
+        equipment_info = self.config.get("nasa_equipment", {}).get(dataset, {}).get(eq_type, {})
         criticality = equipment_info.get("criticality", "MEDIUM")
 
         # Get complexity settings based on criticality
-        complexity = (
-            self.config.get("models", {})
-            .get("complexity_by_criticality", {})
-            .get(criticality, {})
-        )
+        complexity = self.config.get("models", {}).get("complexity_by_criticality", {}).get(criticality, {})
 
         # Create config with optimizations
         config = QuickTrainingConfig(
-            epochs=complexity.get(
-                "epochs", self.config.get("training", {}).get("epochs", 30)
-            ),
+            epochs=complexity.get("epochs", self.config.get("training", {}).get("epochs", 30)),
             batch_size=self.config.get("training", {}).get("batch_size", 32),
-            validation_split=self.config.get("training", {}).get(
-                "validation_split", 0.15
-            ),
+            validation_split=self.config.get("training", {}).get("validation_split", 0.15),
             sequence_length=self.config.get("training", {}).get("sequence_length", 40),
-            early_stopping_patience=self.config.get("training", {}).get(
-                "early_stopping_patience", 5
-            ),
-            learning_rate=self.config.get("models", {})
-            .get("lstm_autoencoder", {})
-            .get("learning_rate", 0.002),
+            early_stopping_patience=self.config.get("training", {}).get("early_stopping_patience", 5),
+            learning_rate=self.config.get("models", {}).get("lstm_autoencoder", {}).get("learning_rate", 0.002),
             encoder_units=complexity.get("encoder_units", [32, 16]),
             latent_dim=complexity.get("latent_dim", 8),
-            dropout_rate=self.config.get("models", {})
-            .get("lstm_autoencoder", {})
-            .get("dropout_rate", 0.2),
+            dropout_rate=self.config.get("models", {}).get("lstm_autoencoder", {}).get("dropout_rate", 0.2),
         )
 
         self.equipment_configs[equipment_id] = config
@@ -474,9 +428,7 @@ class QuickTrainingManager:
             normal_samples = int(len(X_train) * normal_ratio)
             X_train = X_train[:normal_samples]
 
-            logger.info(
-                f"Data prepared for {equipment_id}: Train={X_train.shape}, Val={X_val.shape}"
-            )
+            logger.info(f"Data prepared for {equipment_id}: Train={X_train.shape}, Val={X_val.shape}")
             return X_train, X_val
 
         except Exception as e:
@@ -498,9 +450,7 @@ class QuickTrainingManager:
         try:
             # Update training tracker if available
             if training_tracker is not None:
-                training_tracker.start_model_training(
-                    equipment_id, 1000
-                )  # Approximate sample count
+                training_tracker.start_model_training(equipment_id, 1000)  # Approximate sample count
 
             # Create configuration
             config = self._create_equipment_config(equipment_id)
@@ -538,9 +488,7 @@ class QuickTrainingManager:
             if training_tracker is not None:
                 training_tracker.complete_model_training(equipment_id, success=True)
 
-            logger.info(
-                f"[SUCCESS] Completed training for {equipment_id} in {total_time:.1f}s"
-            )
+            logger.info(f"[SUCCESS] Completed training for {equipment_id} in {total_time:.1f}s")
             return result
 
         except Exception as e:
@@ -553,9 +501,7 @@ class QuickTrainingManager:
             self.training_results[equipment_id] = error_result
 
             if training_tracker is not None:
-                training_tracker.complete_model_training(
-                    equipment_id, success=False, error_message=str(e)
-                )
+                training_tracker.complete_model_training(equipment_id, success=False, error_message=str(e))
 
             logger.error(f"[ERROR] Training failed for {equipment_id}: {str(e)}")
             return error_result
@@ -591,9 +537,7 @@ class QuickTrainingManager:
 
         start_time = time.time()
 
-        logger.info(
-            f"Training {len(equipment_list)} models with {max_workers} parallel workers"
-        )
+        logger.info(f"Training {len(equipment_list)} models with {max_workers} parallel workers")
 
         # Initialize training tracker
         if training_tracker is not None:
@@ -603,8 +547,7 @@ class QuickTrainingManager:
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             # Submit all training jobs
             future_to_equipment = {
-                executor.submit(self.train_single_model, equipment_id): equipment_id
-                for equipment_id in equipment_list
+                executor.submit(self.train_single_model, equipment_id): equipment_id for equipment_id in equipment_list
             }
 
             # Process results as they complete
@@ -617,9 +560,7 @@ class QuickTrainingManager:
                     result = future.result()
                     if result["status"] == "completed":
                         completed += 1
-                        logger.info(
-                            f"[PROGRESS] {completed + failed}/{len(equipment_list)} models processed"
-                        )
+                        logger.info(f"[PROGRESS] {completed + failed}/{len(equipment_list)} models processed")
                     else:
                         failed += 1
                         logger.warning(f"[FAILED] Failed: {equipment_id}")
@@ -649,21 +590,15 @@ class QuickTrainingManager:
         logger.info("=" * 60)
         logger.info("[COMPLETE] TRAINING FINISHED!")
         logger.info("=" * 60)
-        logger.info(
-            f"[SUCCESS] Successfully trained: {completed}/{len(equipment_list)} models"
-        )
+        logger.info(f"[SUCCESS] Successfully trained: {completed}/{len(equipment_list)} models")
         logger.info(f"[FAILED] Failed: {failed}/{len(equipment_list)} models")
         logger.info(f"[TIME] Total time: {total_time/60:.1f} minutes")
-        logger.info(
-            f"[STATS] Average time per model: {total_time/len(equipment_list):.1f} seconds"
-        )
+        logger.info(f"[STATS] Average time per model: {total_time/len(equipment_list):.1f} seconds")
         logger.info(f"[SAVE] Models saved to: {self.models_dir}")
         logger.info(f"[REPORT] Training summary: {summary_path}")
 
         if completed >= len(equipment_list) * 0.8:  # 80% success rate
-            logger.info(
-                "[READY] Training completed successfully! Ready for dashboard deployment."
-            )
+            logger.info("[READY] Training completed successfully! Ready for dashboard deployment.")
         else:
             logger.warning("[WARNING] Some models failed. Check logs for details.")
 
@@ -686,16 +621,12 @@ def main():
         results = trainer.train_all_models_parallel(max_workers=3)
 
         print("\n[RESULTS] TRAINING RESULTS:")
-        print(
-            f"[SUCCESS] Completed: {results['completed_models']}/{results['total_models']}"
-        )
+        print(f"[SUCCESS] Completed: {results['completed_models']}/{results['total_models']}")
         print(f"[TIME] Time: {results['total_training_time']/60:.1f} minutes")
         print(f"[STATS] Avg per model: {results['average_time_per_model']:.1f} seconds")
 
         if results["completed_models"] >= results["total_models"] * 0.8:
-            print(
-                "\n[READY] SUCCESS! Models are ready for the anomaly monitoring dashboard!"
-            )
+            print("\n[READY] SUCCESS! Models are ready for the anomaly monitoring dashboard!")
             print("\nNext steps:")
             print("1. Run: python scripts/run_dashboard.py")
             print("2. Open browser to: http://localhost:8050")

@@ -150,9 +150,7 @@ class AnomalyDetectionMetrics:
             # AUC metrics
             if y_scores is not None:
                 auc_roc = roc_auc_score(y_true, y_scores)
-                precision_vals, recall_vals, _ = precision_recall_curve(
-                    y_true, y_scores
-                )
+                precision_vals, recall_vals, _ = precision_recall_curve(y_true, y_scores)
                 auc_pr = np.trapz(recall_vals, precision_vals)
             else:
                 auc_roc = 0.0
@@ -177,9 +175,7 @@ class AnomalyDetectionMetrics:
             raise
 
     @staticmethod
-    def find_optimal_threshold(
-        y_true: np.ndarray, y_scores: np.ndarray, metric: str = "f1"
-    ) -> Tuple[float, float]:
+    def find_optimal_threshold(y_true: np.ndarray, y_scores: np.ndarray, metric: str = "f1") -> Tuple[float, float]:
         """Find optimal threshold for anomaly detection
 
         Args:
@@ -221,9 +217,7 @@ class AnomalyDetectionMetrics:
                     best_metric = metric_value
                     best_threshold = threshold
 
-            logger.info(
-                f"Optimal threshold for {metric}: {best_threshold:.3f} (value: {best_metric:.3f})"
-            )
+            logger.info(f"Optimal threshold for {metric}: {best_threshold:.3f} (value: {best_metric:.3f})")
             return best_threshold, best_metric
 
         except Exception as e:
@@ -231,9 +225,7 @@ class AnomalyDetectionMetrics:
             raise
 
     @staticmethod
-    def calculate_anomaly_score_distribution(
-        scores: np.ndarray, labels: np.ndarray
-    ) -> Dict[str, Any]:
+    def calculate_anomaly_score_distribution(scores: np.ndarray, labels: np.ndarray) -> Dict[str, Any]:
         """Calculate distribution statistics for anomaly scores
 
         Args:
@@ -249,61 +241,23 @@ class AnomalyDetectionMetrics:
 
             stats_dict = {
                 "normal": {
-                    "mean": (
-                        float(np.mean(normal_scores)) if len(normal_scores) > 0 else 0
-                    ),
-                    "std": (
-                        float(np.std(normal_scores)) if len(normal_scores) > 0 else 0
-                    ),
-                    "median": (
-                        float(np.median(normal_scores)) if len(normal_scores) > 0 else 0
-                    ),
-                    "min": (
-                        float(np.min(normal_scores)) if len(normal_scores) > 0 else 0
-                    ),
-                    "max": (
-                        float(np.max(normal_scores)) if len(normal_scores) > 0 else 0
-                    ),
-                    "q25": (
-                        float(np.percentile(normal_scores, 25))
-                        if len(normal_scores) > 0
-                        else 0
-                    ),
-                    "q75": (
-                        float(np.percentile(normal_scores, 75))
-                        if len(normal_scores) > 0
-                        else 0
-                    ),
+                    "mean": (float(np.mean(normal_scores)) if len(normal_scores) > 0 else 0),
+                    "std": (float(np.std(normal_scores)) if len(normal_scores) > 0 else 0),
+                    "median": (float(np.median(normal_scores)) if len(normal_scores) > 0 else 0),
+                    "min": (float(np.min(normal_scores)) if len(normal_scores) > 0 else 0),
+                    "max": (float(np.max(normal_scores)) if len(normal_scores) > 0 else 0),
+                    "q25": (float(np.percentile(normal_scores, 25)) if len(normal_scores) > 0 else 0),
+                    "q75": (float(np.percentile(normal_scores, 75)) if len(normal_scores) > 0 else 0),
                     "count": len(normal_scores),
                 },
                 "anomaly": {
-                    "mean": (
-                        float(np.mean(anomaly_scores)) if len(anomaly_scores) > 0 else 0
-                    ),
-                    "std": (
-                        float(np.std(anomaly_scores)) if len(anomaly_scores) > 0 else 0
-                    ),
-                    "median": (
-                        float(np.median(anomaly_scores))
-                        if len(anomaly_scores) > 0
-                        else 0
-                    ),
-                    "min": (
-                        float(np.min(anomaly_scores)) if len(anomaly_scores) > 0 else 0
-                    ),
-                    "max": (
-                        float(np.max(anomaly_scores)) if len(anomaly_scores) > 0 else 0
-                    ),
-                    "q25": (
-                        float(np.percentile(anomaly_scores, 25))
-                        if len(anomaly_scores) > 0
-                        else 0
-                    ),
-                    "q75": (
-                        float(np.percentile(anomaly_scores, 75))
-                        if len(anomaly_scores) > 0
-                        else 0
-                    ),
+                    "mean": (float(np.mean(anomaly_scores)) if len(anomaly_scores) > 0 else 0),
+                    "std": (float(np.std(anomaly_scores)) if len(anomaly_scores) > 0 else 0),
+                    "median": (float(np.median(anomaly_scores)) if len(anomaly_scores) > 0 else 0),
+                    "min": (float(np.min(anomaly_scores)) if len(anomaly_scores) > 0 else 0),
+                    "max": (float(np.max(anomaly_scores)) if len(anomaly_scores) > 0 else 0),
+                    "q25": (float(np.percentile(anomaly_scores, 25)) if len(anomaly_scores) > 0 else 0),
+                    "q75": (float(np.percentile(anomaly_scores, 75)) if len(anomaly_scores) > 0 else 0),
                     "count": len(anomaly_scores),
                 },
                 "separation": {"overlap_ratio": 0, "ks_statistic": 0, "ks_pvalue": 0},
@@ -314,15 +268,9 @@ class AnomalyDetectionMetrics:
                 # Overlap ratio
                 normal_range = (np.min(normal_scores), np.max(normal_scores))
                 anomaly_range = (np.min(anomaly_scores), np.max(anomaly_scores))
-                overlap = min(normal_range[1], anomaly_range[1]) - max(
-                    normal_range[0], anomaly_range[0]
-                )
-                total_range = max(normal_range[1], anomaly_range[1]) - min(
-                    normal_range[0], anomaly_range[0]
-                )
-                stats_dict["separation"]["overlap_ratio"] = float(
-                    max(0, overlap / total_range)
-                )
+                overlap = min(normal_range[1], anomaly_range[1]) - max(normal_range[0], anomaly_range[0])
+                total_range = max(normal_range[1], anomaly_range[1]) - min(normal_range[0], anomaly_range[0])
+                stats_dict["separation"]["overlap_ratio"] = float(max(0, overlap / total_range))
 
                 # Kolmogorov-Smirnov test
                 ks_stat, ks_pval = stats.ks_2samp(normal_scores, anomaly_scores)
@@ -340,9 +288,7 @@ class ForecastingMetrics:
     """Metrics calculator for time series forecasting models"""
 
     @staticmethod
-    def calculate_metrics(
-        y_true: np.ndarray, y_pred: np.ndarray, multivariate: bool = False
-    ) -> ForecastMetrics:
+    def calculate_metrics(y_true: np.ndarray, y_pred: np.ndarray, multivariate: bool = False) -> ForecastMetrics:
         """Calculate comprehensive forecasting metrics
 
         Args:
@@ -359,9 +305,7 @@ class ForecastingMetrics:
             y_pred = np.array(y_pred)
 
             if y_true.shape != y_pred.shape:
-                raise ValueError(
-                    f"Shape mismatch: y_true {y_true.shape} vs y_pred {y_pred.shape}"
-                )
+                raise ValueError(f"Shape mismatch: y_true {y_true.shape} vs y_pred {y_pred.shape}")
 
             # Basic metrics
             mse = mean_squared_error(
@@ -382,15 +326,7 @@ class ForecastingMetrics:
                 if np.any(y_true == 0):
                     # Use symmetric MAPE when zeros present
                     denominator = (np.abs(y_true) + np.abs(y_pred)) / 2
-                    mape = (
-                        np.mean(
-                            np.abs(
-                                (y_true - y_pred)
-                                / np.where(denominator != 0, denominator, 1)
-                            )
-                        )
-                        * 100
-                    )
+                    mape = np.mean(np.abs((y_true - y_pred) / np.where(denominator != 0, denominator, 1))) * 100
                 else:
                     mape = mean_absolute_percentage_error(y_true, y_pred) * 100
 
@@ -415,9 +351,7 @@ class ForecastingMetrics:
             if len(y_true) > 1:
                 true_direction = np.diff(y_true.flatten())
                 pred_direction = np.diff(y_pred.flatten())
-                directional_acc = np.mean(
-                    np.sign(true_direction) == np.sign(pred_direction)
-                )
+                directional_acc = np.mean(np.sign(true_direction) == np.sign(pred_direction))
             else:
                 directional_acc = 0
 
@@ -481,9 +415,7 @@ class ForecastingMetrics:
             raise
 
     @staticmethod
-    def calculate_seasonal_metrics(
-        y_true: np.ndarray, y_pred: np.ndarray, season_length: int
-    ) -> Dict[str, float]:
+    def calculate_seasonal_metrics(y_true: np.ndarray, y_pred: np.ndarray, season_length: int) -> Dict[str, float]:
         """Calculate seasonal decomposition metrics
 
         Args:
@@ -509,18 +441,10 @@ class ForecastingMetrics:
                     seasonal_errors.append(season_mae)
 
             return {
-                "mean_seasonal_mae": (
-                    float(np.mean(seasonal_errors)) if seasonal_errors else 0
-                ),
-                "std_seasonal_mae": (
-                    float(np.std(seasonal_errors)) if seasonal_errors else 0
-                ),
-                "max_seasonal_mae": (
-                    float(np.max(seasonal_errors)) if seasonal_errors else 0
-                ),
-                "min_seasonal_mae": (
-                    float(np.min(seasonal_errors)) if seasonal_errors else 0
-                ),
+                "mean_seasonal_mae": (float(np.mean(seasonal_errors)) if seasonal_errors else 0),
+                "std_seasonal_mae": (float(np.std(seasonal_errors)) if seasonal_errors else 0),
+                "max_seasonal_mae": (float(np.max(seasonal_errors)) if seasonal_errors else 0),
+                "min_seasonal_mae": (float(np.min(seasonal_errors)) if seasonal_errors else 0),
             }
 
         except Exception as e:
@@ -552,8 +476,7 @@ class MaintenanceSchedulingMetrics:
         try:
             # Filter data for the period
             period_orders = work_orders_df[
-                (work_orders_df["created_at"] >= start_date)
-                & (work_orders_df["created_at"] <= end_date)
+                (work_orders_df["created_at"] >= start_date) & (work_orders_df["created_at"] <= end_date)
             ].copy()
 
             if period_orders.empty:
@@ -572,43 +495,29 @@ class MaintenanceSchedulingMetrics:
             # Schedule efficiency
             scheduled_duration = period_orders["estimated_duration"].sum()
             actual_duration = period_orders["actual_duration"].sum()
-            schedule_efficiency = (
-                (scheduled_duration / actual_duration * 100)
-                if actual_duration > 0
-                else 0
-            )
+            schedule_efficiency = (scheduled_duration / actual_duration * 100) if actual_duration > 0 else 0
 
             # Resource utilization
             total_available_hours = (end_date - start_date).total_seconds() / 3600
             total_work_hours = actual_duration / 60  # Convert minutes to hours
-            resource_utilization = (
-                (total_work_hours / total_available_hours * 100)
-                if total_available_hours > 0
-                else 0
-            )
+            resource_utilization = (total_work_hours / total_available_hours * 100) if total_available_hours > 0 else 0
 
             # Mean Time To Repair (MTTR)
             completed_orders = period_orders[period_orders["status"] == "COMPLETED"]
-            mttr = (
-                completed_orders["actual_duration"].mean()
-                if not completed_orders.empty
-                else 0
-            )
+            mttr = completed_orders["actual_duration"].mean() if not completed_orders.empty else 0
 
             # Mean Time Between Failures (MTBF)
             failures_by_equipment = period_orders.groupby("equipment_id").size()
             if len(failures_by_equipment) > 1:
                 time_between_failures = []
                 for equipment_id in failures_by_equipment.index:
-                    equipment_orders = period_orders[
-                        period_orders["equipment_id"] == equipment_id
-                    ].sort_values("created_at")
+                    equipment_orders = period_orders[period_orders["equipment_id"] == equipment_id].sort_values(
+                        "created_at"
+                    )
 
                     if len(equipment_orders) > 1:
                         time_diffs = equipment_orders["created_at"].diff().dropna()
-                        time_between_failures.extend(
-                            time_diffs.dt.total_seconds() / 3600
-                        )
+                        time_between_failures.extend(time_diffs.dt.total_seconds() / 3600)
 
                 mtbf = np.mean(time_between_failures) if time_between_failures else 0
             else:
@@ -621,42 +530,25 @@ class MaintenanceSchedulingMetrics:
                 else 0
             )
             total_count = len(period_orders)
-            preventive_rate = (
-                (preventive_count / total_count * 100) if total_count > 0 else 0
-            )
+            preventive_rate = (preventive_count / total_count * 100) if total_count > 0 else 0
 
             # Downtime percentage
-            total_downtime = (
-                period_orders["actual_duration"].sum() / 60
-            )  # Convert to hours
+            total_downtime = period_orders["actual_duration"].sum() / 60  # Convert to hours
             total_operational_hours = total_available_hours
-            downtime_percentage = (
-                (total_downtime / total_operational_hours * 100)
-                if total_operational_hours > 0
-                else 0
-            )
+            downtime_percentage = (total_downtime / total_operational_hours * 100) if total_operational_hours > 0 else 0
 
             # Work order completion rate
             completed_count = len(period_orders[period_orders["status"] == "COMPLETED"])
-            completion_rate = (
-                (completed_count / total_count * 100) if total_count > 0 else 0
-            )
+            completion_rate = (completed_count / total_count * 100) if total_count > 0 else 0
 
             # Average response time
             period_orders["response_time"] = (
-                pd.to_datetime(period_orders["assigned_at"])
-                - pd.to_datetime(period_orders["created_at"])
+                pd.to_datetime(period_orders["assigned_at"]) - pd.to_datetime(period_orders["created_at"])
             ).dt.total_seconds() / 3600  # Convert to hours
-            avg_response_time = (
-                period_orders["response_time"].mean()
-                if "assigned_at" in period_orders.columns
-                else 0
-            )
+            avg_response_time = period_orders["response_time"].mean() if "assigned_at" in period_orders.columns else 0
 
             # Cost savings (placeholder - would need actual cost data)
-            cost_savings = (
-                preventive_count * 1000
-            )  # Example: $1000 saved per preventive maintenance
+            cost_savings = preventive_count * 1000  # Example: $1000 saved per preventive maintenance
 
             return MaintenanceMetrics(
                 schedule_efficiency=float(schedule_efficiency),
@@ -675,9 +567,7 @@ class MaintenanceSchedulingMetrics:
             raise
 
     @staticmethod
-    def calculate_technician_performance(
-        work_orders_df: pd.DataFrame, technician: str
-    ) -> Dict[str, float]:
+    def calculate_technician_performance(work_orders_df: pd.DataFrame, technician: str) -> Dict[str, float]:
         """Calculate performance metrics for a specific technician
 
         Args:
@@ -688,9 +578,7 @@ class MaintenanceSchedulingMetrics:
             Dictionary with performance metrics
         """
         try:
-            tech_orders = work_orders_df[
-                work_orders_df["assigned_technician"] == technician
-            ].copy()
+            tech_orders = work_orders_df[work_orders_df["assigned_technician"] == technician].copy()
 
             if tech_orders.empty:
                 return {
@@ -705,32 +593,21 @@ class MaintenanceSchedulingMetrics:
 
             # Calculate metrics
             total_orders = len(tech_orders)
-            completion_rate = (
-                (len(completed) / total_orders * 100) if total_orders > 0 else 0
-            )
+            completion_rate = (len(completed) / total_orders * 100) if total_orders > 0 else 0
 
-            avg_completion_time = (
-                completed["actual_duration"].mean() if not completed.empty else 0
-            )
+            avg_completion_time = completed["actual_duration"].mean() if not completed.empty else 0
 
             # Efficiency score (actual vs estimated)
             if not completed.empty and "estimated_duration" in completed.columns:
-                efficiency_scores = (
-                    completed["estimated_duration"] / completed["actual_duration"]
-                )
+                efficiency_scores = completed["estimated_duration"] / completed["actual_duration"]
                 efficiency_score = efficiency_scores.mean() * 100
             else:
                 efficiency_score = 0
 
             # On-time rate
             if "due_date" in completed.columns and "completed_at" in completed.columns:
-                on_time = completed[
-                    pd.to_datetime(completed["completed_at"])
-                    <= pd.to_datetime(completed["due_date"])
-                ]
-                on_time_rate = (
-                    (len(on_time) / len(completed) * 100) if not completed.empty else 0
-                )
+                on_time = completed[pd.to_datetime(completed["completed_at"]) <= pd.to_datetime(completed["due_date"])]
+                on_time_rate = (len(on_time) / len(completed) * 100) if not completed.empty else 0
             else:
                 on_time_rate = 0
 
@@ -769,20 +646,12 @@ class MaintenanceSchedulingMetrics:
                 equipment_id = equipment["equipment_id"]
 
                 # Get related data
-                equipment_orders = work_orders_df[
-                    work_orders_df["equipment_id"] == equipment_id
-                ]
-                equipment_anomalies = anomalies_df[
-                    anomalies_df["equipment_id"] == equipment_id
-                ]
+                equipment_orders = work_orders_df[work_orders_df["equipment_id"] == equipment_id]
+                equipment_anomalies = anomalies_df[anomalies_df["equipment_id"] == equipment_id]
 
                 # Calculate reliability score
                 failure_count = (
-                    len(
-                        equipment_orders[
-                            equipment_orders["maintenance_type"] == "CORRECTIVE"
-                        ]
-                    )
+                    len(equipment_orders[equipment_orders["maintenance_type"] == "CORRECTIVE"])
                     if "maintenance_type" in equipment_orders.columns
                     else len(equipment_orders)
                 )
@@ -796,8 +665,7 @@ class MaintenanceSchedulingMetrics:
                 # Health score based on recent anomalies
                 recent_anomalies = (
                     equipment_anomalies[
-                        pd.to_datetime(equipment_anomalies["created_at"])
-                        > datetime.now() - timedelta(days=30)
+                        pd.to_datetime(equipment_anomalies["created_at"]) > datetime.now() - timedelta(days=30)
                     ]
                     if not equipment_anomalies.empty
                     else pd.DataFrame()
@@ -877,9 +745,7 @@ class ModelComparisonMetrics:
 
             # Add ranking
             if "accuracy" in df.columns:
-                df["rank"] = (
-                    df["f1_score"].rank(ascending=False, method="min").astype(int)
-                )
+                df["rank"] = df["f1_score"].rank(ascending=False, method="min").astype(int)
             elif "rmse" in df.columns:
                 df["rank"] = df["rmse"].rank(ascending=True, method="min").astype(int)
 
@@ -912,9 +778,7 @@ class ModelComparisonMetrics:
                 curr_pred = predictions_over_time[i]
 
                 # KS test for distribution drift
-                ks_stat, ks_pval = stats.ks_2samp(
-                    prev_pred.flatten(), curr_pred.flatten()
-                )
+                ks_stat, ks_pval = stats.ks_2samp(prev_pred.flatten(), curr_pred.flatten())
                 drifts.append(ks_stat)
 
             # Stability score (inverse of average drift)
@@ -1056,16 +920,12 @@ class StreamingMetrics:
             "trend": "improving" if slope < 0 else "degrading",
             "slope": float(slope),
             "current_value": float(period_metrics[-1]),
-            "change_rate": float(
-                (period_metrics[-1] - period_metrics[0]) / period_metrics[0] * 100
-            ),
+            "change_rate": float((period_metrics[-1] - period_metrics[0]) / period_metrics[0] * 100),
         }
 
 
 # Utility functions
-def calculate_business_impact(
-    metrics: Dict[str, Any], cost_parameters: Dict[str, float]
-) -> Dict[str, float]:
+def calculate_business_impact(metrics: Dict[str, Any], cost_parameters: Dict[str, float]) -> Dict[str, float]:
     """Calculate business impact of model performance
 
     Args:
@@ -1092,9 +952,7 @@ def calculate_business_impact(
                 impact["false_negative_cost"] = fn_cost
 
                 # Savings from true positives
-                impact["savings"] = tp * cost_parameters.get(
-                    "true_positive_savings", 500
-                )
+                impact["savings"] = tp * cost_parameters.get("true_positive_savings", 500)
 
                 # Net impact
                 impact["net_impact"] = impact["savings"] - impact["total_cost"]
@@ -1102,9 +960,7 @@ def calculate_business_impact(
         # Downtime cost
         if "downtime_percentage" in metrics:
             hourly_cost = cost_parameters.get("hourly_downtime_cost", 5000)
-            impact["downtime_cost"] = (
-                metrics["downtime_percentage"] * hourly_cost * 24 * 30 / 100
-            )
+            impact["downtime_cost"] = metrics["downtime_percentage"] * hourly_cost * 24 * 30 / 100
 
         # ROI calculation
         if "net_impact" in impact:

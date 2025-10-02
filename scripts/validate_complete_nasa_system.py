@@ -67,27 +67,19 @@ class CompleteSystemValidator:
 
             if msl_train.exists():
                 self.nasa_datasets["msl_train"] = np.load(msl_train)
-                logger.info(
-                    f"Loaded MSL training data: {self.nasa_datasets['msl_train'].shape}"
-                )
+                logger.info(f"Loaded MSL training data: {self.nasa_datasets['msl_train'].shape}")
 
             if msl_test.exists():
                 self.nasa_datasets["msl_test"] = np.load(msl_test)
-                logger.info(
-                    f"Loaded MSL test data: {self.nasa_datasets['msl_test'].shape}"
-                )
+                logger.info(f"Loaded MSL test data: {self.nasa_datasets['msl_test'].shape}")
 
             if msl_train_labels.exists():
                 self.nasa_datasets["msl_train_labels"] = np.load(msl_train_labels)
-                logger.info(
-                    f"Loaded MSL training labels: {self.nasa_datasets['msl_train_labels'].shape}"
-                )
+                logger.info(f"Loaded MSL training labels: {self.nasa_datasets['msl_train_labels'].shape}")
 
             if msl_test_labels.exists():
                 self.nasa_datasets["msl_test_labels"] = np.load(msl_test_labels)
-                logger.info(
-                    f"Loaded MSL test labels: {self.nasa_datasets['msl_test_labels'].shape}"
-                )
+                logger.info(f"Loaded MSL test labels: {self.nasa_datasets['msl_test_labels'].shape}")
 
         # Load SMAP data
         if SMAP_DATA_PATH.exists():
@@ -98,51 +90,35 @@ class CompleteSystemValidator:
 
             if smap_train.exists():
                 self.nasa_datasets["smap_train"] = np.load(smap_train)
-                logger.info(
-                    f"Loaded SMAP training data: {self.nasa_datasets['smap_train'].shape}"
-                )
+                logger.info(f"Loaded SMAP training data: {self.nasa_datasets['smap_train'].shape}")
 
             if smap_test.exists():
                 self.nasa_datasets["smap_test"] = np.load(smap_test)
-                logger.info(
-                    f"Loaded SMAP test data: {self.nasa_datasets['smap_test'].shape}"
-                )
+                logger.info(f"Loaded SMAP test data: {self.nasa_datasets['smap_test'].shape}")
 
             if smap_train_labels.exists():
                 self.nasa_datasets["smap_train_labels"] = np.load(smap_train_labels)
-                logger.info(
-                    f"Loaded SMAP training labels: {self.nasa_datasets['smap_train_labels'].shape}"
-                )
+                logger.info(f"Loaded SMAP training labels: {self.nasa_datasets['smap_train_labels'].shape}")
 
             if smap_test_labels.exists():
                 self.nasa_datasets["smap_test_labels"] = np.load(smap_test_labels)
-                logger.info(
-                    f"Loaded SMAP test labels: {self.nasa_datasets['smap_test_labels'].shape}"
-                )
+                logger.info(f"Loaded SMAP test labels: {self.nasa_datasets['smap_test_labels'].shape}")
 
         # Load Telemanom models
         if TELEMANOM_DATA_PATH.exists():
             models_path = TELEMANOM_DATA_PATH / "models"
             if models_path.exists():
                 model_files = list(models_path.glob("*.h5"))
-                self.nasa_datasets["telemanom_models"] = {
-                    f.stem: f for f in model_files
-                }
-                logger.info(
-                    f"Found {len(self.nasa_datasets['telemanom_models'])} Telemanom models"
-                )
+                self.nasa_datasets["telemanom_models"] = {f.stem: f for f in model_files}
+                logger.info(f"Found {len(self.nasa_datasets['telemanom_models'])} Telemanom models")
 
         # Load labeled anomalies
         labeled_anomalies_path = BASE_DATA_PATH / "labeled_anomalies.csv"
         if labeled_anomalies_path.exists():
             import pandas as pd
 
-            self.nasa_datasets["labeled_anomalies"] = pd.read_csv(
-                labeled_anomalies_path
-            )
-            logger.info(
-                f"Loaded labeled anomalies: {len(self.nasa_datasets['labeled_anomalies'])} entries"
-            )
+            self.nasa_datasets["labeled_anomalies"] = pd.read_csv(labeled_anomalies_path)
+            logger.info(f"Loaded labeled anomalies: {len(self.nasa_datasets['labeled_anomalies'])} entries")
 
         logger.info(f"Total datasets loaded: {len(self.nasa_datasets)}")
 
@@ -199,9 +175,7 @@ class CompleteSystemValidator:
                         logger.warning(f"  Failed checks: {failed_checks}")
 
                 except Exception as e:
-                    logger.error(
-                        f"✗ Data integrity validation failed for {dataset_name}: {e}"
-                    )
+                    logger.error(f"✗ Data integrity validation failed for {dataset_name}: {e}")
                     validation_results[dataset_name] = {"error": str(e)}
 
         self.validation_results["data_integrity"] = validation_results
@@ -246,20 +220,14 @@ class CompleteSystemValidator:
                 logger.warning(f"  Compatibility issues: {failed_checks}")
 
         # Check label consistency
-        if (
-            "msl_train_labels" in self.nasa_datasets
-            and "smap_train_labels" in self.nasa_datasets
-        ):
+        if "msl_train_labels" in self.nasa_datasets and "smap_train_labels" in self.nasa_datasets:
             msl_labels = self.nasa_datasets["msl_train_labels"]
             smap_labels = self.nasa_datasets["smap_train_labels"]
 
             label_compatibility = {
                 "same_label_format": msl_labels.dtype == smap_labels.dtype,
-                "binary_labels": np.all(np.isin(msl_labels, [0, 1]))
-                and np.all(np.isin(smap_labels, [0, 1])),
-                "reasonable_anomaly_ratio": self._check_anomaly_ratios(
-                    msl_labels, smap_labels
-                ),
+                "binary_labels": np.all(np.isin(msl_labels, [0, 1])) and np.all(np.isin(smap_labels, [0, 1])),
+                "reasonable_anomaly_ratio": self._check_anomaly_ratios(msl_labels, smap_labels),
             }
 
             compatibility_results["labels"] = label_compatibility
@@ -315,9 +283,7 @@ class CompleteSystemValidator:
 
                     pipeline_results["msl"] = {
                         "samples_processed": len(msl_sample),
-                        "anomalies_detected": (
-                            len(msl_anomalies) if msl_anomalies else 0
-                        ),
+                        "anomalies_detected": (len(msl_anomalies) if msl_anomalies else 0),
                         "detection_time": detection_time,
                         "processing_rate": len(msl_sample) / detection_time,
                         "success": True,
@@ -338,9 +304,7 @@ class CompleteSystemValidator:
 
                     pipeline_results["smap"] = {
                         "samples_processed": len(smap_sample),
-                        "anomalies_detected": (
-                            len(smap_anomalies) if smap_anomalies else 0
-                        ),
+                        "anomalies_detected": (len(smap_anomalies) if smap_anomalies else 0),
                         "detection_time": detection_time,
                         "processing_rate": len(smap_sample) / detection_time,
                         "success": True,
@@ -411,9 +375,7 @@ class CompleteSystemValidator:
                     }
 
                     successful_loads += 1
-                    logger.info(
-                        f"✓ Model {sensor_id}: load {load_time:.4f}s, predict {prediction_time:.4f}s"
-                    )
+                    logger.info(f"✓ Model {sensor_id}: load {load_time:.4f}s, predict {prediction_time:.4f}s")
 
             except Exception as e:
                 logger.error(f"✗ Model {sensor_id} validation failed: {e}")
@@ -427,9 +389,7 @@ class CompleteSystemValidator:
             "individual_results": models_results,
         }
 
-        logger.info(
-            f"Model validation summary: {successful_loads}/{len(test_models)} models successful"
-        )
+        logger.info(f"Model validation summary: {successful_loads}/{len(test_models)} models successful")
 
         self.validation_results["telemanom_models"] = models_summary
         return models_summary
@@ -468,12 +428,8 @@ class CompleteSystemValidator:
 
             # Test performance monitoring
             if hasattr(self.phase3_manager, "performance_monitor"):
-                performance_summary = (
-                    self.phase3_manager.performance_monitor.get_performance_summary()
-                )
-                dashboard_results["performance_monitoring"] = (
-                    performance_summary is not None
-                )
+                performance_summary = self.phase3_manager.performance_monitor.get_performance_summary()
+                dashboard_results["performance_monitoring"] = performance_summary is not None
 
             # Test cache integration
             if hasattr(self.phase3_manager, "cache_manager"):
@@ -481,17 +437,11 @@ class CompleteSystemValidator:
                 dashboard_results["cache_integration"] = cache_metrics is not None
 
             success_count = sum(1 for v in dashboard_results.values() if v is True)
-            total_tests = len(
-                [v for v in dashboard_results.values() if isinstance(v, bool)]
-            )
+            total_tests = len([v for v in dashboard_results.values() if isinstance(v, bool)])
 
-            dashboard_results["overall_success_rate"] = (
-                success_count / total_tests if total_tests > 0 else 0
-            )
+            dashboard_results["overall_success_rate"] = success_count / total_tests if total_tests > 0 else 0
 
-            logger.info(
-                f"Dashboard integration: {success_count}/{total_tests} tests passed"
-            )
+            logger.info(f"Dashboard integration: {success_count}/{total_tests} tests passed")
 
         except Exception as e:
             logger.error(f"Dashboard integration validation failed: {e}")
@@ -509,11 +459,7 @@ class CompleteSystemValidator:
         # Test data loading performance
         if self.nasa_datasets:
             largest_dataset = max(
-                (
-                    data
-                    for data in self.nasa_datasets.values()
-                    if isinstance(data, np.ndarray)
-                ),
+                (data for data in self.nasa_datasets.values() if isinstance(data, np.ndarray)),
                 key=lambda x: x.size,
                 default=None,
             )
@@ -556,16 +502,11 @@ class CompleteSystemValidator:
             "percent": process.memory_percent(),
         }
 
-        logger.info(
-            f"Memory usage: {performance_results['memory_usage']['rss_mb']:.2f} MB"
-        )
+        logger.info(f"Memory usage: {performance_results['memory_usage']['rss_mb']:.2f} MB")
 
         # Performance assertions
         assertions = {
-            "reasonable_throughput": performance_results.get("data_processing", {}).get(
-                "throughput", 0
-            )
-            > 1000,
+            "reasonable_throughput": performance_results.get("data_processing", {}).get("throughput", 0) > 1000,
             "reasonable_memory": performance_results["memory_usage"]["rss_mb"] < 2000,
             "low_memory_percent": performance_results["memory_usage"]["percent"] < 50,
         }
@@ -573,9 +514,7 @@ class CompleteSystemValidator:
         performance_results["assertions"] = assertions
         passed_assertions = sum(assertions.values())
 
-        logger.info(
-            f"Performance assertions: {passed_assertions}/{len(assertions)} passed"
-        )
+        logger.info(f"Performance assertions: {passed_assertions}/{len(assertions)} passed")
 
         self.validation_results["performance_benchmarks"] = performance_results
         return performance_results
@@ -614,9 +553,7 @@ class CompleteSystemValidator:
                 forecast_input = msl_sample[-10:]  # Use last 10 samples
 
                 # Simple forecasting simulation
-                forecast = np.mean(forecast_input, axis=0) + np.random.normal(
-                    0, 0.1, forecast_input.shape[1]
-                )
+                forecast = np.mean(forecast_input, axis=0) + np.random.normal(0, 0.1, forecast_input.shape[1])
 
                 workflow_results["forecasting"] = {
                     "forecast_generated": True,
@@ -627,9 +564,7 @@ class CompleteSystemValidator:
 
                 # Step 4: Maintenance scheduling simulation
                 if workflow_results["anomaly_detection"]["anomalies_detected"] > 0:
-                    maintenance_tasks = min(
-                        3, workflow_results["anomaly_detection"]["anomalies_detected"]
-                    )
+                    maintenance_tasks = min(3, workflow_results["anomaly_detection"]["anomalies_detected"])
 
                     workflow_results["maintenance_scheduling"] = {
                         "tasks_scheduled": maintenance_tasks,
@@ -645,23 +580,15 @@ class CompleteSystemValidator:
 
                 # Overall workflow success
                 workflow_success = all(
-                    step.get("success", False)
-                    for step in workflow_results.values()
-                    if isinstance(step, dict)
+                    step.get("success", False) for step in workflow_results.values() if isinstance(step, dict)
                 )
 
                 workflow_results["overall_success"] = workflow_success
 
                 logger.info(f"End-to-end workflow: {'✓' if workflow_success else '✗'}")
-                logger.info(
-                    f"  Data samples: {workflow_results['data_ingestion']['samples_loaded']}"
-                )
-                logger.info(
-                    f"  Anomalies detected: {workflow_results['anomaly_detection']['anomalies_detected']}"
-                )
-                logger.info(
-                    f"  Maintenance tasks: {workflow_results['maintenance_scheduling']['tasks_scheduled']}"
-                )
+                logger.info(f"  Data samples: {workflow_results['data_ingestion']['samples_loaded']}")
+                logger.info(f"  Anomalies detected: {workflow_results['anomaly_detection']['anomalies_detected']}")
+                logger.info(f"  Maintenance tasks: {workflow_results['maintenance_scheduling']['tasks_scheduled']}")
 
         except Exception as e:
             logger.error(f"End-to-end workflow validation failed: {e}")
@@ -692,9 +619,7 @@ class CompleteSystemValidator:
                 if "error" in results:
                     scores[category] = 0.0
                 elif category == "data_integrity":
-                    passed = sum(
-                        1 for r in results.values() if r.get("all_passed", False)
-                    )
+                    passed = sum(1 for r in results.values() if r.get("all_passed", False))
                     total = len([r for r in results.values() if "all_passed" in r])
                     scores[category] = passed / total if total > 0 else 0.0
                 elif category == "telemanom_models":
@@ -702,21 +627,13 @@ class CompleteSystemValidator:
                 elif category == "dashboard_integration":
                     scores[category] = results.get("overall_success_rate", 0.0)
                 elif category == "end_to_end_workflow":
-                    scores[category] = (
-                        1.0 if results.get("overall_success", False) else 0.0
-                    )
+                    scores[category] = 1.0 if results.get("overall_success", False) else 0.0
                 else:
                     # Generic scoring for other categories
                     if isinstance(results, dict):
-                        success_keys = [
-                            k for k, v in results.items() if isinstance(v, bool) and v
-                        ]
-                        total_keys = [
-                            k for k, v in results.items() if isinstance(v, bool)
-                        ]
-                        scores[category] = (
-                            len(success_keys) / len(total_keys) if total_keys else 0.0
-                        )
+                        success_keys = [k for k, v in results.items() if isinstance(v, bool) and v]
+                        total_keys = [k for k, v in results.items() if isinstance(v, bool)]
+                        scores[category] = len(success_keys) / len(total_keys) if total_keys else 0.0
 
         overall_score = sum(scores.values()) / len(scores) if scores else 0.0
 
@@ -724,10 +641,7 @@ class CompleteSystemValidator:
         report["overall_score"] = overall_score
 
         # Save report
-        report_path = (
-            Path("logs")
-            / f'validation_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
-        )
+        report_path = Path("logs") / f'validation_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
         report_path.parent.mkdir(exist_ok=True)
 
         with open(report_path, "w") as f:

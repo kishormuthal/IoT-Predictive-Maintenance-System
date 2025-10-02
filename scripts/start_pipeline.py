@@ -294,9 +294,7 @@ class IoTPipeline:
             # Load forecasting models
             transformer_path = models_path / "transformer_forecaster_latest"
             if transformer_path.exists():
-                self.models["transformer_forecaster"] = TransformerForecaster.load(
-                    str(transformer_path)
-                )
+                self.models["transformer_forecaster"] = TransformerForecaster.load(str(transformer_path))
                 logger.info("Loaded Transformer Forecaster")
 
             lstm_fc_path = models_path / "lstm_forecaster_latest"
@@ -318,9 +316,7 @@ class IoTPipeline:
         logger.info("Creating default models for testing...")
 
         # Create simple models with default parameters
-        self.models["lstm_detector"] = LSTMDetector(
-            sequence_length=50, n_features=25, hidden_units=[32, 16]
-        )
+        self.models["lstm_detector"] = LSTMDetector(sequence_length=50, n_features=25, hidden_units=[32, 16])
 
         self.models["lstm_autoencoder"] = LSTMAutoencoder(
             sequence_length=50, n_features=25, encoding_dim=16, latent_dim=8
@@ -355,19 +351,14 @@ class IoTPipeline:
             )
 
             # Keep buffer size limited
-            if (
-                len(self.telemetry_buffer)
-                > self.settings.data["streaming"]["buffer_size"]
-            ):
+            if len(self.telemetry_buffer) > self.settings.data["streaming"]["buffer_size"]:
                 self.telemetry_buffer.pop(0)
 
             # Check if we have enough data for sequence
             window_size = self.settings.data["streaming"]["window_size"]
             if len(self.telemetry_buffer) >= window_size:
                 # Create sequence for anomaly detection
-                sequence = np.array(
-                    [item["values"] for item in self.telemetry_buffer[-window_size:]]
-                )
+                sequence = np.array([item["values"] for item in self.telemetry_buffer[-window_size:]])
 
                 # Preprocess sequence
                 sequence = self.preprocessor.normalize(sequence)
@@ -396,13 +387,9 @@ class IoTPipeline:
 
         except Exception as e:
             logger.error(f"Error processing telemetry data: {str(e)}")
-            self.metrics["errors"].append(
-                {"timestamp": datetime.now(), "error": str(e)}
-            )
+            self.metrics["errors"].append({"timestamp": datetime.now(), "error": str(e)})
 
-    def detect_anomalies(
-        self, sequence: np.ndarray, equipment_id: str
-    ) -> Dict[str, Any]:
+    def detect_anomalies(self, sequence: np.ndarray, equipment_id: str) -> Dict[str, Any]:
         """Run anomaly detection models
 
         Args:
@@ -431,18 +418,14 @@ class IoTPipeline:
 
             # Run LSTM Autoencoder
             if "lstm_autoencoder" in self.models:
-                reconstruction_error = self.models[
-                    "lstm_autoencoder"
-                ].calculate_reconstruction_error(sequence)[0]
+                reconstruction_error = self.models["lstm_autoencoder"].calculate_reconstruction_error(sequence)[0]
                 # Normalize to 0-1 range
                 ae_score = min(reconstruction_error / 10.0, 1.0)
                 results["model_scores"]["lstm_autoencoder"] = float(ae_score)
 
             # Ensemble scoring
             if results["model_scores"]:
-                results["anomaly_score"] = np.mean(
-                    list(results["model_scores"].values())
-                )
+                results["anomaly_score"] = np.mean(list(results["model_scores"].values()))
 
                 # Check against threshold
                 threshold = self.settings.anomaly["threshold_percentile"] / 100
@@ -450,15 +433,9 @@ class IoTPipeline:
 
                 # Determine severity
                 if results["is_anomaly"]:
-                    if (
-                        results["anomaly_score"]
-                        > self.settings.anomaly["severity_levels"]["high"]
-                    ):
+                    if results["anomaly_score"] > self.settings.anomaly["severity_levels"]["high"]:
                         results["severity"] = "HIGH"
-                    elif (
-                        results["anomaly_score"]
-                        > self.settings.anomaly["severity_levels"]["medium"]
-                    ):
+                    elif results["anomaly_score"] > self.settings.anomaly["severity_levels"]["medium"]:
                         results["severity"] = "MEDIUM"
                     else:
                         results["severity"] = "LOW"
@@ -471,9 +448,7 @@ class IoTPipeline:
                 # Check for consecutive anomalies
                 min_consecutive = self.settings.anomaly["min_consecutive_anomalies"]
                 recent_anomalies = [
-                    a
-                    for a in self.anomaly_buffer[-min_consecutive:]
-                    if a["equipment_id"] == equipment_id
+                    a for a in self.anomaly_buffer[-min_consecutive:] if a["equipment_id"] == equipment_id
                 ]
 
                 if len(recent_anomalies) >= min_consecutive:
@@ -484,9 +459,7 @@ class IoTPipeline:
 
         return results
 
-    def generate_forecast(
-        self, sequence: np.ndarray, equipment_id: str
-    ) -> Dict[str, Any]:
+    def generate_forecast(self, sequence: np.ndarray, equipment_id: str) -> Dict[str, Any]:
         """Generate time series forecast
 
         Args:
@@ -510,9 +483,7 @@ class IoTPipeline:
 
             # Run Transformer Forecaster
             if "transformer_forecaster" in self.models:
-                forecast = self.models["transformer_forecaster"].forecast(
-                    sequence, steps=results["horizon"]
-                )
+                forecast = self.models["transformer_forecaster"].forecast(sequence, steps=results["horizon"])
                 results["forecast"] = forecast[0].tolist()
 
                 # Generate confidence intervals
@@ -524,9 +495,7 @@ class IoTPipeline:
 
             # Alternative: LSTM Forecaster
             elif "lstm_forecaster" in self.models:
-                forecast = self.models["lstm_forecaster"].forecast(
-                    sequence, steps=results["horizon"]
-                )
+                forecast = self.models["lstm_forecaster"].forecast(sequence, steps=results["horizon"])
                 results["forecast"] = forecast[0].tolist()
 
             # Add to forecast buffer
@@ -538,9 +507,7 @@ class IoTPipeline:
 
         return results
 
-    def calculate_confidence_intervals(
-        self, forecast: np.ndarray, confidence: float = 0.95
-    ) -> tuple:
+    def calculate_confidence_intervals(self, forecast: np.ndarray, confidence: float = 0.95) -> tuple:
         """Calculate confidence intervals for forecast
 
         Args:
@@ -574,15 +541,11 @@ class IoTPipeline:
 
             # Calculate priority
             equipment_info = self.get_equipment_info(equipment_id)
-            priority = self.priority_calculator.calculate_priority(
-                anomaly_results, equipment_info
-            )
+            priority = self.priority_calculator.calculate_priority(anomaly_results, equipment_info)
 
             # Create work order if high priority
             if priority > 70 or anomaly_results.get("severity") in ["HIGH", "CRITICAL"]:
-                work_order_id = self.create_work_order(
-                    equipment_id, anomaly_id, priority, anomaly_results
-                )
+                work_order_id = self.create_work_order(equipment_id, anomaly_id, priority, anomaly_results)
 
                 logger.info(f"Work order created: {work_order_id}")
                 self.metrics["work_order_count"] += 1
@@ -702,9 +665,7 @@ class IoTPipeline:
 
         return work_order_id
 
-    def send_alert(
-        self, equipment_id: str, anomaly_results: Dict[str, Any], priority: float
-    ):
+    def send_alert(self, equipment_id: str, anomaly_results: Dict[str, Any], priority: float):
         """Send alert notification
 
         Args:
@@ -815,9 +776,7 @@ class IoTPipeline:
         while self.running:
             try:
                 # Consume messages from Kafka
-                messages = self.kafka_consumer.consume_messages(
-                    max_messages=10, timeout=1.0
-                )
+                messages = self.kafka_consumer.consume_messages(max_messages=10, timeout=1.0)
 
                 for message in messages:
                     # Process each message
@@ -837,9 +796,7 @@ class IoTPipeline:
         def schedule_maintenance():
             try:
                 # Get pending work orders
-                pending_orders = self.work_order_manager.get_work_orders_by_status(
-                    "PENDING"
-                )
+                pending_orders = self.work_order_manager.get_work_orders_by_status("PENDING")
 
                 if pending_orders:
                     # Get available technicians (mock data)
@@ -877,9 +834,7 @@ class IoTPipeline:
 
                     # Create schedule
                     work_orders_df = pd.DataFrame(pending_orders)
-                    schedule = self.maintenance_scheduler.create_schedule(
-                        work_orders_df, technicians, equipment
-                    )
+                    schedule = self.maintenance_scheduler.create_schedule(work_orders_df, technicians, equipment)
 
                     logger.info(f"Created schedule for {len(schedule)} work orders")
 
@@ -911,9 +866,7 @@ class IoTPipeline:
                 runtime = datetime.now() - self.metrics["start_time"]
 
                 # Get current streaming metrics
-                current_metrics = self.streaming_metrics.get_current_metrics(
-                    "regression"
-                )
+                current_metrics = self.streaming_metrics.get_current_metrics("regression")
 
                 # Log metrics
                 logger.info(
@@ -1037,9 +990,7 @@ def main():
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
         help="Logging level",
     )
-    parser.add_argument(
-        "--test", action="store_true", help="Run in test mode (limited duration)"
-    )
+    parser.add_argument("--test", action="store_true", help="Run in test mode (limited duration)")
 
     args = parser.parse_args()
 

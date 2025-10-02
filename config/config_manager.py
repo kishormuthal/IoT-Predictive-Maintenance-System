@@ -77,13 +77,10 @@ class ConfigurationManager:
     def _setup_validators(self):
         """Setup configuration validators"""
         self._validators = {
-            "system.log_level": lambda v: v
-            in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-            "dashboard.server.port": lambda v: isinstance(v, int)
-            and 1024 <= v <= 65535,
+            "system.log_level": lambda v: v in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+            "dashboard.server.port": lambda v: isinstance(v, int) and 1024 <= v <= 65535,
             "preprocessing.window.size": lambda v: isinstance(v, int) and v > 0,
-            "forecasting.general.forecast_horizon": lambda v: isinstance(v, int)
-            and v > 0,
+            "forecasting.general.forecast_horizon": lambda v: isinstance(v, int) and v > 0,
         }
 
     def load_config(
@@ -142,9 +139,7 @@ class ConfigurationManager:
             self._config["environment"] = self._env
             self._last_loaded = datetime.now()
 
-            logger.info(
-                f"Configuration loaded successfully for environment: {self._env}"
-            )
+            logger.info(f"Configuration loaded successfully for environment: {self._env}")
             return self._config
 
         except Exception as e:
@@ -323,20 +318,14 @@ class ConfigurationManager:
         db_type = self.get("data_ingestion.database.type", "sqlite")
 
         if db_type == "sqlite":
-            db_path = self.get(
-                "data_ingestion.database.sqlite.path", "./data/iot_telemetry.db"
-            )
+            db_path = self.get("data_ingestion.database.sqlite.path", "./data/iot_telemetry.db")
             return f"sqlite:///{db_path}"
 
         elif db_type == "postgresql":
             host = self.get("data_ingestion.database.postgresql.host", "localhost")
             port = self.get("data_ingestion.database.postgresql.port", 5432)
-            database = self.get(
-                "data_ingestion.database.postgresql.database", "iot_telemetry"
-            )
-            username = self.get(
-                "data_ingestion.database.postgresql.username", "iot_user"
-            )
+            database = self.get("data_ingestion.database.postgresql.database", "iot_telemetry")
+            username = self.get("data_ingestion.database.postgresql.username", "iot_user")
             password = self.get("data_ingestion.database.postgresql.password", "")
             return f"postgresql://{username}:{password}@{host}:{port}/{database}"
 
@@ -355,11 +344,7 @@ class ConfigurationManager:
     def get_paths(self) -> Dict[str, Path]:
         """Get all configured paths as Path objects"""
         paths_config = self.get_section("paths")
-        return {
-            key: Path(value)
-            for key, value in paths_config.items()
-            if isinstance(value, str)
-        }
+        return {key: Path(value) for key, value in paths_config.items() if isinstance(value, str)}
 
     def ensure_paths(self):
         """Ensure all configured directories exist"""
@@ -417,9 +402,7 @@ def get_config() -> ConfigurationManager:
     return _global_config
 
 
-def load_config(
-    config_path: str = "config/config.yaml", env: Optional[str] = None
-) -> ConfigurationManager:
+def load_config(config_path: str = "config/config.yaml", env: Optional[str] = None) -> ConfigurationManager:
     """
     Load configuration and return manager instance
 

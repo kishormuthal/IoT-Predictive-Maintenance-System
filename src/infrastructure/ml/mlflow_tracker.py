@@ -93,8 +93,7 @@ class MLflowTracker:
         self.client = MlflowClient(tracking_uri=self.tracking_uri)
 
         logger.info(
-            f"MLflow tracker initialized: experiment='{self.experiment_name}', "
-            f"tracking_uri='{self.tracking_uri}'"
+            f"MLflow tracker initialized: experiment='{self.experiment_name}', " f"tracking_uri='{self.tracking_uri}'"
         )
 
     def _get_or_create_experiment(self) -> mlflow.entities.Experiment:
@@ -180,9 +179,7 @@ class MLflowTracker:
         Returns:
             Run ID
         """
-        run_name = (
-            f"{model_type}_{sensor_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        )
+        run_name = f"{model_type}_{sensor_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
         # Prepare tags
         run_tags = {
@@ -224,9 +221,7 @@ class MLflowTracker:
             # Log model to registry
             if model is not None and model_name is not None:
                 try:
-                    self._log_model_to_registry(
-                        model=model, model_name=model_name, model_type=model_type
-                    )
+                    self._log_model_to_registry(model=model, model_name=model_name, model_type=model_type)
                 except Exception as e:
                     logger.error(f"Could not log model to registry: {e}")
 
@@ -243,9 +238,7 @@ class MLflowTracker:
                     registered_model_name=model_name,
                 )
             elif model_type == "tensorflow":
-                mlflow.tensorflow.log_model(
-                    model=model, artifact_path="model", registered_model_name=model_name
-                )
+                mlflow.tensorflow.log_model(model=model, artifact_path="model", registered_model_name=model_name)
             else:
                 # Generic Python model
                 mlflow.pyfunc.log_model(
@@ -260,9 +253,7 @@ class MLflowTracker:
             logger.error(f"Error logging model: {e}")
             raise
 
-    def register_model(
-        self, run_id: str, model_name: str, artifact_path: str = "model"
-    ) -> str:
+    def register_model(self, run_id: str, model_name: str, artifact_path: str = "model") -> str:
         """
         Register a model from a completed run
 
@@ -279,10 +270,7 @@ class MLflowTracker:
 
             result = mlflow.register_model(model_uri=model_uri, name=model_name)
 
-            logger.info(
-                f"Registered model '{model_name}' version {result.version} "
-                f"from run {run_id}"
-            )
+            logger.info(f"Registered model '{model_name}' version {result.version} " f"from run {run_id}")
 
             return result.version
 
@@ -314,9 +302,7 @@ class MLflowTracker:
                 archive_existing_versions=archive_existing,
             )
 
-            logger.info(
-                f"Transitioned model '{model_name}' v{version} to {stage.value}"
-            )
+            logger.info(f"Transitioned model '{model_name}' v{version} to {stage.value}")
 
         except Exception as e:
             logger.error(f"Error transitioning model stage: {e}")
@@ -342,9 +328,7 @@ class MLflowTracker:
         try:
             if stage:
                 # Get latest version in stage
-                versions = self.client.get_latest_versions(
-                    name=model_name, stages=[stage.value]
-                )
+                versions = self.client.get_latest_versions(name=model_name, stages=[stage.value])
                 if versions:
                     return versions[0]
                 else:
@@ -356,9 +340,7 @@ class MLflowTracker:
 
             else:
                 # Get latest version overall
-                versions = self.client.search_model_versions(
-                    filter_string=f"name='{model_name}'"
-                )
+                versions = self.client.search_model_versions(filter_string=f"name='{model_name}'")
                 if versions:
                     return max(versions, key=lambda v: int(v.version))
                 else:
@@ -453,15 +435,11 @@ class MLflowTracker:
         order_direction = "DESC" if maximize else "ASC"
         order_by = [f"metrics.{metric_name} {order_direction}"]
 
-        runs = self.search_runs(
-            filter_string=filter_string, max_results=1, order_by=order_by
-        )
+        runs = self.search_runs(filter_string=filter_string, max_results=1, order_by=order_by)
 
         return runs[0] if runs else None
 
-    def compare_runs(
-        self, run_ids: List[str], metrics: Optional[List[str]] = None
-    ) -> Dict[str, Dict[str, Any]]:
+    def compare_runs(self, run_ids: List[str], metrics: Optional[List[str]] = None) -> Dict[str, Dict[str, Any]]:
         """
         Compare metrics across multiple runs
 
@@ -479,9 +457,7 @@ class MLflowTracker:
                 run = self.client.get_run(run_id)
 
                 if metrics:
-                    run_metrics = {
-                        k: v for k, v in run.data.metrics.items() if k in metrics
-                    }
+                    run_metrics = {k: v for k, v in run.data.metrics.items() if k in metrics}
                 else:
                     run_metrics = run.data.metrics
 

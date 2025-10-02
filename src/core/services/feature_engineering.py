@@ -185,9 +185,7 @@ class FeatureEngineer:
                 features[f"{prefix}_max"] = self._rolling_stat(data, window, np.max)
 
             if self.config.include_rolling_median:
-                features[f"{prefix}_median"] = self._rolling_stat(
-                    data, window, np.median
-                )
+                features[f"{prefix}_median"] = self._rolling_stat(data, window, np.median)
 
             # Range (max - min)
             if self.config.include_rolling_min and self.config.include_rolling_max:
@@ -233,15 +231,11 @@ class FeatureEngineer:
 
         # Rate of change (difference / time)
         if self.config.include_rate_of_change and len(data) > 1:
-            features["rate_of_change"] = features.get(
-                "diff_1", np.concatenate([[0], np.diff(data)])
-            )
+            features["rate_of_change"] = features.get("diff_1", np.concatenate([[0], np.diff(data)]))
 
         # Acceleration (second derivative)
         if self.config.include_acceleration and len(data) > 2:
-            features["acceleration"] = features.get(
-                "diff_2", np.concatenate([[0, 0], np.diff(data, n=2)])
-            )
+            features["acceleration"] = features.get("diff_2", np.concatenate([[0, 0], np.diff(data, n=2)]))
 
         return features
 
@@ -317,9 +311,7 @@ class FeatureEngineer:
             positive_freq_idx = np.where(fft_freq > 0)[0]
             if len(positive_freq_idx) > 0:
                 top_k = min(self.config.fft_top_k, len(positive_freq_idx))
-                top_indices = positive_freq_idx[
-                    np.argsort(power[positive_freq_idx])[-top_k:]
-                ]
+                top_indices = positive_freq_idx[np.argsort(power[positive_freq_idx])[-top_k:]]
 
                 for i, idx in enumerate(top_indices):
                     # Reconstruct signal from this frequency component
@@ -332,18 +324,14 @@ class FeatureEngineer:
 
                 # Overall spectral features
                 features["spectral_energy"] = np.full(len(data), np.sum(power))
-                features["spectral_entropy"] = np.full(
-                    len(data), stats.entropy(power / (np.sum(power) + 1e-10))
-                )
+                features["spectral_entropy"] = np.full(len(data), stats.entropy(power / (np.sum(power) + 1e-10)))
 
         except Exception as e:
             logger.warning(f"Error computing FFT features: {e}")
 
         return features
 
-    def _compute_time_features(
-        self, timestamps: List[datetime]
-    ) -> Dict[str, np.ndarray]:
+    def _compute_time_features(self, timestamps: List[datetime]) -> Dict[str, np.ndarray]:
         """Compute time-based features"""
         features = {}
 
@@ -352,9 +340,7 @@ class FeatureEngineer:
         features["day_of_week"] = np.array([t.weekday() for t in timestamps])
         features["day_of_month"] = np.array([t.day for t in timestamps])
         features["month"] = np.array([t.month for t in timestamps])
-        features["is_weekend"] = np.array(
-            [1 if t.weekday() >= 5 else 0 for t in timestamps]
-        )
+        features["is_weekend"] = np.array([1 if t.weekday() >= 5 else 0 for t in timestamps])
 
         # Cyclical encoding (sin/cos for periodic features)
         if self.config.include_cyclical_encoding:
@@ -460,9 +446,7 @@ class FeatureEngineer:
 
         # Time features
         if self.config.include_time_features:
-            feature_names.extend(
-                ["hour", "day_of_week", "day_of_month", "month", "is_weekend"]
-            )
+            feature_names.extend(["hour", "day_of_week", "day_of_month", "month", "is_weekend"])
             if self.config.include_cyclical_encoding:
                 feature_names.extend(
                     [

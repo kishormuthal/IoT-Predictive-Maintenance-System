@@ -20,9 +20,7 @@ sys.path.append(str(Path(__file__).parent))
 from src.anomaly_detection.nasa_telemanom import NASATelemanom, Telemanom_Config
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -38,9 +36,7 @@ def check_existing_models(models_dir: Path):
         if sensor_id.startswith(("SMAP_", "MSL_")) and len(sensor_id) >= 6:
             existing_models.add(sensor_id)
 
-    logger.info(
-        f"Found {len(existing_models)} existing models: {sorted(existing_models)}"
-    )
+    logger.info(f"Found {len(existing_models)} existing models: {sorted(existing_models)}")
     return existing_models
 
 
@@ -73,9 +69,7 @@ def load_nasa_raw_data():
         msl_train = np.load("data/raw/msl/train.npy")
         msl_test = np.load("data/raw/msl/test.npy")
 
-        logger.info(
-            f"Loaded NASA data - SMAP: {smap_train.shape}, MSL: {msl_train.shape}"
-        )
+        logger.info(f"Loaded NASA data - SMAP: {smap_train.shape}, MSL: {msl_train.shape}")
 
         return {
             "smap_train": smap_train,
@@ -88,9 +82,7 @@ def load_nasa_raw_data():
         return None
 
 
-def train_sensor_model(
-    sensor_id: str, data: np.ndarray, models_dir: Path, quick_mode=True
-):
+def train_sensor_model(sensor_id: str, data: np.ndarray, models_dir: Path, quick_mode=True):
     """Train a single sensor model with NASA Telemanom"""
     try:
         # Ensure we have enough data
@@ -119,9 +111,7 @@ def train_sensor_model(
         model_path = models_dir / f"{sensor_id}.pkl"
         model.save_model(str(model_path))
 
-        logger.info(
-            f"Successfully trained {sensor_id} - threshold: {model.error_threshold:.4f}"
-        )
+        logger.info(f"Successfully trained {sensor_id} - threshold: {model.error_threshold:.4f}")
 
         return {
             "sensor_id": sensor_id,
@@ -181,9 +171,7 @@ def train_missing_sensors():
 
             sensor_data = smap_data[:, sensor_idx]
 
-            result = train_sensor_model(
-                sensor_id, sensor_data, models_dir, quick_mode=True
-            )
+            result = train_sensor_model(sensor_id, sensor_data, models_dir, quick_mode=True)
             results.append(result)
 
             if result and result["status"] == "success":
@@ -191,9 +179,7 @@ def train_missing_sensors():
             else:
                 failed += 1
 
-            logger.info(
-                f"SMAP Progress: {successful + failed}/{len(smap_missing)} completed"
-            )
+            logger.info(f"SMAP Progress: {successful + failed}/{len(smap_missing)} completed")
 
     # Train missing MSL sensors
     if msl_missing:
@@ -205,16 +191,12 @@ def train_missing_sensors():
             sensor_idx = int(sensor_id.split("_")[1]) - 25  # MSL_25 maps to column 0
 
             if sensor_idx >= msl_data.shape[1] or sensor_idx < 0:
-                logger.warning(
-                    f"MSL sensor {sensor_id} (column {sensor_idx}) not available in data"
-                )
+                logger.warning(f"MSL sensor {sensor_id} (column {sensor_idx}) not available in data")
                 continue
 
             sensor_data = msl_data[:, sensor_idx]
 
-            result = train_sensor_model(
-                sensor_id, sensor_data, models_dir, quick_mode=True
-            )
+            result = train_sensor_model(sensor_id, sensor_data, models_dir, quick_mode=True)
             results.append(result)
 
             if result and result["status"] == "success":
@@ -222,9 +204,7 @@ def train_missing_sensors():
             else:
                 failed += 1
 
-            logger.info(
-                f"MSL Progress: {successful + failed - len(smap_missing)}/{len(msl_missing)} completed"
-            )
+            logger.info(f"MSL Progress: {successful + failed - len(smap_missing)}/{len(msl_missing)} completed")
 
     # Save training summary
     summary = {
@@ -238,10 +218,7 @@ def train_missing_sensors():
         "results": results,
     }
 
-    summary_path = (
-        models_dir
-        / f"incremental_training_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    )
+    summary_path = models_dir / f"incremental_training_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     with open(summary_path, "w") as f:
         json.dump(summary, f, indent=2)
 

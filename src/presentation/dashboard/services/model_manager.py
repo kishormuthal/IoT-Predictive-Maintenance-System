@@ -85,12 +85,8 @@ class PretrainedModelManager:
 
     def get_model_performance_summary(self) -> Dict[str, Any]:
         """Get summary of model performance metrics"""
-        telemanom_count = sum(
-            1 for m in self.loaded_models.values() if m["type"] == "telemanom"
-        )
-        transformer_count = sum(
-            1 for m in self.loaded_models.values() if m["type"] == "transformer"
-        )
+        telemanom_count = sum(1 for m in self.loaded_models.values() if m["type"] == "telemanom")
+        transformer_count = sum(1 for m in self.loaded_models.values() if m["type"] == "transformer")
 
         return {
             "total_models": len(self.loaded_models),
@@ -101,9 +97,7 @@ class PretrainedModelManager:
             "avg_inference_time": self.inference_stats.get("avg_inference_time", 0.05),
         }
 
-    def predict_anomaly(
-        self, equipment_id: str, sensor_data: np.ndarray
-    ) -> Dict[str, Any]:
+    def predict_anomaly(self, equipment_id: str, sensor_data: np.ndarray) -> Dict[str, Any]:
         """Predict anomaly for given sensor data
 
         Args:
@@ -132,9 +126,7 @@ class PretrainedModelManager:
             logger.error(f"Error in anomaly prediction: {e}")
             return {"error": str(e), "anomaly_score": 0.0}
 
-    def _simulate_anomaly_prediction(
-        self, equipment_id: str, sensor_data: np.ndarray
-    ) -> Dict[str, Any]:
+    def _simulate_anomaly_prediction(self, equipment_id: str, sensor_data: np.ndarray) -> Dict[str, Any]:
         """Simulate anomaly prediction for demonstration"""
         # Generate realistic-looking anomaly scores
         base_score = 0.1 + np.random.random() * 0.3
@@ -153,9 +145,7 @@ class PretrainedModelManager:
             "simulated": True,
         }
 
-    def get_real_time_predictions(
-        self, time_window_minutes: int = 60
-    ) -> List[Dict[str, Any]]:
+    def get_real_time_predictions(self, time_window_minutes: int = 60) -> List[Dict[str, Any]]:
         """Get recent real-time predictions
 
         Args:
@@ -181,9 +171,7 @@ class PretrainedModelManager:
 
         return predictions
 
-    def simulate_real_time_data(
-        self, equipment_id: str, num_points: int = 100
-    ) -> np.ndarray:
+    def simulate_real_time_data(self, equipment_id: str, num_points: int = 100) -> np.ndarray:
         """Simulate real-time sensor data
 
         Args:

@@ -132,9 +132,7 @@ class SharedStateManager:
                 logger.warning(f"State key not found: {key_path}")
                 return None
 
-    def set_state(
-        self, key_path: str, value: Any, component_id: str = "unknown"
-    ) -> bool:
+    def set_state(self, key_path: str, value: Any, component_id: str = "unknown") -> bool:
         """
         Set state value by key path
 
@@ -189,9 +187,7 @@ class SharedStateManager:
         with self._lock:
             return self._state.copy()
 
-    def update_multiple(
-        self, updates: Dict[str, Any], component_id: str = "unknown"
-    ) -> bool:
+    def update_multiple(self, updates: Dict[str, Any], component_id: str = "unknown") -> bool:
         """
         Update multiple state values atomically
 
@@ -224,9 +220,7 @@ class SharedStateManager:
             component_id: Component identifier
         """
         with self._lock:
-            self._subscribers[key_path].append(
-                {"callback": callback, "component_id": component_id}
-            )
+            self._subscribers[key_path].append({"callback": callback, "component_id": component_id})
 
         logger.info(f"Component {component_id} subscribed to {key_path}")
 
@@ -241,9 +235,7 @@ class SharedStateManager:
         with self._lock:
             if key_path in self._subscribers:
                 self._subscribers[key_path] = [
-                    sub
-                    for sub in self._subscribers[key_path]
-                    if sub["component_id"] != component_id
+                    sub for sub in self._subscribers[key_path] if sub["component_id"] != component_id
                 ]
 
         logger.info(f"Component {component_id} unsubscribed from {key_path}")
@@ -257,9 +249,7 @@ class SharedStateManager:
                     try:
                         subscriber["callback"](key_path, old_value, new_value)
                     except Exception as e:
-                        logger.error(
-                            f"Error notifying subscriber {subscriber['component_id']}: {e}"
-                        )
+                        logger.error(f"Error notifying subscriber {subscriber['component_id']}: {e}")
 
             # Notify wildcard subscribers (parent paths)
             parts = key_path.split(".")
@@ -270,9 +260,7 @@ class SharedStateManager:
                         try:
                             subscriber["callback"](key_path, old_value, new_value)
                         except Exception as e:
-                            logger.error(
-                                f"Error notifying wildcard subscriber {subscriber['component_id']}: {e}"
-                            )
+                            logger.error(f"Error notifying wildcard subscriber {subscriber['component_id']}: {e}")
 
         except Exception as e:
             logger.error(f"Error notifying subscribers for {key_path}: {e}")
@@ -380,13 +368,9 @@ class SharedStateManager:
         with self._lock:
             return {
                 "total_keys": len(str(self._state).split(":")),
-                "subscriber_count": sum(
-                    len(subs) for subs in self._subscribers.values()
-                ),
+                "subscriber_count": sum(len(subs) for subs in self._subscribers.values()),
                 "update_count": len(self._update_history),
-                "last_update": (
-                    self._update_history[-1].timestamp if self._update_history else None
-                ),
+                "last_update": (self._update_history[-1].timestamp if self._update_history else None),
                 "active_subscriptions": list(self._subscribers.keys()),
             }
 

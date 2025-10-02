@@ -33,9 +33,7 @@ def create_training_hub_layout():
                                         [
                                             html.H4(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-graduation-cap me-3 text-primary"
-                                                    ),
+                                                    html.I(className="fas fa-graduation-cap me-3 text-primary"),
                                                     "Training Hub",
                                                 ],
                                                 className="mb-3",
@@ -74,9 +72,7 @@ def create_training_hub_layout():
                                                         [
                                                             dbc.Button(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-play me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-play me-2"),
                                                                     "Train All Models",
                                                                 ],
                                                                 id="train-all-btn",
@@ -95,9 +91,7 @@ def create_training_hub_layout():
                                                         [
                                                             dbc.Button(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-search me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-search me-2"),
                                                                     "Validate Models",
                                                                 ],
                                                                 id="validate-all-btn",
@@ -116,9 +110,7 @@ def create_training_hub_layout():
                                                         [
                                                             dbc.Button(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-chart-line me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-chart-line me-2"),
                                                                     "Training Report",
                                                                 ],
                                                                 id="training-report-btn",
@@ -137,9 +129,7 @@ def create_training_hub_layout():
                                                         [
                                                             dbc.Button(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-cog me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-cog me-2"),
                                                                     "Configuration",
                                                                 ],
                                                                 id="config-btn",
@@ -174,15 +164,11 @@ def create_training_hub_layout():
                                 [
                                     dbc.CardHeader(
                                         [
-                                            html.I(
-                                                className="fas fa-tachometer-alt me-2"
-                                            ),
+                                            html.I(className="fas fa-tachometer-alt me-2"),
                                             "Training Status Overview",
                                         ]
                                     ),
-                                    dbc.CardBody(
-                                        [html.Div(id="training-status-overview")]
-                                    ),
+                                    dbc.CardBody([html.Div(id="training-status-overview")]),
                                 ]
                             )
                         ],
@@ -194,15 +180,11 @@ def create_training_hub_layout():
                                 [
                                     dbc.CardHeader(
                                         [
-                                            html.I(
-                                                className="fas fa-exclamation-circle me-2"
-                                            ),
+                                            html.I(className="fas fa-exclamation-circle me-2"),
                                             "Training Recommendations",
                                         ]
                                     ),
-                                    dbc.CardBody(
-                                        [html.Div(id="training-recommendations")]
-                                    ),
+                                    dbc.CardBody([html.Div(id="training-recommendations")]),
                                 ]
                             )
                         ],
@@ -304,9 +286,7 @@ def create_training_hub_layout():
                                                         [
                                                             dbc.Button(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-play me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-play me-2"),
                                                                     "Start Training",
                                                                 ],
                                                                 id="start-individual-training",
@@ -315,9 +295,7 @@ def create_training_hub_layout():
                                                             ),
                                                             dbc.Button(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-stop me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-stop me-2"),
                                                                     "Stop Training",
                                                                 ],
                                                                 id="stop-training",
@@ -350,9 +328,7 @@ def create_training_hub_layout():
                                             "Training Progress",
                                         ]
                                     ),
-                                    dbc.CardBody(
-                                        [html.Div(id="training-progress-display")]
-                                    ),
+                                    dbc.CardBody([html.Div(id="training-progress-display")]),
                                 ]
                             )
                         ],
@@ -400,9 +376,7 @@ def create_training_hub_layout():
                                             "Training History",
                                         ]
                                     ),
-                                    dbc.CardBody(
-                                        [dcc.Graph(id="training-history-chart")]
-                                    ),
+                                    dbc.CardBody([dcc.Graph(id="training-history-chart")]),
                                 ]
                             )
                         ]
@@ -422,9 +396,7 @@ def create_training_hub_layout():
     )
 
 
-def register_training_hub_callbacks(
-    app, training_use_case, config_manager, performance_monitor
-):
+def register_training_hub_callbacks(app, training_use_case, config_manager, performance_monitor):
     """Register callbacks for training hub functionality"""
 
     @app.callback(
@@ -465,14 +437,10 @@ def register_training_hub_callbacks(
 
             # Calculate training coverage
             anomaly_trained = sum(
-                1
-                for status in equipment_status.values()
-                if status.get("anomaly_detection", {}).get("trained", False)
+                1 for status in equipment_status.values() if status.get("anomaly_detection", {}).get("trained", False)
             )
             forecast_trained = sum(
-                1
-                for status in equipment_status.values()
-                if status.get("forecasting", {}).get("trained", False)
+                1 for status in equipment_status.values() if status.get("forecasting", {}).get("trained", False)
             )
 
             # Calculate average performance scores
@@ -487,12 +455,8 @@ def register_training_hub_callbacks(
                 if status.get("forecasting", {}).get("trained", False)
             ]
 
-            avg_anomaly_score = (
-                sum(anomaly_scores) / len(anomaly_scores) if anomaly_scores else 0
-            )
-            avg_forecast_score = (
-                sum(forecast_scores) / len(forecast_scores) if forecast_scores else 0
-            )
+            avg_anomaly_score = sum(anomaly_scores) / len(anomaly_scores) if anomaly_scores else 0
+            avg_forecast_score = sum(forecast_scores) / len(forecast_scores) if forecast_scores else 0
 
             # Create overview cards
             overview_cards = dbc.Row(
@@ -513,8 +477,7 @@ def register_training_hub_callbacks(
                                             ),
                                             dbc.Progress(
                                                 value=(
-                                                    (anomaly_trained / total_equipment)
-                                                    * 100
+                                                    (anomaly_trained / total_equipment) * 100
                                                     if total_equipment > 0
                                                     else 0
                                                 ),
@@ -545,8 +508,7 @@ def register_training_hub_callbacks(
                                             ),
                                             dbc.Progress(
                                                 value=(
-                                                    (forecast_trained / total_equipment)
-                                                    * 100
+                                                    (forecast_trained / total_equipment) * 100
                                                     if total_equipment > 0
                                                     else 0
                                                 ),
@@ -641,26 +603,19 @@ def register_training_hub_callbacks(
             recommendation_items = []
 
             # Sensors needing training
-            sensors_needing_training = recommendations.get(
-                "sensors_needing_training", []
-            )
+            sensors_needing_training = recommendations.get("sensors_needing_training", [])
             if sensors_needing_training:
                 recommendation_items.append(
                     dbc.ListGroupItem(
                         [
                             html.H6(
                                 [
-                                    html.I(
-                                        className="fas fa-exclamation-triangle text-danger me-2"
-                                    ),
+                                    html.I(className="fas fa-exclamation-triangle text-danger me-2"),
                                     f"{len(sensors_needing_training)} sensors need initial training",
                                 ]
                             ),
                             html.P(
-                                [
-                                    eq["sensor_id"]
-                                    for eq in sensors_needing_training[:3]
-                                ],
+                                [eq["sensor_id"] for eq in sensors_needing_training[:3]],
                                 className="text-muted mb-0",
                             ),
                         ],
@@ -670,26 +625,19 @@ def register_training_hub_callbacks(
                 )
 
             # Sensors needing retraining
-            sensors_needing_retraining = recommendations.get(
-                "sensors_needing_retraining", []
-            )
+            sensors_needing_retraining = recommendations.get("sensors_needing_retraining", [])
             if sensors_needing_retraining:
                 recommendation_items.append(
                     dbc.ListGroupItem(
                         [
                             html.H6(
                                 [
-                                    html.I(
-                                        className="fas fa-sync-alt text-warning me-2"
-                                    ),
+                                    html.I(className="fas fa-sync-alt text-warning me-2"),
                                     f"{len(sensors_needing_retraining)} sensors need retraining",
                                 ]
                             ),
                             html.P(
-                                [
-                                    eq["sensor_id"]
-                                    for eq in sensors_needing_retraining[:3]
-                                ],
+                                [eq["sensor_id"] for eq in sensors_needing_retraining[:3]],
                                 className="text-muted mb-0",
                             ),
                         ],
@@ -706,9 +654,7 @@ def register_training_hub_callbacks(
                         [
                             html.H6(
                                 [
-                                    html.I(
-                                        className="fas fa-check-circle text-success me-2"
-                                    ),
+                                    html.I(className="fas fa-check-circle text-success me-2"),
                                     f"{len(well_performing)} sensors performing well",
                                 ]
                             )
@@ -767,9 +713,7 @@ def register_training_hub_callbacks(
             if trigger_id == "start-individual-training" and individual_clicks:
                 if not sensor_id or not model_type:
                     return (
-                        dbc.Alert(
-                            "Please select sensor and model type", color="warning"
-                        ),
+                        dbc.Alert("Please select sensor and model type", color="warning"),
                         [],
                         True,
                     )
@@ -781,15 +725,9 @@ def register_training_hub_callbacks(
                 )
 
                 logs = [
-                    html.P(
-                        f"[{datetime.now().strftime('%H:%M:%S')}] Starting training for {sensor_id}"
-                    ),
-                    html.P(
-                        f"[{datetime.now().strftime('%H:%M:%S')}] Model type: {model_type}"
-                    ),
-                    html.P(
-                        f"[{datetime.now().strftime('%H:%M:%S')}] Training mode: {mode}"
-                    ),
+                    html.P(f"[{datetime.now().strftime('%H:%M:%S')}] Starting training for {sensor_id}"),
+                    html.P(f"[{datetime.now().strftime('%H:%M:%S')}] Model type: {model_type}"),
+                    html.P(f"[{datetime.now().strftime('%H:%M:%S')}] Training mode: {mode}"),
                 ]
 
                 return progress, logs, False  # Enable interval
@@ -808,9 +746,7 @@ def register_training_hub_callbacks(
                 )
 
                 logs = [
-                    html.P(
-                        f"[{datetime.now().strftime('%H:%M:%S')}] Starting batch training for all sensors"
-                    ),
+                    html.P(f"[{datetime.now().strftime('%H:%M:%S')}] Starting batch training for all sensors"),
                     html.P(
                         f"[{datetime.now().strftime('%H:%M:%S')}] Training both anomaly detection and forecasting models"
                     ),
@@ -830,9 +766,7 @@ def register_training_hub_callbacks(
                 )
 
                 new_logs = logs_data + [
-                    html.P(
-                        f"[{datetime.now().strftime('%H:%M:%S')}] Training progress: {new_progress}%"
-                    )
+                    html.P(f"[{datetime.now().strftime('%H:%M:%S')}] Training progress: {new_progress}%")
                 ]
 
                 # Stop when complete
@@ -861,14 +795,10 @@ def register_training_hub_callbacks(
         """Update training history chart"""
         try:
             # Get training metrics from performance monitor
-            training_summary = performance_monitor.get_training_metrics_summary(
-                hours_back=168
-            )  # 1 week
+            training_summary = performance_monitor.get_training_metrics_summary(hours_back=168)  # 1 week
 
             # Create mock data for demonstration
-            dates = pd.date_range(
-                start=datetime.now() - timedelta(days=7), end=datetime.now(), freq="D"
-            )
+            dates = pd.date_range(start=datetime.now() - timedelta(days=7), end=datetime.now(), freq="D")
 
             # Mock training sessions per day
             anomaly_sessions = [2, 1, 3, 0, 2, 1, 4]

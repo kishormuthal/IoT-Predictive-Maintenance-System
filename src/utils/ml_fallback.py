@@ -92,9 +92,7 @@ class MockLSTMPredictor(MockModel):
 class MockVAE(MockModel):
     """Mock LSTM-VAE"""
 
-    def __init__(
-        self, sequence_length: int, n_features: int, latent_dim: int = 20, **kwargs
-    ):
+    def __init__(self, sequence_length: int, n_features: int, latent_dim: int = 20, **kwargs):
         super().__init__((sequence_length, n_features))
         self.sequence_length = sequence_length
         self.n_features = n_features
@@ -108,9 +106,7 @@ class MockVAE(MockModel):
     def decode(self, z):
         """Decode from latent space"""
         batch_size = z.shape[0]
-        return np.random.normal(
-            0, 0.1, (batch_size, self.sequence_length, self.n_features)
-        )
+        return np.random.normal(0, 0.1, (batch_size, self.sequence_length, self.n_features))
 
     def get_elbo_loss(self, X):
         """Calculate ELBO loss"""

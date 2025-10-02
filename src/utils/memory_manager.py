@@ -135,18 +135,10 @@ class SlidingWindow:
                 part1_size = self.max_size - start_idx
                 part2_size = count - part1_size
 
-                timestamps = np.concatenate(
-                    [self.timestamps[start_idx:], self.timestamps[:part2_size]]
-                )
-                values = np.concatenate(
-                    [self.values[start_idx:], self.values[:part2_size]]
-                )
-                anomaly_scores = np.concatenate(
-                    [self.anomaly_scores[start_idx:], self.anomaly_scores[:part2_size]]
-                )
-                anomaly_flags = np.concatenate(
-                    [self.anomaly_flags[start_idx:], self.anomaly_flags[:part2_size]]
-                )
+                timestamps = np.concatenate([self.timestamps[start_idx:], self.timestamps[:part2_size]])
+                values = np.concatenate([self.values[start_idx:], self.values[:part2_size]])
+                anomaly_scores = np.concatenate([self.anomaly_scores[start_idx:], self.anomaly_scores[:part2_size]])
+                anomaly_flags = np.concatenate([self.anomaly_flags[start_idx:], self.anomaly_flags[:part2_size]])
 
                 return {
                     "timestamps": timestamps,
@@ -164,9 +156,7 @@ class SlidingWindow:
                 "anomaly_flags": self.anomaly_flags[:end_idx].copy(),
             }
 
-    def get_time_range(
-        self, start_time: datetime, end_time: datetime
-    ) -> Dict[str, np.ndarray]:
+    def get_time_range(self, start_time: datetime, end_time: datetime) -> Dict[str, np.ndarray]:
         """Get data within specific time range"""
         if self.current_size == 0:
             return self.get_latest(0)
@@ -179,9 +169,7 @@ class SlidingWindow:
         all_data = self.get_latest()
 
         # Filter by time range
-        time_mask = (all_data["timestamps"] >= start_np) & (
-            all_data["timestamps"] <= end_np
-        )
+        time_mask = (all_data["timestamps"] >= start_np) & (all_data["timestamps"] <= end_np)
 
         return {
             "timestamps": all_data["timestamps"][time_mask],
@@ -202,12 +190,7 @@ class SlidingWindow:
 
     def get_memory_usage(self) -> int:
         """Get memory usage in bytes"""
-        base_size = (
-            self.timestamps.nbytes
-            + self.values.nbytes
-            + self.anomaly_scores.nbytes
-            + self.anomaly_flags.nbytes
-        )
+        base_size = self.timestamps.nbytes + self.values.nbytes + self.anomaly_scores.nbytes + self.anomaly_flags.nbytes
         return int(base_size * self.compression_ratio)
 
 
@@ -265,9 +248,7 @@ class SlidingWindowMemoryManager:
     def create_sensor_window(self, sensor_id: str, window_size: int = None) -> bool:
         """Create a new sliding window for a sensor"""
         window_size = window_size or self.config.default_window_size
-        window_size = max(
-            self.config.min_window_size, min(window_size, self.config.max_window_size)
-        )
+        window_size = max(self.config.min_window_size, min(window_size, self.config.max_window_size))
 
         with self.global_lock:
             if sensor_id in self.windows:
@@ -280,15 +261,11 @@ class SlidingWindowMemoryManager:
                 return False
 
             # Create window and lock
-            self.windows[sensor_id] = SlidingWindow(
-                sensor_id=sensor_id, max_size=window_size
-            )
+            self.windows[sensor_id] = SlidingWindow(sensor_id=sensor_id, max_size=window_size)
             self.window_locks[sensor_id] = threading.RLock()
 
             self.stats.total_sensors += 1
-            logger.debug(
-                f"Created sliding window for sensor {sensor_id}: size={window_size}"
-            )
+            logger.debug(f"Created sliding window for sensor {sensor_id}: size={window_size}")
 
             return True
 
@@ -309,17 +286,13 @@ class SlidingWindowMemoryManager:
         # Add data with thread safety
         try:
             with self.window_locks[sensor_id]:
-                self.windows[sensor_id].append(
-                    timestamp, value, anomaly_score, anomaly_flag
-                )
+                self.windows[sensor_id].append(timestamp, value, anomaly_score, anomaly_flag)
             return True
         except Exception as e:
             logger.error(f"Failed to add data for sensor {sensor_id}: {e}")
             return False
 
-    def get_sensor_data(
-        self, sensor_id: str, count: int = None
-    ) -> Optional[Dict[str, np.ndarray]]:
+    def get_sensor_data(self, sensor_id: str, count: int = None) -> Optional[Dict[str, np.ndarray]]:
         """Get latest data from sensor's sliding window"""
         if sensor_id not in self.windows:
             return None
@@ -345,9 +318,7 @@ class SlidingWindowMemoryManager:
             logger.error(f"Failed to get time range data for sensor {sensor_id}: {e}")
             return None
 
-    def get_all_sensors_latest(
-        self, count: int = 100
-    ) -> Dict[str, Dict[str, np.ndarray]]:
+    def get_all_sensors_latest(self, count: int = 100) -> Dict[str, Dict[str, np.ndarray]]:
         """Get latest data from all sensors efficiently"""
         result = {}
 
@@ -369,9 +340,7 @@ class SlidingWindowMemoryManager:
     def _check_memory_available(self, additional_window_size: int) -> bool:
         """Check if there's enough memory for additional window"""
         # Estimate memory for new window (4 arrays * window_size * bytes per element)
-        estimated_mb = (additional_window_size * 4 * 8) / (
-            1024 * 1024
-        )  # 8 bytes avg per element
+        estimated_mb = (additional_window_size * 4 * 8) / (1024 * 1024)  # 8 bytes avg per element
 
         current_memory = self._get_current_memory_usage()
 
@@ -393,9 +362,7 @@ class SlidingWindowMemoryManager:
             return
 
         self.is_running = True
-        self.cleanup_thread = threading.Thread(
-            target=self._maintenance_loop, daemon=True
-        )
+        self.cleanup_thread = threading.Thread(target=self._maintenance_loop, daemon=True)
         self.cleanup_thread.start()
 
         logger.info("Memory maintenance thread started")
@@ -417,10 +384,7 @@ class SlidingWindowMemoryManager:
                 # Memory warning
                 if memory_ratio > self.config.memory_warning_threshold:
                     self.stats.memory_warnings += 1
-                    logger.warning(
-                        f"High memory usage: {current_memory:.1f}MB "
-                        f"({memory_ratio:.1%} of limit)"
-                    )
+                    logger.warning(f"High memory usage: {current_memory:.1f}MB " f"({memory_ratio:.1%} of limit)")
 
                 # Memory cleanup
                 if memory_ratio > self.config.memory_cleanup_threshold:
@@ -565,14 +529,10 @@ def add_sensor_data(
     anomaly_flag: bool = False,
 ) -> bool:
     """Add data to sensor's sliding window"""
-    return memory_manager.add_sensor_data(
-        sensor_id, timestamp, value, anomaly_score, anomaly_flag
-    )
+    return memory_manager.add_sensor_data(sensor_id, timestamp, value, anomaly_score, anomaly_flag)
 
 
-def get_sensor_data(
-    sensor_id: str, count: int = None
-) -> Optional[Dict[str, np.ndarray]]:
+def get_sensor_data(sensor_id: str, count: int = None) -> Optional[Dict[str, np.ndarray]]:
     """Get latest data from sensor's sliding window"""
     return memory_manager.get_sensor_data(sensor_id, count)
 

@@ -17,9 +17,7 @@ from src.dashboard.nasa_dashboard_orchestrator import phase3_manager
 from src.dashboard.state.shared_state import shared_state_manager
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -89,9 +87,7 @@ async def test_cache_manager():
 
     try:
         # Test sensor data caching
-        data = await phase3_manager.cache_manager.get_sensor_data(
-            "T-1", "1h", "sensor_monitoring"
-        )
+        data = await phase3_manager.cache_manager.get_sensor_data("T-1", "1h", "sensor_monitoring")
         assert data is not None, "Sensor data retrieval failed"
 
         # Test cross-feature data
@@ -121,9 +117,7 @@ async def test_lazy_loader():
         def mock_load_function():
             return {"data": "test_data", "loaded_at": time.time()}
 
-        success = phase3_manager.lazy_loader.register_component(
-            "test_component", "sensor_chart", mock_load_function
-        )
+        success = phase3_manager.lazy_loader.register_component("test_component", "sensor_chart", mock_load_function)
         assert success, "Component registration failed"
 
         # Test component loading
@@ -235,17 +229,13 @@ def test_shared_state_integration():
 
     try:
         # Test state setting and getting
-        shared_state_manager.set_state(
-            "test.phase3_validation", True, "validation_script"
-        )
+        shared_state_manager.set_state("test.phase3_validation", True, "validation_script")
         value = shared_state_manager.get_state("test.phase3_validation")
         assert value is True, "State setting/getting failed"
 
         # Test integration status
         integration_status = shared_state_manager.get_integration_status()
-        assert (
-            "event_coordinator_active" in integration_status
-        ), "Integration status missing"
+        assert "event_coordinator_active" in integration_status, "Integration status missing"
 
         # Test NASA sensor state
         nasa_state = shared_state_manager.get_nasa_sensor_state("T-1")
@@ -265,9 +255,7 @@ async def test_end_to_end_integration():
 
     try:
         # Simulate user sensor selection
-        shared_state_manager.set_state(
-            "selections.sensor_id", "T-1", "validation_script"
-        )
+        shared_state_manager.set_state("selections.sensor_id", "T-1", "validation_script")
 
         # Wait for event propagation
         await asyncio.sleep(0.5)
@@ -293,9 +281,7 @@ async def test_end_to_end_integration():
 
         # Check performance impact
         perf_summary = phase3_manager.performance_monitor.get_performance_summary()
-        logger.info(
-            f"Performance score: {perf_summary.get('performance_score', 'N/A')}"
-        )
+        logger.info(f"Performance score: {perf_summary.get('performance_score', 'N/A')}")
 
         logger.info("✓ End-to-End Integration tests passed")
         return True
@@ -350,9 +336,7 @@ async def run_validation():
         if passed == total:
             logger.info("🎉 ALL TESTS PASSED - Phase 3 integration successful!")
         else:
-            logger.warning(
-                f"⚠️  {total - passed} tests failed - Phase 3 integration has issues"
-            )
+            logger.warning(f"⚠️  {total - passed} tests failed - Phase 3 integration has issues")
 
         # Show integration status
         logger.info("\nIntegration Status:")
@@ -365,24 +349,12 @@ async def run_validation():
         logger.info(f"\nDashboard Summary:")
         dashboard_data = phase3_manager.get_phase3_dashboard_data()
         if "error" not in dashboard_data:
-            logger.info(
-                f"  Performance Score: {dashboard_data.get('performance', {}).get('performance_score', 'N/A')}"
-            )
-            logger.info(
-                f"  Cache Hit Rate: {dashboard_data.get('cache', {}).get('hit_rate_12h', 'N/A'):.1%}"
-            )
-            logger.info(
-                f"  Loaded Components: {dashboard_data.get('loading', {}).get('loaded_components', 'N/A')}"
-            )
-            logger.info(
-                f"  Current Theme: {dashboard_data.get('theme', {}).get('name', 'N/A')}"
-            )
-            logger.info(
-                f"  Device Type: {dashboard_data.get('integration_status', {}).get('device_type', 'N/A')}"
-            )
-            logger.info(
-                f"  NASA Sensors: {dashboard_data.get('nasa_sensors', {}).get('total', 'N/A')}"
-            )
+            logger.info(f"  Performance Score: {dashboard_data.get('performance', {}).get('performance_score', 'N/A')}")
+            logger.info(f"  Cache Hit Rate: {dashboard_data.get('cache', {}).get('hit_rate_12h', 'N/A'):.1%}")
+            logger.info(f"  Loaded Components: {dashboard_data.get('loading', {}).get('loaded_components', 'N/A')}")
+            logger.info(f"  Current Theme: {dashboard_data.get('theme', {}).get('name', 'N/A')}")
+            logger.info(f"  Device Type: {dashboard_data.get('integration_status', {}).get('device_type', 'N/A')}")
+            logger.info(f"  NASA Sensors: {dashboard_data.get('nasa_sensors', {}).get('total', 'N/A')}")
 
         return passed == total
 

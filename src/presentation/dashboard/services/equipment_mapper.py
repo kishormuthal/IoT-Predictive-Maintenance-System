@@ -23,9 +23,7 @@ class EquipmentMapper:
         try:
             self.equipment_list = get_equipment_list()
             self.equipment_registry = EQUIPMENT_REGISTRY
-            logger.info(
-                f"Equipment mapper initialized with {len(self.equipment_list)} equipment units"
-            )
+            logger.info(f"Equipment mapper initialized with {len(self.equipment_list)} equipment units")
         except Exception as e:
             logger.error(f"Failed to load equipment configuration: {e}")
             self.equipment_list = []
@@ -70,9 +68,7 @@ class EquipmentMapper:
             logger.error(f"Error getting equipment info for {equipment_id}: {e}")
             return None
 
-    def get_sensor_options_by_equipment(
-        self, equipment_id: str
-    ) -> List[Dict[str, str]]:
+    def get_sensor_options_by_equipment(self, equipment_id: str) -> List[Dict[str, str]]:
         """Get sensor options for dropdown
 
         Args:

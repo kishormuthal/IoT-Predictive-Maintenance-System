@@ -13,9 +13,7 @@ class AnomalyDetectorInterface(ABC):
     """Abstract base class for all anomaly detectors"""
 
     @abstractmethod
-    def detect_anomalies(
-        self, sensor_id: str, data: np.ndarray, timestamps: List[datetime]
-    ) -> Dict[str, Any]:
+    def detect_anomalies(self, sensor_id: str, data: np.ndarray, timestamps: List[datetime]) -> Dict[str, Any]:
         """
         Detect anomalies in sensor data
 

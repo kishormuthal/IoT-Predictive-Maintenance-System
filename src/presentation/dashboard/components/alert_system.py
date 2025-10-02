@@ -122,9 +122,7 @@ class AlertManager:
                 return True
         return False
 
-    def get_active_alerts(
-        self, category: Optional[AlertCategory] = None
-    ) -> List[Alert]:
+    def get_active_alerts(self, category: Optional[AlertCategory] = None) -> List[Alert]:
         """Get active alerts, optionally filtered by category"""
         alerts = [alert for alert in self.alerts if not alert.acknowledged]
 
@@ -141,11 +139,7 @@ class AlertManager:
         """Clear alerts older than specified hours"""
         cutoff_time = datetime.now() - timedelta(hours=hours_old)
 
-        self.alerts = [
-            alert
-            for alert in self.alerts
-            if datetime.fromisoformat(alert.timestamp) >= cutoff_time
-        ]
+        self.alerts = [alert for alert in self.alerts if datetime.fromisoformat(alert.timestamp) >= cutoff_time]
 
 
 # Global alert manager instance
@@ -182,9 +176,7 @@ def create_alert_system_components():
                                 color="warning",
                                 className="me-2",
                             ),
-                            dbc.Button(
-                                "Close", id="close-alert-modal", className="ms-auto"
-                            ),
+                            dbc.Button("Close", id="close-alert-modal", className="ms-auto"),
                         ]
                     ),
                 ],
@@ -197,9 +189,7 @@ def create_alert_system_components():
                     dbc.Button(
                         [
                             html.I(className="fas fa-bell me-2"),
-                            dbc.Badge(
-                                id="alert-count-badge", color="danger", className="ms-1"
-                            ),
+                            dbc.Badge(id="alert-count-badge", color="danger", className="ms-1"),
                         ],
                         id="alert-summary-btn",
                         color="outline-secondary",
@@ -224,9 +214,7 @@ def create_alert_system_components():
     )
 
 
-def register_alert_system_callbacks(
-    app, performance_monitor, training_use_case, anomaly_service
-):
+def register_alert_system_callbacks(app, performance_monitor, training_use_case, anomaly_service):
     """Register alert system callbacks"""
 
     @app.callback(
@@ -240,9 +228,7 @@ def register_alert_system_callbacks(
         """Update alert store with new alerts"""
         try:
             # Generate alerts based on system status
-            _generate_system_alerts(
-                performance_monitor, training_use_case, anomaly_service
-            )
+            _generate_system_alerts(performance_monitor, training_use_case, anomaly_service)
 
             # Get current alerts
             active_alerts = alert_manager.get_active_alerts()
@@ -250,16 +236,10 @@ def register_alert_system_callbacks(
 
             # Count by severity
             alert_count = len(active_alerts)
-            critical_count = len(
-                [a for a in active_alerts if a.severity == AlertSeverity.CRITICAL]
-            )
+            critical_count = len([a for a in active_alerts if a.severity == AlertSeverity.CRITICAL])
 
             # Display count (show critical count if any, otherwise total)
-            display_count = (
-                str(critical_count)
-                if critical_count > 0
-                else str(alert_count) if alert_count > 0 else ""
-            )
+            display_count = str(critical_count) if critical_count > 0 else str(alert_count) if alert_count > 0 else ""
 
             return alert_data, display_count
 
@@ -302,9 +282,7 @@ def register_alert_system_callbacks(
                     },
                 }
 
-                props = severity_map.get(
-                    alert.severity, {"icon": "secondary", "header_color": "secondary"}
-                )
+                props = severity_map.get(alert.severity, {"icon": "secondary", "header_color": "secondary"})
 
                 # Create action buttons
                 action_buttons = []
@@ -361,11 +339,7 @@ def register_alert_system_callbacks(
                     icon=props["icon"],
                     dismissable=True,
                     is_open=True,
-                    duration=(
-                        alert.dismiss_after_seconds * 1000
-                        if alert.auto_dismiss
-                        else False
-                    ),
+                    duration=(alert.dismiss_after_seconds * 1000 if alert.auto_dismiss else False),
                     style={"margin-bottom": "10px", "max-width": "380px"},
                 )
 
@@ -439,16 +413,12 @@ def register_alert_system_callbacks(
                                             [
                                                 dbc.Badge(
                                                     alert.severity.value.upper(),
-                                                    color=severity_colors.get(
-                                                        alert.severity, "secondary"
-                                                    ),
+                                                    color=severity_colors.get(alert.severity, "secondary"),
                                                     className="me-2",
                                                 ),
                                                 dbc.Badge(
                                                     alert.category.value.upper(),
-                                                    color=category_colors.get(
-                                                        alert.category, "secondary"
-                                                    ),
+                                                    color=category_colors.get(alert.category, "secondary"),
                                                     className="me-2",
                                                 ),
                                                 html.Small(
@@ -462,9 +432,7 @@ def register_alert_system_callbacks(
                                 ),
                                 dbc.Col(
                                     [
-                                        html.Small(
-                                            alert.timestamp, className="text-muted"
-                                        ),
+                                        html.Small(alert.timestamp, className="text-muted"),
                                         html.Br(),
                                         dbc.ButtonGroup(
                                             [
@@ -551,9 +519,7 @@ def _generate_system_alerts(performance_monitor, training_use_case, anomaly_serv
             alert_manager.create_alert(
                 title=f"Performance Alert: {perf_alert.get('type', 'UNKNOWN')}",
                 message=perf_alert.get("message", "Performance issue detected"),
-                severity=severity_map.get(
-                    perf_alert.get("severity", "info"), AlertSeverity.INFO
-                ),
+                severity=severity_map.get(perf_alert.get("severity", "info"), AlertSeverity.INFO),
                 category=AlertCategory.PERFORMANCE,
                 source="Performance Monitor",
                 auto_dismiss=False,
@@ -582,11 +548,7 @@ def _generate_system_alerts(performance_monitor, training_use_case, anomaly_serv
 
         # Anomaly alerts
         anomaly_summary = anomaly_service.get_detection_summary()
-        critical_anomalies = [
-            a
-            for a in anomaly_summary.get("recent_anomalies", [])
-            if a.get("severity") == "CRITICAL"
-        ]
+        critical_anomalies = [a for a in anomaly_summary.get("recent_anomalies", []) if a.get("severity") == "CRITICAL"]
 
         for anomaly in critical_anomalies[:3]:  # Limit to 3 most recent
             alert_manager.create_alert(

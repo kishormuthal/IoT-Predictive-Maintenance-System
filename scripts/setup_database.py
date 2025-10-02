@@ -244,9 +244,7 @@ def verify_database(db_path):
     conn.close()
 
     # Check if all expected tables exist
-    missing_tables = [
-        table for table in expected_tables if table not in existing_tables
-    ]
+    missing_tables = [table for table in expected_tables if table not in existing_tables]
     if missing_tables:
         print(f"Missing tables: {missing_tables}")
         return False

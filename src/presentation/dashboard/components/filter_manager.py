@@ -111,9 +111,7 @@ class FilterManager:
             self.shared_state = shared_state_manager
 
             # Subscribe to filter state changes
-            self.shared_state.subscribe(
-                "selections.*", self._on_selection_change, "filter_manager"
-            )
+            self.shared_state.subscribe("selections.*", self._on_selection_change, "filter_manager")
 
         except ImportError as e:
             logger.warning(f"Could not import managers: {e}")
@@ -174,13 +172,9 @@ class FilterManager:
                     spacecraft_mask = False
                     for spacecraft in filters.spacecraft:
                         if spacecraft.lower() == "smap":
-                            spacecraft_mask |= filtered_data[
-                                "equipment_id"
-                            ].str.startswith("SMAP")
+                            spacecraft_mask |= filtered_data["equipment_id"].str.startswith("SMAP")
                         elif spacecraft.lower() == "msl":
-                            spacecraft_mask |= filtered_data[
-                                "equipment_id"
-                            ].str.startswith("MSL")
+                            spacecraft_mask |= filtered_data["equipment_id"].str.startswith("MSL")
                     filtered_data = filtered_data[spacecraft_mask]
 
             # Apply criticality filters
@@ -194,33 +188,20 @@ class FilterManager:
                 value_column = self._find_value_column(filtered_data)
                 if value_column:
                     if filters.min_value is not None:
-                        filtered_data = filtered_data[
-                            filtered_data[value_column] >= filters.min_value
-                        ]
+                        filtered_data = filtered_data[filtered_data[value_column] >= filters.min_value]
                     if filters.max_value is not None:
-                        filtered_data = filtered_data[
-                            filtered_data[value_column] <= filters.max_value
-                        ]
+                        filtered_data = filtered_data[filtered_data[value_column] <= filters.max_value]
 
             # Apply anomaly filters
             if filters.include_anomalies_only:
                 if "anomaly_detected" in filtered_data.columns:
-                    filtered_data = filtered_data[
-                        filtered_data["anomaly_detected"] == True
-                    ]
-                elif (
-                    "anomaly_score" in filtered_data.columns
-                    and filters.anomaly_threshold
-                ):
-                    filtered_data = filtered_data[
-                        filtered_data["anomaly_score"] > filters.anomaly_threshold
-                    ]
+                    filtered_data = filtered_data[filtered_data["anomaly_detected"] == True]
+                elif "anomaly_score" in filtered_data.columns and filters.anomaly_threshold:
+                    filtered_data = filtered_data[filtered_data["anomaly_score"] > filters.anomaly_threshold]
 
             if filters.include_normal_only:
                 if "anomaly_detected" in filtered_data.columns:
-                    filtered_data = filtered_data[
-                        filtered_data["anomaly_detected"] == False
-                    ]
+                    filtered_data = filtered_data[filtered_data["anomaly_detected"] == False]
 
             # Apply alert filters
             if filters.active_alerts_only:
@@ -232,9 +213,7 @@ class FilterManager:
                 "equipment_count": len(equipment_matched),
                 "sensor_count": len(sensor_matched),
                 "reduction_ratio": (
-                    (original_count - len(filtered_data)) / original_count
-                    if original_count > 0
-                    else 0
+                    (original_count - len(filtered_data)) / original_count if original_count > 0 else 0
                 ),
                 "filters_applied": self._get_applied_filter_summary(filters),
             }
@@ -266,9 +245,7 @@ class FilterManager:
             if len(self.filter_history) > self.max_history:
                 self.filter_history = self.filter_history[-self.max_history :]
 
-            logger.info(
-                f"Filters applied: {original_count} → {len(filtered_data)} records"
-            )
+            logger.info(f"Filters applied: {original_count} → {len(filtered_data)} records")
             return result
 
         except Exception as e:
@@ -283,9 +260,7 @@ class FilterManager:
                 applied_filters=filters or FilterCriteria(),
             )
 
-    def set_equipment_filter(
-        self, equipment_ids: List[str], component_id: str = "unknown"
-    ) -> bool:
+    def set_equipment_filter(self, equipment_ids: List[str], component_id: str = "unknown") -> bool:
         """
         Set equipment filter and update related dropdowns
 
@@ -312,9 +287,7 @@ class FilterManager:
 
             # Update sensor filter if current selection is not available
             if self.active_filters.sensor_ids:
-                valid_sensors = [
-                    s for s in self.active_filters.sensor_ids if s in available_sensors
-                ]
+                valid_sensors = [s for s in self.active_filters.sensor_ids if s in available_sensors]
                 if not valid_sensors:
                     self.active_filters.sensor_ids = None
 
@@ -325,9 +298,7 @@ class FilterManager:
             logger.error(f"Error setting equipment filter: {e}")
             return False
 
-    def set_sensor_filter(
-        self, sensor_ids: List[str], component_id: str = "unknown"
-    ) -> bool:
+    def set_sensor_filter(self, sensor_ids: List[str], component_id: str = "unknown") -> bool:
         """
         Set sensor filter and update related dropdowns
 
@@ -354,9 +325,7 @@ class FilterManager:
 
             # Update metric filter if current selection is not available
             if self.active_filters.metric_ids:
-                valid_metrics = [
-                    m for m in self.active_filters.metric_ids if m in available_metrics
-                ]
+                valid_metrics = [m for m in self.active_filters.metric_ids if m in available_metrics]
                 if not valid_metrics:
                     self.active_filters.metric_ids = None
 
@@ -367,9 +336,7 @@ class FilterManager:
             logger.error(f"Error setting sensor filter: {e}")
             return False
 
-    def set_metric_filter(
-        self, metric_ids: List[str], component_id: str = "unknown"
-    ) -> bool:
+    def set_metric_filter(self, metric_ids: List[str], component_id: str = "unknown") -> bool:
         """
         Set metric filter
 
@@ -398,9 +365,7 @@ class FilterManager:
             logger.error(f"Error setting metric filter: {e}")
             return False
 
-    def apply_preset_filter(
-        self, preset_name: str, component_id: str = "unknown"
-    ) -> bool:
+    def apply_preset_filter(self, preset_name: str, component_id: str = "unknown") -> bool:
         """
         Apply predefined filter preset
 
@@ -439,9 +404,7 @@ class FilterManager:
             logger.error(f"Error applying preset filter: {e}")
             return False
 
-    def get_available_options(
-        self, current_filters: Optional[FilterCriteria] = None
-    ) -> Dict[str, List]:
+    def get_available_options(self, current_filters: Optional[FilterCriteria] = None) -> Dict[str, List]:
         """
         Get available filter options based on current filters
 
@@ -466,41 +429,25 @@ class FilterManager:
 
             # Get equipment options from dropdown manager
             if self.dropdown_manager:
-                equipment_options = self.dropdown_manager.get_equipment_options(
-                    include_all=False
-                )
-                options["equipment"] = [
-                    opt.value for opt in equipment_options if not opt.disabled
-                ]
+                equipment_options = self.dropdown_manager.get_equipment_options(include_all=False)
+                options["equipment"] = [opt.value for opt in equipment_options if not opt.disabled]
 
                 # Get sensors for current equipment selection
                 if current_filters.equipment_ids:
                     for equipment_id in current_filters.equipment_ids:
-                        sensor_options = (
-                            self.dropdown_manager.get_sensor_options_for_equipment(
-                                equipment_id, include_all=False
-                            )
+                        sensor_options = self.dropdown_manager.get_sensor_options_for_equipment(
+                            equipment_id, include_all=False
                         )
-                        options["sensors"].extend(
-                            [opt.value for opt in sensor_options if not opt.disabled]
-                        )
+                        options["sensors"].extend([opt.value for opt in sensor_options if not opt.disabled])
 
                 # Get metrics for current sensor selection
                 if current_filters.equipment_ids and current_filters.sensor_ids:
                     for equipment_id in current_filters.equipment_ids:
                         for sensor_id in current_filters.sensor_ids:
-                            metric_options = (
-                                self.dropdown_manager.get_metric_options_for_sensor(
-                                    equipment_id, sensor_id, include_calculated=True
-                                )
+                            metric_options = self.dropdown_manager.get_metric_options_for_sensor(
+                                equipment_id, sensor_id, include_calculated=True
                             )
-                            options["metrics"].extend(
-                                [
-                                    opt.value
-                                    for opt in metric_options
-                                    if not opt.disabled
-                                ]
-                            )
+                            options["metrics"].extend([opt.value for opt in metric_options if not opt.disabled])
 
             # Remove duplicates
             for key in options:
@@ -610,12 +557,8 @@ class FilterManager:
 
         if self.dropdown_manager:
             for equipment_id in equipment_ids:
-                sensor_options = self.dropdown_manager.get_sensor_options_for_equipment(
-                    equipment_id, include_all=False
-                )
-                sensors.update(
-                    [opt.value for opt in sensor_options if not opt.disabled]
-                )
+                sensor_options = self.dropdown_manager.get_sensor_options_for_equipment(equipment_id, include_all=False)
+                sensors.update([opt.value for opt in sensor_options if not opt.disabled])
 
         return sensors
 
@@ -626,14 +569,10 @@ class FilterManager:
         if self.dropdown_manager and self.active_filters.equipment_ids:
             for equipment_id in self.active_filters.equipment_ids:
                 for sensor_id in sensor_ids:
-                    metric_options = (
-                        self.dropdown_manager.get_metric_options_for_sensor(
-                            equipment_id, sensor_id, include_calculated=True
-                        )
+                    metric_options = self.dropdown_manager.get_metric_options_for_sensor(
+                        equipment_id, sensor_id, include_calculated=True
                     )
-                    metrics.update(
-                        [opt.value for opt in metric_options if not opt.disabled]
-                    )
+                    metrics.update([opt.value for opt in metric_options if not opt.disabled])
 
         return metrics
 
@@ -676,14 +615,10 @@ class FilterManager:
         try:
             if self.shared_state:
                 filter_state = {
-                    "filters.active_count": len(
-                        result.filter_summary.get("filters_applied", {})
-                    ),
+                    "filters.active_count": len(result.filter_summary.get("filters_applied", {})),
                     "filters.filtered_count": result.filtered_count,
                     "filters.total_count": result.original_count,
-                    "filters.reduction_ratio": result.filter_summary.get(
-                        "reduction_ratio", 0
-                    ),
+                    "filters.reduction_ratio": result.filter_summary.get("reduction_ratio", 0),
                 }
 
                 self.shared_state.update_multiple(filter_state, "filter_manager")

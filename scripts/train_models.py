@@ -111,12 +111,8 @@ class ModelTrainer:
             X_test = self.data_loader.load_npy(f"{data_path}/test.npy")
             y_test = self.data_loader.load_npy(f"{data_path}/test_labels.npy")
         else:  # MSL
-            X_train, y_train = self.data_loader.load_h5_with_labels(
-                f"{data_path}/train.h5", "data", "labels"
-            )
-            X_test, y_test = self.data_loader.load_h5_with_labels(
-                f"{data_path}/test.h5", "data", "labels"
-            )
+            X_train, y_train = self.data_loader.load_h5_with_labels(f"{data_path}/train.h5", "data", "labels")
+            X_test, y_test = self.data_loader.load_h5_with_labels(f"{data_path}/test.h5", "data", "labels")
 
         logger.info(f"Data shapes - Train: {X_train.shape}, Test: {X_test.shape}")
 
@@ -185,9 +181,7 @@ class ModelTrainer:
             if labels is not None:
                 sequence_labels.append(labels[i + sequence_length - 1])
 
-        return np.array(sequences), (
-            np.array(sequence_labels) if labels is not None else None
-        )
+        return np.array(sequences), (np.array(sequence_labels) if labels is not None else None)
 
     def train_lstm_detector(self, X_train, y_train, X_val, y_val, hyperparams=None):
         """Train LSTM anomaly detector
@@ -236,12 +230,8 @@ class ModelTrainer:
 
         # Callbacks
         callbacks = [
-            keras.callbacks.EarlyStopping(
-                monitor="val_loss", patience=10, restore_best_weights=True
-            ),
-            keras.callbacks.ReduceLROnPlateau(
-                monitor="val_loss", factor=0.5, patience=5, min_lr=1e-6
-            ),
+            keras.callbacks.EarlyStopping(monitor="val_loss", patience=10, restore_best_weights=True),
+            keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=5, min_lr=1e-6),
             keras.callbacks.ModelCheckpoint(
                 "models/lstm_detector_best.h5",
                 monitor="val_accuracy",
@@ -300,18 +290,12 @@ class ModelTrainer:
 
         # Build and compile
         model.build_model()
-        model.model.compile(
-            optimizer=keras.optimizers.Adam(default_params["learning_rate"]), loss="mse"
-        )
+        model.model.compile(optimizer=keras.optimizers.Adam(default_params["learning_rate"]), loss="mse")
 
         # Callbacks
         callbacks = [
-            keras.callbacks.EarlyStopping(
-                monitor="val_loss", patience=10, restore_best_weights=True
-            ),
-            keras.callbacks.ReduceLROnPlateau(
-                monitor="val_loss", factor=0.5, patience=5, min_lr=1e-6
-            ),
+            keras.callbacks.EarlyStopping(monitor="val_loss", patience=10, restore_best_weights=True),
+            keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=5, min_lr=1e-6),
         ]
 
         # Train (reconstruction task)
@@ -372,11 +356,7 @@ class ModelTrainer:
         )
 
         # Callbacks
-        callbacks = [
-            keras.callbacks.EarlyStopping(
-                monitor="val_loss", patience=10, restore_best_weights=True
-            )
-        ]
+        callbacks = [keras.callbacks.EarlyStopping(monitor="val_loss", patience=10, restore_best_weights=True)]
 
         # Train
         history = model.model.fit(
@@ -391,9 +371,7 @@ class ModelTrainer:
 
         return model, history
 
-    def train_transformer_forecaster(
-        self, X_train, y_train, X_val, y_val, hyperparams=None
-    ):
+    def train_transformer_forecaster(self, X_train, y_train, X_val, y_val, hyperparams=None):
         """Train Transformer for forecasting
 
         Args:
@@ -449,12 +427,8 @@ class ModelTrainer:
 
         # Callbacks
         callbacks = [
-            keras.callbacks.EarlyStopping(
-                monitor="val_loss", patience=15, restore_best_weights=True
-            ),
-            keras.callbacks.ReduceLROnPlateau(
-                monitor="val_loss", factor=0.5, patience=7, min_lr=1e-6
-            ),
+            keras.callbacks.EarlyStopping(monitor="val_loss", patience=15, restore_best_weights=True),
+            keras.callbacks.ReduceLROnPlateau(monitor="val_loss", factor=0.5, patience=7, min_lr=1e-6),
         ]
 
         # Train
@@ -521,11 +495,7 @@ class ModelTrainer:
         )
 
         # Callbacks
-        callbacks = [
-            keras.callbacks.EarlyStopping(
-                monitor="val_loss", patience=10, restore_best_weights=True
-            )
-        ]
+        callbacks = [keras.callbacks.EarlyStopping(monitor="val_loss", patience=10, restore_best_weights=True)]
 
         # Train
         history = model.model.fit(
@@ -617,9 +587,7 @@ class ModelTrainer:
 
         return metrics.to_dict()
 
-    def hyperparameter_tuning(
-        self, model_type, X_train, y_train, X_val, y_val, n_trials=20
-    ):
+    def hyperparameter_tuning(self, model_type, X_train, y_train, X_val, y_val, n_trials=20):
         """Perform hyperparameter tuning using Optuna
 
         Args:
@@ -643,23 +611,17 @@ class ModelTrainer:
                         trial.suggest_int("hidden_units_2", 16, 64),
                     ],
                     "dropout_rate": trial.suggest_float("dropout_rate", 0.1, 0.5),
-                    "learning_rate": trial.suggest_loguniform(
-                        "learning_rate", 1e-4, 1e-2
-                    ),
+                    "learning_rate": trial.suggest_loguniform("learning_rate", 1e-4, 1e-2),
                     "batch_size": trial.suggest_categorical("batch_size", [16, 32, 64]),
                     "epochs": 20,  # Reduced for tuning
                 }
 
-                model, _ = self.train_lstm_detector(
-                    X_train, y_train, X_val, y_val, params
-                )
+                model, _ = self.train_lstm_detector(X_train, y_train, X_val, y_val, params)
 
                 # Evaluate on validation set
                 val_predictions = model.predict(X_val)
                 val_predictions = (val_predictions > 0.5).astype(int).flatten()
-                val_metrics = AnomalyDetectionMetrics.calculate_metrics(
-                    y_val, val_predictions
-                )
+                val_metrics = AnomalyDetectionMetrics.calculate_metrics(y_val, val_predictions)
 
                 return val_metrics.f1_score
 
@@ -669,22 +631,16 @@ class ModelTrainer:
                     "n_heads": trial.suggest_categorical("n_heads", [4, 8]),
                     "n_layers": trial.suggest_int("n_layers", 2, 6),
                     "dropout_rate": trial.suggest_float("dropout_rate", 0.1, 0.3),
-                    "learning_rate": trial.suggest_loguniform(
-                        "learning_rate", 1e-4, 1e-2
-                    ),
+                    "learning_rate": trial.suggest_loguniform("learning_rate", 1e-4, 1e-2),
                     "batch_size": trial.suggest_categorical("batch_size", [16, 32, 64]),
                     "epochs": 20,
                 }
 
-                model, _ = self.train_transformer_forecaster(
-                    X_train, y_train, X_val, y_val, params
-                )
+                model, _ = self.train_transformer_forecaster(X_train, y_train, X_val, y_val, params)
 
                 # Evaluate on validation set
                 val_predictions = model.predict(X_val)
-                val_metrics = ForecastingMetrics.calculate_metrics(
-                    y_val, val_predictions
-                )
+                val_metrics = ForecastingMetrics.calculate_metrics(y_val, val_predictions)
 
                 return -val_metrics.mse  # Minimize MSE
 
@@ -692,9 +648,7 @@ class ModelTrainer:
                 raise ValueError(f"Unknown model type: {model_type}")
 
         # Create study
-        study = optuna.create_study(
-            direction="maximize" if model_type == "lstm_detector" else "minimize"
-        )
+        study = optuna.create_study(direction="maximize" if model_type == "lstm_detector" else "minimize")
         study.optimize(objective, n_trials=n_trials)
 
         logger.info(f"Best hyperparameters: {study.best_params}")
@@ -729,15 +683,11 @@ class ModelTrainer:
 
             # Train model
             if model_class == LSTMDetector:
-                model, _ = self.train_lstm_detector(
-                    X_train_fold, y_train_fold, X_val_fold, y_val_fold
-                )
+                model, _ = self.train_lstm_detector(X_train_fold, y_train_fold, X_val_fold, y_val_fold)
                 # Evaluate
                 val_predictions = model.predict(X_val_fold)
                 val_predictions = (val_predictions > 0.5).astype(int).flatten()
-                metrics = AnomalyDetectionMetrics.calculate_metrics(
-                    y_val_fold, val_predictions
-                )
+                metrics = AnomalyDetectionMetrics.calculate_metrics(y_val_fold, val_predictions)
                 scores.append(metrics.f1_score)
 
             # Clear session to free memory
@@ -745,9 +695,7 @@ class ModelTrainer:
 
         cv_results = {"scores": scores, "mean": np.mean(scores), "std": np.std(scores)}
 
-        logger.info(
-            f"CV Results - Mean: {cv_results['mean']:.4f} (+/- {cv_results['std']:.4f})"
-        )
+        logger.info(f"CV Results - Mean: {cv_results['mean']:.4f} (+/- {cv_results['std']:.4f})")
 
         return cv_results
 
@@ -805,9 +753,7 @@ class ModelTrainer:
 
         print("\n" + "=" * 60)
 
-    def train_all_models(
-        self, dataset="smap", tune_hyperparameters=False, use_cv=False
-    ):
+    def train_all_models(self, dataset="smap", tune_hyperparameters=False, use_cv=False):
         """Train all models in the pipeline
 
         Args:
@@ -827,16 +773,12 @@ class ModelTrainer:
         X, y, X_test, y_test, scaler = self.preprocess_data(X, y, X_test, y_test)
 
         # Create sequences for time series models
-        sequence_length = self.settings.models["anomaly_detection"]["lstm"][
-            "sequence_length"
-        ]
+        sequence_length = self.settings.models["anomaly_detection"]["lstm"]["sequence_length"]
         X_seq, y_seq = self.create_sequences(X, y, sequence_length)
         X_test_seq, y_test_seq = self.create_sequences(X_test, y_test, sequence_length)
 
         # Split training data for validation
-        X_train, X_val, y_train, y_val = train_test_split(
-            X_seq, y_seq, test_size=0.2, random_state=42, stratify=y_seq
-        )
+        X_train, X_val, y_train, y_val = train_test_split(X_seq, y_seq, test_size=0.2, random_state=42, stratify=y_seq)
 
         # Filter normal data for autoencoder/VAE training
         normal_indices_train = y_train == 0
@@ -852,20 +794,12 @@ class ModelTrainer:
         logger.info("=" * 40)
 
         if tune_hyperparameters:
-            best_params = self.hyperparameter_tuning(
-                "lstm_detector", X_train, y_train, X_val, y_val
-            )
-            lstm_model, lstm_history = self.train_lstm_detector(
-                X_train, y_train, X_val, y_val, best_params
-            )
+            best_params = self.hyperparameter_tuning("lstm_detector", X_train, y_train, X_val, y_val)
+            lstm_model, lstm_history = self.train_lstm_detector(X_train, y_train, X_val, y_val, best_params)
         else:
-            lstm_model, lstm_history = self.train_lstm_detector(
-                X_train, y_train, X_val, y_val
-            )
+            lstm_model, lstm_history = self.train_lstm_detector(X_train, y_train, X_val, y_val)
 
-        lstm_results = self.evaluate_anomaly_model(
-            lstm_model, X_test_seq, y_test_seq, "LSTM_Detector"
-        )
+        lstm_results = self.evaluate_anomaly_model(lstm_model, X_test_seq, y_test_seq, "LSTM_Detector")
         self.results["anomaly_detection"]["lstm_detector"] = lstm_results
         trained_models["lstm_detector"] = lstm_model
 
@@ -875,9 +809,7 @@ class ModelTrainer:
         logger.info("=" * 40)
 
         ae_model, ae_history = self.train_lstm_autoencoder(X_train_normal, X_val_normal)
-        ae_results = self.evaluate_anomaly_model(
-            ae_model, X_test_seq, y_test_seq, "LSTM_Autoencoder"
-        )
+        ae_results = self.evaluate_anomaly_model(ae_model, X_test_seq, y_test_seq, "LSTM_Autoencoder")
         self.results["anomaly_detection"]["lstm_autoencoder"] = ae_results
         trained_models["lstm_autoencoder"] = ae_model
 
@@ -887,9 +819,7 @@ class ModelTrainer:
         logger.info("=" * 40)
 
         vae_model, vae_history = self.train_lstm_vae(X_train_normal, X_val_normal)
-        vae_results = self.evaluate_anomaly_model(
-            vae_model, X_test_seq, y_test_seq, "LSTM_VAE"
-        )
+        vae_results = self.evaluate_anomaly_model(vae_model, X_test_seq, y_test_seq, "LSTM_VAE")
         self.results["anomaly_detection"]["lstm_vae"] = vae_results
         trained_models["lstm_vae"] = vae_model
 
@@ -900,9 +830,7 @@ class ModelTrainer:
 
         for i in range(len(X) - sequence_length - forecast_horizon):
             X_forecast.append(X[i : i + sequence_length])
-            y_forecast.append(
-                X[i + sequence_length : i + sequence_length + forecast_horizon]
-            )
+            y_forecast.append(X[i + sequence_length : i + sequence_length + forecast_horizon])
 
         X_forecast = np.array(X_forecast)
         y_forecast = np.array(y_forecast)
@@ -924,9 +852,7 @@ class ModelTrainer:
         logger.info("=" * 40)
 
         if tune_hyperparameters:
-            best_params = self.hyperparameter_tuning(
-                "transformer", X_fc_train, y_fc_train, X_fc_val, y_fc_val
-            )
+            best_params = self.hyperparameter_tuning("transformer", X_fc_train, y_fc_train, X_fc_val, y_fc_val)
             transformer_model, transformer_history = self.train_transformer_forecaster(
                 X_fc_train, y_fc_train, X_fc_val, y_fc_val, best_params
             )
@@ -946,12 +872,8 @@ class ModelTrainer:
         logger.info("Training LSTM Forecaster")
         logger.info("=" * 40)
 
-        lstm_fc_model, lstm_fc_history = self.train_lstm_forecaster(
-            X_fc_train, y_fc_train, X_fc_val, y_fc_val
-        )
-        lstm_fc_results = self.evaluate_forecast_model(
-            lstm_fc_model, X_fc_test, y_fc_test, "LSTM_Forecaster"
-        )
+        lstm_fc_model, lstm_fc_history = self.train_lstm_forecaster(X_fc_train, y_fc_train, X_fc_val, y_fc_val)
+        lstm_fc_results = self.evaluate_forecast_model(lstm_fc_model, X_fc_test, y_fc_test, "LSTM_Forecaster")
         self.results["forecasting"]["lstm_forecaster"] = lstm_fc_results
         trained_models["lstm_forecaster"] = lstm_fc_model
 
@@ -991,9 +913,7 @@ def main():
         default="config/config.yaml",
         help="Path to configuration file",
     )
-    parser.add_argument(
-        "--tune", action="store_true", help="Perform hyperparameter tuning"
-    )
+    parser.add_argument("--tune", action="store_true", help="Perform hyperparameter tuning")
     parser.add_argument("--cv", action="store_true", help="Use cross-validation")
     parser.add_argument("--gpu", type=str, default="0", help="GPU device to use")
 
@@ -1018,9 +938,7 @@ def main():
 
     # Train models
     try:
-        results = trainer.train_all_models(
-            dataset=args.dataset, tune_hyperparameters=args.tune, use_cv=args.cv
-        )
+        results = trainer.train_all_models(dataset=args.dataset, tune_hyperparameters=args.tune, use_cv=args.cv)
 
         logger.info("Training completed successfully!")
 

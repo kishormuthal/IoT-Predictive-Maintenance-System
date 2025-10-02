@@ -82,9 +82,7 @@ class TestCoreImports:
             assert module is not None, f"Failed to import {interface_name}"
 
         import_time = time.time() - start_time
-        assert (
-            import_time < 5.0
-        ), f"Core interfaces import took too long: {import_time}s"
+        assert import_time < 5.0, f"Core interfaces import took too long: {import_time}s"
 
     def test_import_core_services_individually(self):
         """Test importing core services one by one"""
@@ -99,9 +97,7 @@ class TestCoreImports:
                 module = import_with_timeout(service_name, timeout=15)
                 import_time = time.time() - start_time
                 assert module is not None, f"Failed to import {service_name}"
-                assert (
-                    import_time < 10.0
-                ), f"{service_name} import took too long: {import_time}s"
+                assert import_time < 10.0, f"{service_name} import took too long: {import_time}s"
             except ImportTimeoutError:
                 pytest.fail(f"Import of {service_name} hung and timed out")
             except Exception as e:
@@ -121,9 +117,7 @@ class TestInfrastructureImports:
                 module = import_with_timeout(module_name, timeout=20)
                 import_time = time.time() - start_time
                 assert module is not None, f"Failed to import {module_name}"
-                assert (
-                    import_time < 15.0
-                ), f"{module_name} import took too long: {import_time}s"
+                assert import_time < 15.0, f"{module_name} import took too long: {import_time}s"
             except ImportTimeoutError:
                 pytest.fail(f"Import of {module_name} hung and timed out")
 
@@ -142,9 +136,7 @@ class TestInfrastructureImports:
                 import_time = time.time() - start_time
                 assert module is not None, f"Failed to import {module_name}"
                 # ML modules may take longer due to TensorFlow/Keras imports
-                assert (
-                    import_time < 20.0
-                ), f"{module_name} import took too long: {import_time}s"
+                assert import_time < 20.0, f"{module_name} import took too long: {import_time}s"
             except ImportTimeoutError:
                 pytest.fail(f"Import of {module_name} hung and timed out")
             except Exception as e:
@@ -161,9 +153,7 @@ class TestInfrastructureImports:
                 module = import_with_timeout(module_name, timeout=15)
                 import_time = time.time() - start_time
                 assert module is not None, f"Failed to import {module_name}"
-                assert (
-                    import_time < 10.0
-                ), f"{module_name} import took too long: {import_time}s"
+                assert import_time < 10.0, f"{module_name} import took too long: {import_time}s"
             except ImportTimeoutError:
                 pytest.fail(f"Import of {module_name} hung and timed out")
 
@@ -181,9 +171,7 @@ class TestApplicationImports:
                 module = import_with_timeout(module_name, timeout=15)
                 import_time = time.time() - start_time
                 assert module is not None, f"Failed to import {module_name}"
-                assert (
-                    import_time < 10.0
-                ), f"{module_name} import took too long: {import_time}s"
+                assert import_time < 10.0, f"{module_name} import took too long: {import_time}s"
             except ImportTimeoutError:
                 pytest.fail(f"Import of {module_name} hung and timed out")
 
@@ -197,9 +185,7 @@ class TestApplicationImports:
                 module = import_with_timeout(module_name, timeout=15)
                 import_time = time.time() - start_time
                 assert module is not None, f"Failed to import {module_name}"
-                assert (
-                    import_time < 10.0
-                ), f"{module_name} import took too long: {import_time}s"
+                assert import_time < 10.0, f"{module_name} import took too long: {import_time}s"
             except ImportTimeoutError:
                 pytest.fail(f"Import of {module_name} hung and timed out")
 
@@ -218,9 +204,7 @@ class TestDashboardImports:
                 module = import_with_timeout(module_name, timeout=20)
                 import_time = time.time() - start_time
                 assert module is not None, f"Failed to import {module_name}"
-                assert (
-                    import_time < 15.0
-                ), f"{module_name} import took too long: {import_time}s"
+                assert import_time < 15.0, f"{module_name} import took too long: {import_time}s"
             except ImportTimeoutError:
                 pytest.fail(f"Import of {module_name} hung and timed out")
 
@@ -229,17 +213,13 @@ class TestDashboardImports:
         start_time = time.time()
         try:
             # This is the critical test - main dashboard import
-            module = import_with_timeout(
-                "src.presentation.dashboard.enhanced_app", timeout=30
-            )
+            module = import_with_timeout("src.presentation.dashboard.enhanced_app", timeout=30)
             import_time = time.time() - start_time
             assert module is not None, "Failed to import main dashboard module"
             # Dashboard may take longer due to Dash imports
             assert import_time < 25.0, f"Dashboard import took too long: {import_time}s"
         except ImportTimeoutError:
-            pytest.fail(
-                "Main dashboard module import hung and timed out - this is the likely cause of hanging"
-            )
+            pytest.fail("Main dashboard module import hung and timed out - this is the likely cause of hanging")
         except Exception as e:
             pytest.fail(f"Main dashboard module import failed: {e}")
 
@@ -258,9 +238,7 @@ class TestDashboardImports:
                 module = import_with_timeout(module_name, timeout=30)
                 import_time = time.time() - start_time
                 if module is not None:
-                    assert (
-                        import_time < 25.0
-                    ), f"{module_name} import took too long: {import_time}s"
+                    assert import_time < 25.0, f"{module_name} import took too long: {import_time}s"
             except ImportTimeoutError:
                 print(f"Warning: {module_name} timed out during import")
             except Exception as e:
@@ -280,9 +258,7 @@ class TestConfigImports:
                 module = import_with_timeout(module_name, timeout=10)
                 import_time = time.time() - start_time
                 assert module is not None, f"Failed to import {module_name}"
-                assert (
-                    import_time < 5.0
-                ), f"{module_name} import took too long: {import_time}s"
+                assert import_time < 5.0, f"{module_name} import took too long: {import_time}s"
             except ImportTimeoutError:
                 pytest.fail(f"Import of {module_name} hung and timed out")
 
@@ -300,9 +276,7 @@ class TestUtilityImports:
                 module = import_with_timeout(module_name, timeout=10)
                 import_time = time.time() - start_time
                 if module is not None:
-                    assert (
-                        import_time < 5.0
-                    ), f"{module_name} import took too long: {import_time}s"
+                    assert import_time < 5.0, f"{module_name} import took too long: {import_time}s"
             except ImportTimeoutError:
                 print(f"Warning: {module_name} timed out during import")
             except Exception as e:
@@ -334,9 +308,7 @@ def test_overall_import_health():
 
     # At least 75% of critical imports should succeed
     success_rate = successful_imports / len(critical_imports)
-    assert (
-        success_rate >= 0.75
-    ), f"Critical import success rate too low: {success_rate:.2%}"
+    assert success_rate >= 0.75, f"Critical import success rate too low: {success_rate:.2%}"
 
     # Total import time should be reasonable
     assert total_time < 30.0, f"Critical imports took too long: {total_time}s"

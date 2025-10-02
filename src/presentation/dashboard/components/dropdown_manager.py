@@ -167,10 +167,7 @@ class DropdownStateManager:
                     subsystem = equipment.subsystem
 
                     # Apply filters
-                    if (
-                        filter_by_spacecraft
-                        and spacecraft.lower() != filter_by_spacecraft.lower()
-                    ):
+                    if filter_by_spacecraft and spacecraft.lower() != filter_by_spacecraft.lower():
                         continue
 
                     criticality = self._get_equipment_criticality(spacecraft, subsystem)
@@ -186,9 +183,7 @@ class DropdownStateManager:
 
                     for subsystem, equipment_list in subsystems.items():
                         for equipment in equipment_list:
-                            criticality = self._get_equipment_criticality(
-                                spacecraft, subsystem
-                            )
+                            criticality = self._get_equipment_criticality(spacecraft, subsystem)
                             criticality_icon = self._get_criticality_icon(criticality)
 
                             label = f"{criticality_icon} {equipment.equipment_id} ({equipment.equipment_type})"
@@ -212,15 +207,9 @@ class DropdownStateManager:
 
         except Exception as e:
             logger.error(f"Error getting equipment options: {e}")
-            return [
-                DropdownOption(
-                    label="Error loading equipment", value="ERROR", disabled=True
-                )
-            ]
+            return [DropdownOption(label="Error loading equipment", value="ERROR", disabled=True)]
 
-    def get_sensor_options_for_equipment(
-        self, equipment_id: str, include_all: bool = True
-    ) -> List[DropdownOption]:
+    def get_sensor_options_for_equipment(self, equipment_id: str, include_all: bool = True) -> List[DropdownOption]:
         """
         Get sensor options for specific equipment
 
@@ -274,15 +263,11 @@ class DropdownStateManager:
 
             # Get sensors for specific equipment
             if self.equipment_mapper:
-                equipment_sensors = (
-                    self.equipment_mapper.get_sensor_options_by_equipment(equipment_id)
-                )
+                equipment_sensors = self.equipment_mapper.get_sensor_options_by_equipment(equipment_id)
 
                 for sensor_option in equipment_sensors:
                     # Get additional sensor details
-                    sensor_details = self._get_sensor_details(
-                        equipment_id, sensor_option["value"]
-                    )
+                    sensor_details = self._get_sensor_details(equipment_id, sensor_option["value"])
 
                     options.append(
                         DropdownOption(
@@ -301,11 +286,7 @@ class DropdownStateManager:
 
         except Exception as e:
             logger.error(f"Error getting sensor options for {equipment_id}: {e}")
-            return [
-                DropdownOption(
-                    label="Error loading sensors", value="ERROR", disabled=True
-                )
-            ]
+            return [DropdownOption(label="Error loading sensors", value="ERROR", disabled=True)]
 
     def get_metric_options_for_sensor(
         self, equipment_id: str, sensor_id: str, include_calculated: bool = True
@@ -342,24 +323,18 @@ class DropdownStateManager:
                 )
 
             # Add sensor-specific metrics based on sensor type
-            specific_metrics = self._get_sensor_specific_metrics(
-                equipment_id, sensor_id
-            )
+            specific_metrics = self._get_sensor_specific_metrics(equipment_id, sensor_id)
             options.extend(specific_metrics)
 
             # Cache the results
             cache_key = f"{equipment_id}::{sensor_id}"
             self._metric_cache[cache_key] = options
 
-            logger.info(
-                f"Generated {len(options)} metric options for {equipment_id}::{sensor_id}"
-            )
+            logger.info(f"Generated {len(options)} metric options for {equipment_id}::{sensor_id}")
             return options
 
         except Exception as e:
-            logger.error(
-                f"Error getting metric options for {equipment_id}::{sensor_id}: {e}"
-            )
+            logger.error(f"Error getting metric options for {equipment_id}::{sensor_id}: {e}")
             return [DropdownOption(label="Raw Value", value="raw_value")]
 
     def get_equipment_info(self, equipment_id: str) -> Optional[EquipmentInfo]:
@@ -379,9 +354,7 @@ class DropdownStateManager:
                 for equipment in all_equipment:
                     if equipment.equipment_id == equipment_id:
                         spacecraft = equipment_id.split("-")[0]
-                        criticality = self._get_equipment_criticality(
-                            spacecraft, equipment.subsystem
-                        )
+                        criticality = self._get_equipment_criticality(spacecraft, equipment.subsystem)
 
                         return EquipmentInfo(
                             equipment_id=equipment.equipment_id,
@@ -398,9 +371,7 @@ class DropdownStateManager:
             logger.error(f"Error getting equipment info for {equipment_id}: {e}")
             return None
 
-    def validate_selection(
-        self, equipment_id: str, sensor_id: str = None, metric_id: str = None
-    ) -> Dict[str, bool]:
+    def validate_selection(self, equipment_id: str, sensor_id: str = None, metric_id: str = None) -> Dict[str, bool]:
         """
         Validate dropdown selections
 
@@ -426,17 +397,13 @@ class DropdownStateManager:
 
             # Validate sensor if provided
             if sensor_id:
-                sensor_options = self.get_sensor_options_for_equipment(
-                    equipment_id, include_all=True
-                )
+                sensor_options = self.get_sensor_options_for_equipment(equipment_id, include_all=True)
                 if any(opt.value == sensor_id for opt in sensor_options):
                     validation_result["sensor_valid"] = True
 
             # Validate metric if provided
             if metric_id and sensor_id:
-                metric_options = self.get_metric_options_for_sensor(
-                    equipment_id, sensor_id
-                )
+                metric_options = self.get_metric_options_for_sensor(equipment_id, sensor_id)
                 if any(opt.value == metric_id for opt in metric_options):
                     validation_result["metric_valid"] = True
 
@@ -474,9 +441,7 @@ class DropdownStateManager:
                         for sensor in equipment.sensors:
                             if sensor.name == sensor_id:
                                 return {
-                                    "description": getattr(
-                                        sensor, "description", sensor.name
-                                    ),
+                                    "description": getattr(sensor, "description", sensor.name),
                                     "unit": getattr(sensor, "unit", ""),
                                     "range": getattr(sensor, "range", ""),
                                     "type": getattr(sensor, "sensor_type", "numeric"),
@@ -486,9 +451,7 @@ class DropdownStateManager:
 
         return {"description": sensor_id, "unit": "", "range": "", "type": "numeric"}
 
-    def _get_sensor_specific_metrics(
-        self, equipment_id: str, sensor_id: str
-    ) -> List[DropdownOption]:
+    def _get_sensor_specific_metrics(self, equipment_id: str, sensor_id: str) -> List[DropdownOption]:
         """Get sensor-specific metric options"""
         specific_metrics = []
 
@@ -523,9 +486,7 @@ class DropdownStateManager:
             specific_metrics.extend(
                 [
                     DropdownOption(label="Vibration FFT", value="vibration_fft"),
-                    DropdownOption(
-                        label="Vibration Envelope", value="vibration_envelope"
-                    ),
+                    DropdownOption(label="Vibration Envelope", value="vibration_envelope"),
                 ]
             )
 

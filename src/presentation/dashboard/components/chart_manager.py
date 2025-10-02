@@ -81,9 +81,7 @@ class ChartManager:
     def __init__(self):
         """Initialize chart manager"""
         self.supported_types = list(ChartType)
-        self.default_config = ChartConfig(
-            chart_type=ChartType.LINE, title="Sensor Data", height=400
-        )
+        self.default_config = ChartConfig(chart_type=ChartType.LINE, title="Sensor Data", height=400)
 
         # NASA-specific color schemes
         self.nasa_colors = {
@@ -95,9 +93,7 @@ class ChartManager:
             "low": "#17becf",  # Cyan for low priority
         }
 
-        logger.info(
-            "ChartManager initialized with support for NASA IoT data visualization"
-        )
+        logger.info("ChartManager initialized with support for NASA IoT data visualization")
 
     def create_chart(self, data: ChartData, config: ChartConfig) -> go.Figure:
         """
@@ -164,9 +160,7 @@ class ChartManager:
             logger.error(f"Error converting chart type: {e}")
             return figure  # Return original figure on error
 
-    def add_anomaly_overlays(
-        self, figure: go.Figure, data: ChartData, config: ChartConfig
-    ) -> go.Figure:
+    def add_anomaly_overlays(self, figure: go.Figure, data: ChartData, config: ChartConfig) -> go.Figure:
         """
         Add anomaly overlays to existing chart
 
@@ -183,14 +177,8 @@ class ChartManager:
                 return figure
 
             # Find anomaly points (scores above threshold)
-            anomaly_threshold = (
-                data.thresholds.get("anomaly", 0.7) if data.thresholds else 0.7
-            )
-            anomaly_indices = [
-                i
-                for i, score in enumerate(data.anomaly_scores)
-                if score > anomaly_threshold
-            ]
+            anomaly_threshold = data.thresholds.get("anomaly", 0.7) if data.thresholds else 0.7
+            anomaly_indices = [i for i, score in enumerate(data.anomaly_scores) if score > anomaly_threshold]
 
             if anomaly_indices:
                 anomaly_times = [data.timestamps[i] for i in anomaly_indices]
@@ -222,9 +210,7 @@ class ChartManager:
             logger.error(f"Error adding anomaly overlays: {e}")
             return figure
 
-    def add_threshold_lines(
-        self, figure: go.Figure, data: ChartData, config: ChartConfig
-    ) -> go.Figure:
+    def add_threshold_lines(self, figure: go.Figure, data: ChartData, config: ChartConfig) -> go.Figure:
         """
         Add threshold lines to chart
 
@@ -241,9 +227,7 @@ class ChartManager:
                 return figure
 
             for threshold_name, threshold_value in data.thresholds.items():
-                if (
-                    threshold_name != "anomaly"
-                ):  # Skip anomaly threshold (handled separately)
+                if threshold_name != "anomaly":  # Skip anomaly threshold (handled separately)
                     figure.add_hline(
                         y=threshold_value,
                         line_dash="dash",
@@ -270,19 +254,12 @@ class ChartManager:
                 mode="lines",
                 name=f"{data.sensor_id} - {data.metric_id}",
                 line=dict(color=self._get_equipment_color(data.equipment_id), width=2),
-                hovertemplate="<b>%{fullData.name}</b><br>"
-                + "Time: %{x}<br>"
-                + "Value: %{y}<br>"
-                + "<extra></extra>",
+                hovertemplate="<b>%{fullData.name}</b><br>" + "Time: %{x}<br>" + "Value: %{y}<br>" + "<extra></extra>",
             )
         )
 
         # Add confidence intervals if available
-        if (
-            config.show_confidence_intervals
-            and data.confidence_upper
-            and data.confidence_lower
-        ):
+        if config.show_confidence_intervals and data.confidence_upper and data.confidence_lower:
             figure.add_trace(
                 go.Scatter(
                     x=data.timestamps + data.timestamps[::-1],
@@ -297,9 +274,7 @@ class ChartManager:
 
         return self._apply_chart_styling(figure, data, config)
 
-    def _create_candlestick_chart(
-        self, data: ChartData, config: ChartConfig
-    ) -> go.Figure:
+    def _create_candlestick_chart(self, data: ChartData, config: ChartConfig) -> go.Figure:
         """Create candlestick chart (useful for time-series data with OHLC values)"""
         figure = go.Figure()
 
@@ -342,10 +317,7 @@ class ChartManager:
                 fill="tonexty" if len(figure.data) > 0 else "tozeroy",
                 fillcolor=f"rgba{(*self._hex_to_rgb(self._get_equipment_color(data.equipment_id)), 0.3)}",
                 line=dict(color=self._get_equipment_color(data.equipment_id), width=2),
-                hovertemplate="<b>%{fullData.name}</b><br>"
-                + "Time: %{x}<br>"
-                + "Value: %{y}<br>"
-                + "<extra></extra>",
+                hovertemplate="<b>%{fullData.name}</b><br>" + "Time: %{x}<br>" + "Value: %{y}<br>" + "<extra></extra>",
             )
         )
 
@@ -405,10 +377,7 @@ class ChartManager:
                     showscale=bool(marker_colors),
                     colorbar=dict(title="Anomaly Score") if marker_colors else None,
                 ),
-                hovertemplate="<b>%{fullData.name}</b><br>"
-                + "Time: %{x}<br>"
-                + "Value: %{y}<br>"
-                + "<extra></extra>",
+                hovertemplate="<b>%{fullData.name}</b><br>" + "Time: %{x}<br>" + "Value: %{y}<br>" + "<extra></extra>",
             )
         )
 
@@ -424,18 +393,13 @@ class ChartManager:
                 y=data.values,
                 name=f"{data.sensor_id} - {data.metric_id}",
                 marker_color=self._get_equipment_color(data.equipment_id),
-                hovertemplate="<b>%{fullData.name}</b><br>"
-                + "Time: %{x}<br>"
-                + "Value: %{y}<br>"
-                + "<extra></extra>",
+                hovertemplate="<b>%{fullData.name}</b><br>" + "Time: %{x}<br>" + "Value: %{y}<br>" + "<extra></extra>",
             )
         )
 
         return self._apply_chart_styling(figure, data, config)
 
-    def _create_histogram_chart(
-        self, data: ChartData, config: ChartConfig
-    ) -> go.Figure:
+    def _create_histogram_chart(self, data: ChartData, config: ChartConfig) -> go.Figure:
         """Create histogram chart"""
         figure = go.Figure()
 
@@ -480,9 +444,7 @@ class ChartManager:
         )
         return figure
 
-    def _apply_chart_styling(
-        self, figure: go.Figure, data: ChartData, config: ChartConfig
-    ) -> go.Figure:
+    def _apply_chart_styling(self, figure: go.Figure, data: ChartData, config: ChartConfig) -> go.Figure:
         """Apply consistent styling to charts"""
         try:
             # Add anomaly overlays

@@ -33,9 +33,7 @@ def create_model_registry_layout():
                                         [
                                             html.H4(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-database me-3 text-success"
-                                                    ),
+                                                    html.I(className="fas fa-database me-3 text-success"),
                                                     "Model Registry",
                                                 ],
                                                 className="mb-3",
@@ -209,9 +207,7 @@ def create_model_registry_layout():
                                                 [
                                                     dbc.Button(
                                                         [
-                                                            html.I(
-                                                                className="fas fa-sync me-1"
-                                                            ),
+                                                            html.I(className="fas fa-sync me-1"),
                                                             "Refresh",
                                                         ],
                                                         id="refresh-models-btn",
@@ -220,9 +216,7 @@ def create_model_registry_layout():
                                                     ),
                                                     dbc.Button(
                                                         [
-                                                            html.I(
-                                                                className="fas fa-download me-1"
-                                                            ),
+                                                            html.I(className="fas fa-download me-1"),
                                                             "Export",
                                                         ],
                                                         id="export-models-btn",
@@ -313,9 +307,7 @@ def create_model_registry_layout():
                                                 id="analytics-tabs",
                                                 active_tab="perf-dist",
                                             ),
-                                            html.Div(
-                                                id="analytics-content", className="mt-3"
-                                            ),
+                                            html.Div(id="analytics-content", className="mt-3"),
                                         ]
                                     ),
                                 ]
@@ -332,9 +324,7 @@ def create_model_registry_layout():
     )
 
 
-def register_model_registry_callbacks(
-    app, model_registry, training_use_case, config_manager
-):
+def register_model_registry_callbacks(app, model_registry, training_use_case, config_manager):
     """Register callbacks for model registry functionality"""
 
     @app.callback(
@@ -352,18 +342,14 @@ def register_model_registry_callbacks(
             equipment_list = get_equipment_list()
 
             # Equipment type options
-            equipment_types = list(
-                set([eq.equipment_type.value for eq in equipment_list])
-            )
+            equipment_types = list(set([eq.equipment_type.value for eq in equipment_list]))
             equipment_options = [{"label": "All Types", "value": "all"}] + [
-                {"label": eq_type, "value": eq_type}
-                for eq_type in sorted(equipment_types)
+                {"label": eq_type, "value": eq_type} for eq_type in sorted(equipment_types)
             ]
 
             # Sensor options
             sensor_options = [
-                {"label": f"{eq.equipment_id} - {eq.name}", "value": eq.equipment_id}
-                for eq in equipment_list
+                {"label": f"{eq.equipment_id} - {eq.name}", "value": eq.equipment_id} for eq in equipment_list
             ]
 
             return equipment_options, sensor_options
@@ -397,14 +383,10 @@ def register_model_registry_callbacks(
 
             # Calculate coverage
             anomaly_coverage = sum(
-                1
-                for s in equipment_status.values()
-                if s.get("anomaly_detection", {}).get("trained", False)
+                1 for s in equipment_status.values() if s.get("anomaly_detection", {}).get("trained", False)
             )
             forecast_coverage = sum(
-                1
-                for s in equipment_status.values()
-                if s.get("forecasting", {}).get("trained", False)
+                1 for s in equipment_status.values() if s.get("forecasting", {}).get("trained", False)
             )
 
             # Create statistics cards
@@ -477,11 +459,7 @@ def register_model_registry_callbacks(
                                                 className="text-muted mb-0",
                                             ),
                                             dbc.Progress(
-                                                value=(
-                                                    anomaly_coverage
-                                                    / max(total_equipment, 1)
-                                                )
-                                                * 100,
+                                                value=(anomaly_coverage / max(total_equipment, 1)) * 100,
                                                 color="danger",
                                                 size="sm",
                                             ),
@@ -508,11 +486,7 @@ def register_model_registry_callbacks(
                                                 className="text-muted mb-0",
                                             ),
                                             dbc.Progress(
-                                                value=(
-                                                    forecast_coverage
-                                                    / max(total_equipment, 1)
-                                                )
-                                                * 100,
+                                                value=(forecast_coverage / max(total_equipment, 1)) * 100,
                                                 color="success",
                                                 size="sm",
                                             ),
@@ -534,9 +508,7 @@ def register_model_registry_callbacks(
                                                 f"{model_types.get('telemanom', 0)}",
                                                 className="text-warning mb-1",
                                             ),
-                                            html.P(
-                                                "Telemanom", className="text-muted mb-0"
-                                            ),
+                                            html.P("Telemanom", className="text-muted mb-0"),
                                             html.Small(
                                                 "Anomaly Detection",
                                                 className="text-muted",
@@ -563,9 +535,7 @@ def register_model_registry_callbacks(
                                                 "Transformer",
                                                 className="text-muted mb-0",
                                             ),
-                                            html.Small(
-                                                "Forecasting", className="text-muted"
-                                            ),
+                                            html.Small("Forecasting", className="text-muted"),
                                         ]
                                     )
                                 ],
@@ -626,9 +596,7 @@ def register_model_registry_callbacks(
                 equipment = equipment_dict.get(sensor_id)
 
                 # Get active version details
-                active_version = model_registry.get_active_model_version(
-                    sensor_id, model["model_type"]
-                )
+                active_version = model_registry.get_active_model_version(sensor_id, model["model_type"])
                 metadata = None
                 if active_version:
                     metadata = model_registry.get_model_metadata(active_version)
@@ -636,40 +604,23 @@ def register_model_registry_callbacks(
                 model_data = {
                     "sensor_id": sensor_id,
                     "model_type": model["model_type"],
-                    "equipment_type": (
-                        equipment.equipment_type.value if equipment else "Unknown"
-                    ),
+                    "equipment_type": (equipment.equipment_type.value if equipment else "Unknown"),
                     "equipment_name": equipment.name if equipment else "Unknown",
-                    "criticality": (
-                        equipment.criticality.value if equipment else "Unknown"
-                    ),
+                    "criticality": (equipment.criticality.value if equipment else "Unknown"),
                     "total_versions": model["total_versions"],
                     "active_version": active_version or "None",
                     "performance_score": metadata.performance_score if metadata else 0,
-                    "model_size_mb": (
-                        (metadata.model_size_bytes / (1024 * 1024)) if metadata else 0
-                    ),
+                    "model_size_mb": ((metadata.model_size_bytes / (1024 * 1024)) if metadata else 0),
                     "last_trained": metadata.created_at if metadata else "Never",
-                    "performance_grade": _calculate_grade(
-                        metadata.performance_score if metadata else 0
-                    ),
+                    "performance_grade": _calculate_grade(metadata.performance_score if metadata else 0),
                 }
 
                 # Apply filters
-                if (
-                    model_type_filter != "all"
-                    and model_data["model_type"] != model_type_filter
-                ):
+                if model_type_filter != "all" and model_data["model_type"] != model_type_filter:
                     continue
-                if (
-                    grade_filter != "all"
-                    and model_data["performance_grade"] != grade_filter
-                ):
+                if grade_filter != "all" and model_data["performance_grade"] != grade_filter:
                     continue
-                if (
-                    equipment_filter != "all"
-                    and model_data["equipment_type"] != equipment_filter
-                ):
+                if equipment_filter != "all" and model_data["equipment_type"] != equipment_filter:
                     continue
                 if sensor_filter and model_data["sensor_id"] != sensor_filter:
                     continue
@@ -679,9 +630,7 @@ def register_model_registry_callbacks(
             # Create table
             if not models_data:
                 return (
-                    dbc.Alert(
-                        "No models found matching the selected filters.", color="info"
-                    ),
+                    dbc.Alert("No models found matching the selected filters.", color="info"),
                     [],
                 )
 
@@ -767,9 +716,7 @@ def register_model_registry_callbacks(
             model_type = selected_model["model_type"]
 
             # Get detailed model information
-            active_version = model_registry.get_active_model_version(
-                sensor_id, model_type
-            )
+            active_version = model_registry.get_active_model_version(sensor_id, model_type)
             if not active_version:
                 return "Model details not available", "No actions available"
 

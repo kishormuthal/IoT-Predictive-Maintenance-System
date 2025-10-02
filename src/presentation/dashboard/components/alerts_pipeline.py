@@ -229,9 +229,7 @@ class NASAAlertsManager:
                 self._process_model_predictions(new_alerts)
 
             # Generate simulated alerts for demonstration
-            if (
-                not new_alerts or np.random.random() < 0.1
-            ):  # 10% chance of simulated alert
+            if not new_alerts or np.random.random() < 0.1:  # 10% chance of simulated alert
                 simulated_alert = self._generate_simulated_alert()
                 if simulated_alert:
                     new_alerts.append(simulated_alert)
@@ -245,9 +243,7 @@ class NASAAlertsManager:
 
         return new_alerts
 
-    def _process_equipment_anomalies(
-        self, equipment_status: Dict, new_alerts: List[NASAAlert]
-    ):
+    def _process_equipment_anomalies(self, equipment_status: Dict, new_alerts: List[NASAAlert]):
         """Process equipment anomalies for alert generation"""
         for equipment_id, status_data in equipment_status.items():
             if not status_data:
@@ -263,9 +259,7 @@ class NASAAlertsManager:
                 if existing_alert and existing_alert.severity == severity:
                     continue  # Don't duplicate similar alerts
 
-                alert = self._create_equipment_alert(
-                    equipment_id, status_data, severity, mission
-                )
+                alert = self._create_equipment_alert(equipment_id, status_data, severity, mission)
                 new_alerts.append(alert)
 
     def _process_model_predictions(self, new_alerts: List[NASAAlert]):
@@ -281,19 +275,13 @@ class NASAAlertsManager:
                 if np.random.random() < 0.05:  # 5% chance per model
                     # Simulate getting prediction data
                     sensor_data = self.model_manager.simulate_real_time_data(model_id)
-                    prediction = self.model_manager.predict_anomaly(
-                        model_id, sensor_data
-                    )
+                    prediction = self.model_manager.predict_anomaly(model_id, sensor_data)
 
                     if prediction.get("is_anomaly", False):
                         mission = self._determine_mission(model_id)
-                        severity = self._calculate_severity(
-                            prediction["anomaly_score"], mission
-                        )
+                        severity = self._calculate_severity(prediction["anomaly_score"], mission)
 
-                        alert = self._create_prediction_alert(
-                            model_id, prediction, severity, mission
-                        )
+                        alert = self._create_prediction_alert(model_id, prediction, severity, mission)
                         new_alerts.append(alert)
 
         except Exception as e:
@@ -327,9 +315,7 @@ class NASAAlertsManager:
                     "Navigation",
                 ]
                 orbit_phase = None
-                spacecraft_status = np.random.choice(
-                    ["Driving", "Parked", "Science Ops", "Maintenance"]
-                )
+                spacecraft_status = np.random.choice(["Driving", "Parked", "Science Ops", "Maintenance"])
 
             subsystem = np.random.choice(subsystems)
             anomaly_score = np.random.uniform(0.2, 0.9)
@@ -337,13 +323,9 @@ class NASAAlertsManager:
 
             # Generate mission-specific alert content
             if mission == MissionType.SMAP:
-                alert_content = self._generate_smap_alert_content(
-                    subsystem, anomaly_score
-                )
+                alert_content = self._generate_smap_alert_content(subsystem, anomaly_score)
             else:
-                alert_content = self._generate_msl_alert_content(
-                    subsystem, anomaly_score
-                )
+                alert_content = self._generate_msl_alert_content(subsystem, anomaly_score)
 
             alert = NASAAlert(
                 alert_id=f"NASA-{datetime.now().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:8]}",
@@ -361,11 +343,7 @@ class NASAAlertsManager:
                 model_confidence=np.random.uniform(0.8, 0.98),
                 spacecraft_status=spacecraft_status,
                 orbit_phase=orbit_phase,
-                sol_day=(
-                    np.random.randint(3500, 4000)
-                    if mission == MissionType.MSL
-                    else None
-                ),
+                sol_day=(np.random.randint(3500, 4000) if mission == MissionType.MSL else None),
                 recommended_actions=alert_content["actions"],
                 tags=[mission.value, subsystem, severity.value],
             )
@@ -376,9 +354,7 @@ class NASAAlertsManager:
             logger.error(f"Error generating simulated alert: {e}")
             return None
 
-    def _generate_smap_alert_content(
-        self, subsystem: str, anomaly_score: float
-    ) -> Dict[str, Any]:
+    def _generate_smap_alert_content(self, subsystem: str, anomaly_score: float) -> Dict[str, Any]:
         """Generate SMAP-specific alert content"""
         content_templates = {
             "Power": {
@@ -437,9 +413,7 @@ class NASAAlertsManager:
             },
         )
 
-    def _generate_msl_alert_content(
-        self, subsystem: str, anomaly_score: float
-    ) -> Dict[str, Any]:
+    def _generate_msl_alert_content(self, subsystem: str, anomaly_score: float) -> Dict[str, Any]:
         """Generate MSL-specific alert content"""
         content_templates = {
             "Power": {
@@ -516,13 +490,9 @@ class NASAAlertsManager:
         else:
             return MissionType.UNKNOWN
 
-    def _calculate_severity(
-        self, anomaly_score: float, mission: MissionType
-    ) -> AlertSeverity:
+    def _calculate_severity(self, anomaly_score: float, mission: MissionType) -> AlertSeverity:
         """Calculate alert severity based on anomaly score and mission"""
-        thresholds = self.alert_thresholds.get(
-            mission.value, self.alert_thresholds["SMAP"]
-        )
+        thresholds = self.alert_thresholds.get(mission.value, self.alert_thresholds["SMAP"])
 
         if anomaly_score >= thresholds["CRITICAL"]:
             return AlertSeverity.CRITICAL
@@ -623,23 +593,15 @@ class NASAAlertsManager:
         self.alert_stats["by_severity"][alert.severity.value] += 1
         self.alert_stats["by_mission"][alert.mission.value] += 1
         self.alert_stats["active_count"] = len(
-            [
-                a
-                for a in self.active_alerts.values()
-                if a.status in [AlertStatus.NEW, AlertStatus.ACKNOWLEDGED]
-            ]
+            [a for a in self.active_alerts.values() if a.status in [AlertStatus.NEW, AlertStatus.ACKNOWLEDGED]]
         )
 
         # Integration with existing alert manager
         if self.alert_manager:
             try:
                 self.alert_manager.create_alert(
-                    alert_type=getattr(
-                        self.alert_manager.AlertType, "ANOMALY", "ANOMALY"
-                    ),
-                    severity=getattr(
-                        self.alert_manager.AlertSeverity, alert.severity.value, "MEDIUM"
-                    ),
+                    alert_type=getattr(self.alert_manager.AlertType, "ANOMALY", "ANOMALY"),
+                    severity=getattr(self.alert_manager.AlertSeverity, alert.severity.value, "MEDIUM"),
                     source=f"{alert.mission.value}_{alert.equipment_id}",
                     title=alert.title,
                     description=alert.description,
@@ -649,13 +611,9 @@ class NASAAlertsManager:
             except Exception as e:
                 logger.warning(f"Could not integrate with alert manager: {e}")
 
-        logger.info(
-            f"New {alert.severity.value} alert generated for {alert.mission.value} {alert.equipment_id}"
-        )
+        logger.info(f"New {alert.severity.value} alert generated for {alert.mission.value} {alert.equipment_id}")
 
-    def acknowledge_alert(
-        self, alert_id: str, acknowledged_by: str = "Dashboard User"
-    ) -> bool:
+    def acknowledge_alert(self, alert_id: str, acknowledged_by: str = "Dashboard User") -> bool:
         """Acknowledge an alert
 
         Args:
@@ -707,9 +665,7 @@ class NASAAlertsManager:
 
         # Calculate resolution time
         if alert.acknowledged_at:
-            resolution_time = (
-                datetime.now() - alert.acknowledged_at
-            ).total_seconds() / 60
+            resolution_time = (datetime.now() - alert.acknowledged_at).total_seconds() / 60
         else:
             resolution_time = (datetime.now() - alert.timestamp).total_seconds() / 60
 
@@ -721,11 +677,7 @@ class NASAAlertsManager:
             current_avg * (total_resolved - 1) + resolution_time
         ) / total_resolved
         self.alert_stats["active_count"] = len(
-            [
-                a
-                for a in self.active_alerts.values()
-                if a.status in [AlertStatus.NEW, AlertStatus.ACKNOWLEDGED]
-            ]
+            [a for a in self.active_alerts.values() if a.status in [AlertStatus.NEW, AlertStatus.ACKNOWLEDGED]]
         )
 
         logger.info(f"Alert {alert_id} resolved by {resolved_by}")
@@ -761,10 +713,7 @@ class NASAAlertsManager:
         if mission:
             active = [alert for alert in active if alert.mission.value == mission]
 
-        return [
-            alert.to_dict()
-            for alert in sorted(active, key=lambda a: a.timestamp, reverse=True)
-        ]
+        return [alert.to_dict() for alert in sorted(active, key=lambda a: a.timestamp, reverse=True)]
 
     def get_alert_statistics(self) -> Dict[str, Any]:
         """Get comprehensive alert statistics
@@ -774,28 +723,15 @@ class NASAAlertsManager:
         """
         # Update active count
         self.alert_stats["active_count"] = len(
-            [
-                a
-                for a in self.active_alerts.values()
-                if a.status in [AlertStatus.NEW, AlertStatus.ACKNOWLEDGED]
-            ]
+            [a for a in self.active_alerts.values() if a.status in [AlertStatus.NEW, AlertStatus.ACKNOWLEDGED]]
         )
 
         return {
             **self.alert_stats,
-            "last_alert": (
-                max([a.timestamp for a in self.active_alerts.values()])
-                if self.active_alerts
-                else None
-            ),
-            "resolution_rate": (
-                self.alert_stats["total_resolved"]
-                / max(self.alert_stats["total_generated"], 1)
-            )
-            * 100,
+            "last_alert": (max([a.timestamp for a in self.active_alerts.values()]) if self.active_alerts else None),
+            "resolution_rate": (self.alert_stats["total_resolved"] / max(self.alert_stats["total_generated"], 1)) * 100,
             "acknowledgment_rate": (
-                self.alert_stats["total_acknowledged"]
-                / max(self.alert_stats["total_generated"], 1)
+                self.alert_stats["total_acknowledged"] / max(self.alert_stats["total_generated"], 1)
             )
             * 100,
         }

@@ -57,9 +57,7 @@ class TestSensorReading:
     def test_sensor_reading_creation(self):
         """Test basic sensor reading creation"""
         timestamp = datetime.now()
-        reading = SensorReading(
-            sensor_id="SMAP-ATT-001", timestamp=timestamp, value=42.5
-        )
+        reading = SensorReading(sensor_id="SMAP-ATT-001", timestamp=timestamp, value=42.5)
 
         assert reading.sensor_id == "SMAP-ATT-001"
         assert reading.timestamp == timestamp
@@ -104,9 +102,7 @@ class TestSensorReading:
     def test_sensor_reading_serialization(self):
         """Test that sensor reading can be converted to dict"""
         timestamp = datetime.now()
-        reading = SensorReading(
-            sensor_id="SMAP-ATT-001", timestamp=timestamp, value=42.5
-        )
+        reading = SensorReading(sensor_id="SMAP-ATT-001", timestamp=timestamp, value=42.5)
 
         reading_dict = asdict(reading)
         assert reading_dict["sensor_id"] == "SMAP-ATT-001"
@@ -317,9 +313,7 @@ class TestSensorDataIntegration:
             timestamp = datetime.now() - timedelta(minutes=i)
             value = 50.0 + i * 2.0
 
-            reading = SensorReading(
-                sensor_id="SMAP-ATT-001", timestamp=timestamp, value=value
-            )
+            reading = SensorReading(sensor_id="SMAP-ATT-001", timestamp=timestamp, value=value)
 
             readings.append(reading)
             timestamps.append(timestamp)
@@ -358,11 +352,7 @@ class TestSensorDataIntegration:
         """Test creating sensor info for NASA sensors"""
         for sensor_id in sample_sensors[:6]:  # Test first 6 SMAP sensors
             data_source = "smap" if sensor_id.startswith("SMAP") else "msl"
-            channel_index = (
-                int(sensor_id.split("-")[-1])
-                if sensor_id.split("-")[-1].isdigit()
-                else 0
-            )
+            channel_index = int(sensor_id.split("-")[-1]) if sensor_id.split("-")[-1].isdigit() else 0
 
             sensor_info = SensorInfo(
                 sensor_id=sensor_id,

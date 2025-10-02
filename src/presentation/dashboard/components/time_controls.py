@@ -99,9 +99,7 @@ class TimeControlManager:
 
         logger.info("TimeControlManager initialized with NASA mission-specific ranges")
 
-    def get_time_range_options(
-        self, include_nasa_ranges: bool = True
-    ) -> List[Dict[str, Any]]:
+    def get_time_range_options(self, include_nasa_ranges: bool = True) -> List[Dict[str, Any]]:
         """
         Get available time range options for dropdowns
 
@@ -186,9 +184,7 @@ class TimeControlManager:
                     end_time=end_time,
                     range_type=TimeRange.CUSTOM,  # Treat as custom for processing
                     label=f"NASA {range_type.replace('_', ' ').title()}",
-                    refresh_interval=self.config.auto_refresh_intervals.get(
-                        TimeRange.LAST_1H.value
-                    ),
+                    refresh_interval=self.config.auto_refresh_intervals.get(TimeRange.LAST_1H.value),
                     is_realtime=False,
                 )
 
@@ -250,9 +246,7 @@ class TimeControlManager:
             range_type, self.config.auto_refresh_intervals[TimeRange.LAST_1H.value]
         )
 
-    def filter_data_by_time(
-        self, data: pd.DataFrame, timestamp_column: str = "timestamp"
-    ) -> pd.DataFrame:
+    def filter_data_by_time(self, data: pd.DataFrame, timestamp_column: str = "timestamp") -> pd.DataFrame:
         """
         Filter data by current time window
 
@@ -276,13 +270,10 @@ class TimeControlManager:
 
             # Filter data
             filtered_data = data[
-                (data[timestamp_column] >= window.start_time)
-                & (data[timestamp_column] <= window.end_time)
+                (data[timestamp_column] >= window.start_time) & (data[timestamp_column] <= window.end_time)
             ]
 
-            logger.debug(
-                f"Filtered data: {len(filtered_data)}/{len(data)} records in time window"
-            )
+            logger.debug(f"Filtered data: {len(filtered_data)}/{len(data)} records in time window")
             return filtered_data
 
         except Exception as e:
@@ -360,9 +351,7 @@ class TimeControlManager:
                                 html.Label("⏰ Time Range", className="fw-bold mb-2"),
                                 dcc.Dropdown(
                                     id=f"{component_prefix}time-range-select",
-                                    options=self.get_time_range_options(
-                                        include_nasa_ranges=True
-                                    ),
+                                    options=self.get_time_range_options(include_nasa_ranges=True),
                                     value=self.config.default_range.value,
                                     clearable=False,
                                     className="mb-2",
@@ -388,8 +377,7 @@ class TimeControlManager:
                                 html.Label("📅 Custom Range", className="fw-bold mb-2"),
                                 dcc.DatePickerRange(
                                     id=f"{component_prefix}custom-date-range",
-                                    start_date=datetime.now().date()
-                                    - timedelta(days=1),
+                                    start_date=datetime.now().date() - timedelta(days=1),
                                     end_date=datetime.now().date(),
                                     display_format="MM/DD/YYYY",
                                     style={"display": "none"},  # Hidden by default
@@ -429,9 +417,7 @@ class TimeControlManager:
             className="time-controls-container",
         )
 
-    def validate_time_window(
-        self, start_time: datetime, end_time: datetime
-    ) -> Dict[str, bool]:
+    def validate_time_window(self, start_time: datetime, end_time: datetime) -> Dict[str, bool]:
         """
         Validate time window parameters
 

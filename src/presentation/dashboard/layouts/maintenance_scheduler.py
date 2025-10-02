@@ -89,9 +89,7 @@ class MaintenanceScheduler:
                                         ),
                                         dbc.Button(
                                             [
-                                                html.I(
-                                                    className="fas fa-calendar-alt me-2"
-                                                ),
+                                                html.I(className="fas fa-calendar-alt me-2"),
                                                 "Calendar",
                                             ],
                                             id="calendar-view-btn",
@@ -110,9 +108,7 @@ class MaintenanceScheduler:
                                         ),
                                         dbc.Button(
                                             [
-                                                html.I(
-                                                    className="fas fa-chart-gantt me-2"
-                                                ),
+                                                html.I(className="fas fa-chart-gantt me-2"),
                                                 "Gantt",
                                             ],
                                             id="gantt-view-btn",
@@ -121,9 +117,7 @@ class MaintenanceScheduler:
                                         ),
                                         dbc.Button(
                                             [
-                                                html.I(
-                                                    className="fas fa-file-export me-2"
-                                                ),
+                                                html.I(className="fas fa-file-export me-2"),
                                                 "Export",
                                             ],
                                             id="export-schedule-btn",
@@ -238,9 +232,7 @@ class MaintenanceScheduler:
                                             [
                                                 html.Div(
                                                     id="schedule-view-container",
-                                                    children=[
-                                                        self._create_calendar_view()
-                                                    ],
+                                                    children=[self._create_calendar_view()],
                                                 )
                                             ]
                                         )
@@ -259,9 +251,7 @@ class MaintenanceScheduler:
                                             [
                                                 html.Div(
                                                     id="task-details-panel",
-                                                    children=[
-                                                        self._create_task_details_placeholder()
-                                                    ],
+                                                    children=[self._create_task_details_placeholder()],
                                                 )
                                             ]
                                         ),
@@ -275,9 +265,7 @@ class MaintenanceScheduler:
                                             [
                                                 html.Div(
                                                     id="resource-availability-panel",
-                                                    children=[
-                                                        self._create_resource_availability()
-                                                    ],
+                                                    children=[self._create_resource_availability()],
                                                 )
                                             ]
                                         ),
@@ -297,9 +285,7 @@ class MaintenanceScheduler:
                                 dbc.Card(
                                     [
                                         dbc.CardHeader("Upcoming Maintenance"),
-                                        dbc.CardBody(
-                                            [html.Div(id="upcoming-maintenance-table")]
-                                        ),
+                                        dbc.CardBody([html.Div(id="upcoming-maintenance-table")]),
                                     ]
                                 )
                             ],
@@ -310,9 +296,7 @@ class MaintenanceScheduler:
                                 dbc.Card(
                                     [
                                         dbc.CardHeader("Optimization Suggestions"),
-                                        dbc.CardBody(
-                                            [html.Div(id="optimization-suggestions")]
-                                        ),
+                                        dbc.CardBody([html.Div(id="optimization-suggestions")]),
                                     ]
                                 )
                             ],
@@ -406,12 +390,8 @@ class MaintenanceScheduler:
                             [
                                 html.Div(
                                     [
-                                        html.Small(
-                                            "Technicians", className="text-muted"
-                                        ),
-                                        html.Small(
-                                            "75%", className="text-primary ms-auto"
-                                        ),
+                                        html.Small("Technicians", className="text-muted"),
+                                        html.Small("75%", className="text-primary ms-auto"),
                                     ],
                                     className="d-flex justify-content-between",
                                 ),
@@ -428,9 +408,7 @@ class MaintenanceScheduler:
                                 html.Div(
                                     [
                                         html.Small("Equipment", className="text-muted"),
-                                        html.Small(
-                                            "82%", className="text-warning ms-auto"
-                                        ),
+                                        html.Small("82%", className="text-warning ms-auto"),
                                     ],
                                     className="d-flex justify-content-between",
                                 ),
@@ -447,15 +425,11 @@ class MaintenanceScheduler:
                                 html.Div(
                                     [
                                         html.Small("Parts", className="text-muted"),
-                                        html.Small(
-                                            "68%", className="text-success ms-auto"
-                                        ),
+                                        html.Small("68%", className="text-success ms-auto"),
                                     ],
                                     className="d-flex justify-content-between",
                                 ),
-                                dbc.Progress(
-                                    value=68, color="success", style={"height": "5px"}
-                                ),
+                                dbc.Progress(value=68, color="success", style={"height": "5px"}),
                             ]
                         ),
                     ]
@@ -521,9 +495,7 @@ class MaintenanceScheduler:
                                 html.H4("$24,500", className="mb-0"),
                                 html.Small(
                                     [
-                                        html.I(
-                                            className="fas fa-arrow-down text-success me-1"
-                                        ),
+                                        html.I(className="fas fa-arrow-down text-success me-1"),
                                         "12% from last month",
                                     ]
                                 ),
@@ -556,9 +528,7 @@ class MaintenanceScheduler:
                             [
                                 dbc.ButtonGroup(
                                     [
-                                        dbc.Button(
-                                            "Today", size="sm", color="secondary"
-                                        ),
+                                        dbc.Button("Today", size="sm", color="secondary"),
                                         dbc.Button("◄", size="sm", color="secondary"),
                                         dbc.Button("►", size="sm", color="secondary"),
                                     ]
@@ -612,10 +582,7 @@ class MaintenanceScheduler:
         # Days of week header
         weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         header = dbc.Row(
-            [
-                dbc.Col(html.Div(day, className="text-center fw-bold"), width=True)
-                for day in weekdays
-            ],
+            [dbc.Col(html.Div(day, className="text-center fw-bold"), width=True) for day in weekdays],
             className="mb-2",
         )
 
@@ -625,16 +592,10 @@ class MaintenanceScheduler:
             week_cols = []
             for day in week:
                 if day == 0:
-                    week_cols.append(
-                        dbc.Col(
-                            html.Div("", className="calendar-day empty"), width=True
-                        )
-                    )
+                    week_cols.append(dbc.Col(html.Div("", className="calendar-day empty"), width=True))
                 else:
                     # Get maintenance tasks for this day
-                    tasks = self._get_tasks_for_day(
-                        current_date.year, current_date.month, day
-                    )
+                    tasks = self._get_tasks_for_day(current_date.year, current_date.month, day)
 
                     day_content = [
                         html.Div(str(day), className="day-number"),
@@ -714,12 +675,8 @@ class MaintenanceScheduler:
         """
         return html.Div(
             [
-                html.P(
-                    "Select a task to view details", className="text-muted text-center"
-                ),
-                html.I(
-                    className="fas fa-calendar-check fa-3x text-muted d-block text-center mt-4"
-                ),
+                html.P("Select a task to view details", className="text-muted text-center"),
+                html.I(className="fas fa-calendar-check fa-3x text-muted d-block text-center mt-4"),
             ]
         )
 
@@ -739,11 +696,7 @@ class MaintenanceScheduler:
         tech_items = []
         for tech in technicians:
             status_color = "success" if tech["available"] else "danger"
-            workload_color = (
-                "success"
-                if tech["workload"] < 70
-                else "warning" if tech["workload"] < 90 else "danger"
-            )
+            workload_color = "success" if tech["workload"] < 70 else "warning" if tech["workload"] < 90 else "danger"
 
             tech_items.append(
                 html.Div(
@@ -830,9 +783,7 @@ class MaintenanceScheduler:
                             [
                                 dbc.Col(
                                     [
-                                        html.Label(
-                                            "Maintenance Type", className="fw-bold"
-                                        ),
+                                        html.Label("Maintenance Type", className="fw-bold"),
                                         dcc.Dropdown(
                                             id="new-maintenance-type",
                                             options=[
@@ -916,9 +867,7 @@ class MaintenanceScheduler:
                                 ),
                                 dbc.Col(
                                     [
-                                        html.Label(
-                                            "Duration (hours)", className="fw-bold"
-                                        ),
+                                        html.Label("Duration (hours)", className="fw-bold"),
                                         dbc.Input(
                                             id="new-maintenance-duration",
                                             type="number",
@@ -936,9 +885,7 @@ class MaintenanceScheduler:
                             [
                                 dbc.Col(
                                     [
-                                        html.Label(
-                                            "Assigned Technician", className="fw-bold"
-                                        ),
+                                        html.Label("Assigned Technician", className="fw-bold"),
                                         dcc.Dropdown(
                                             id="new-maintenance-technician",
                                             options=[],  # Would be populated dynamically
@@ -949,9 +896,7 @@ class MaintenanceScheduler:
                                 ),
                                 dbc.Col(
                                     [
-                                        html.Label(
-                                            "Estimated Cost", className="fw-bold"
-                                        ),
+                                        html.Label("Estimated Cost", className="fw-bold"),
                                         dbc.InputGroup(
                                             [
                                                 dbc.InputGroupText("$"),
@@ -1020,12 +965,8 @@ class MaintenanceScheduler:
                 ),
                 dbc.ModalFooter(
                     [
-                        dbc.Button(
-                            "Schedule", id="schedule-maintenance-btn", color="primary"
-                        ),
-                        dbc.Button(
-                            "Cancel", id="cancel-new-maintenance", color="secondary"
-                        ),
+                        dbc.Button("Schedule", id="schedule-maintenance-btn", color="primary"),
+                        dbc.Button("Cancel", id="cancel-new-maintenance", color="secondary"),
                     ]
                 ),
             ],
@@ -1051,9 +992,7 @@ class MaintenanceScheduler:
                 ),
                 dbc.ModalFooter(
                     [
-                        dbc.Button(
-                            "Save Changes", id="save-task-changes", color="primary"
-                        ),
+                        dbc.Button("Save Changes", id="save-task-changes", color="primary"),
                         dbc.Button("Delete Task", id="delete-task", color="danger"),
                         dbc.Button("Cancel", id="cancel-task-edit", color="secondary"),
                     ]
@@ -1078,16 +1017,12 @@ class MaintenanceScheduler:
                         dbc.Alert(
                             [
                                 html.H5("Resource Conflict", className="alert-heading"),
-                                html.P(
-                                    "The selected time slot has conflicts with existing maintenance tasks."
-                                ),
+                                html.P("The selected time slot has conflicts with existing maintenance tasks."),
                                 html.Hr(),
                                 html.P("Conflicting tasks:", className="mb-2"),
                                 html.Ul(
                                     [
-                                        html.Li(
-                                            "EQ-042 Preventive Maintenance - John Smith"
-                                        ),
+                                        html.Li("EQ-042 Preventive Maintenance - John Smith"),
                                         html.Li("EQ-015 Inspection - Jane Doe"),
                                     ]
                                 ),
@@ -1121,9 +1056,7 @@ class MaintenanceScheduler:
                 ),
                 dbc.ModalFooter(
                     [
-                        dbc.Button(
-                            "Apply Resolution", id="apply-resolution", color="primary"
-                        ),
+                        dbc.Button("Apply Resolution", id="apply-resolution", color="primary"),
                         dbc.Button("Cancel", id="cancel-resolution", color="secondary"),
                     ]
                 ),
@@ -1335,18 +1268,14 @@ class MaintenanceScheduler:
                                             [
                                                 html.I(
                                                     className=f"fas {sugg['icon']} fa-2x",
-                                                    style={
-                                                        "color": f"var(--bs-{sugg['color']}"
-                                                    },
+                                                    style={"color": f"var(--bs-{sugg['color']}"},
                                                 )
                                             ],
                                             width=2,
                                         ),
                                         dbc.Col(
                                             [
-                                                html.H6(
-                                                    sugg["title"], className="mb-1"
-                                                ),
+                                                html.H6(sugg["title"], className="mb-1"),
                                                 html.P(
                                                     sugg["description"],
                                                     className="small mb-1",
@@ -1432,9 +1361,7 @@ class MaintenanceScheduler:
                 State("schedule-date-range", "end_date"),
             ],
         )
-        def update_schedule_view(
-            cal_clicks, list_clicks, gantt_clicks, start_date, end_date
-        ):
+        def update_schedule_view(cal_clicks, list_clicks, gantt_clicks, start_date, end_date):
             """Update schedule view based on selected view type"""
             ctx = callback_context
             if not ctx.triggered:
@@ -1443,9 +1370,7 @@ class MaintenanceScheduler:
             button_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
             if button_id == "list-view-btn":
-                return html.Div(
-                    [html.H5("List View"), self.create_upcoming_maintenance_table()]
-                )
+                return html.Div([html.H5("List View"), self.create_upcoming_maintenance_table()])
             elif button_id == "gantt-view-btn":
                 return dcc.Graph(figure=self.create_gantt_chart(start_date, end_date))
             else:
@@ -1476,9 +1401,7 @@ class MaintenanceScheduler:
             ],
             [State("new-maintenance-modal", "is_open")],
         )
-        def toggle_new_maintenance_modal(
-            new_clicks, schedule_clicks, cancel_clicks, is_open
-        ):
+        def toggle_new_maintenance_modal(new_clicks, schedule_clicks, cancel_clicks, is_open):
             """Toggle new maintenance modal"""
             ctx = callback_context
             if ctx.triggered:
@@ -1501,7 +1424,5 @@ def register_callbacks(app, data_service=None):
     """Register callbacks for maintenance scheduler (placeholder for compatibility)"""
     # Note: This layout uses @callback decorators which are auto-registered
     # This function exists for compatibility with the dashboard launcher
-    print(
-        "Maintenance scheduler callbacks are auto-registered via @callback decorators"
-    )
+    print("Maintenance scheduler callbacks are auto-registered via @callback decorators")
     return True

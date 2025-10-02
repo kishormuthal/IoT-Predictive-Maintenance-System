@@ -52,9 +52,7 @@ class ProbabilisticAnomalyScorer:
     """
 
     @staticmethod
-    def gaussian_likelihood_score(
-        value: float, reference_data: np.ndarray, alpha: float = 0.05
-    ) -> ProbabilisticScore:
+    def gaussian_likelihood_score(value: float, reference_data: np.ndarray, alpha: float = 0.05) -> ProbabilisticScore:
         """
         Gaussian likelihood-based anomaly score
 
@@ -103,9 +101,7 @@ class ProbabilisticAnomalyScorer:
         )
 
     @staticmethod
-    def mixture_model_score(
-        value: float, reference_data: np.ndarray, n_components: int = 2
-    ) -> ProbabilisticScore:
+    def mixture_model_score(value: float, reference_data: np.ndarray, n_components: int = 2) -> ProbabilisticScore:
         """
         Gaussian Mixture Model likelihood score
 
@@ -129,18 +125,14 @@ class ProbabilisticAnomalyScorer:
             likelihood = np.exp(log_likelihood)
 
             # Get maximum possible likelihood (at mode)
-            max_log_likelihood = np.max(
-                gmm.score_samples(reference_data.reshape(-1, 1))
-            )
+            max_log_likelihood = np.max(gmm.score_samples(reference_data.reshape(-1, 1)))
             max_likelihood = np.exp(max_log_likelihood)
 
             # Anomaly score
             score = 1 - (likelihood / (max_likelihood + 1e-10))
 
             # Estimate anomaly probability using threshold
-            threshold = np.percentile(
-                gmm.score_samples(reference_data.reshape(-1, 1)), 5
-            )
+            threshold = np.percentile(gmm.score_samples(reference_data.reshape(-1, 1)), 5)
             anomaly_prob = 1.0 if log_likelihood < threshold else 0.0
 
             return ProbabilisticScore(
@@ -152,14 +144,10 @@ class ProbabilisticAnomalyScorer:
 
         except ImportError:
             logger.warning("scikit-learn not available, using Gaussian fallback")
-            return ProbabilisticAnomalyScorer.gaussian_likelihood_score(
-                value, reference_data
-            )
+            return ProbabilisticAnomalyScorer.gaussian_likelihood_score(value, reference_data)
         except Exception as e:
             logger.error(f"Error in mixture model scoring: {e}")
-            return ProbabilisticAnomalyScorer.gaussian_likelihood_score(
-                value, reference_data
-            )
+            return ProbabilisticAnomalyScorer.gaussian_likelihood_score(value, reference_data)
 
     @staticmethod
     def bayesian_anomaly_probability(
@@ -247,9 +235,7 @@ class ProbabilisticAnomalyScorer:
             likelihood = np.exp(log_likelihood)
 
             # Get maximum likelihood in reference data
-            max_log_likelihood = np.max(
-                kde.score_samples(reference_data.reshape(-1, 1))
-            )
+            max_log_likelihood = np.max(kde.score_samples(reference_data.reshape(-1, 1)))
             max_likelihood = np.exp(max_log_likelihood)
 
             # Anomaly score
@@ -269,14 +255,10 @@ class ProbabilisticAnomalyScorer:
 
         except ImportError:
             logger.warning("scikit-learn not available, using Gaussian fallback")
-            return ProbabilisticAnomalyScorer.gaussian_likelihood_score(
-                value, reference_data
-            )
+            return ProbabilisticAnomalyScorer.gaussian_likelihood_score(value, reference_data)
         except Exception as e:
             logger.error(f"Error in KDE scoring: {e}")
-            return ProbabilisticAnomalyScorer.gaussian_likelihood_score(
-                value, reference_data
-            )
+            return ProbabilisticAnomalyScorer.gaussian_likelihood_score(value, reference_data)
 
     @staticmethod
     def cusum_score(
@@ -320,9 +302,7 @@ class ProbabilisticAnomalyScorer:
             cusum_score = min(cusum_score, 1.0)  # Clip to [0, 1]
 
             # Anomaly probability
-            anomaly_prob = (
-                1.0 if (s_high > threshold or s_low > threshold) else cusum_score
-            )
+            anomaly_prob = 1.0 if (s_high > threshold or s_low > threshold) else cusum_score
 
             # Likelihood (inverse of anomaly score)
             likelihood = 1 - cusum_score
@@ -368,21 +348,13 @@ class ProbabilisticAnomalyScorer:
         for method in methods:
             try:
                 if method == "Gaussian":
-                    score = ProbabilisticAnomalyScorer.gaussian_likelihood_score(
-                        value, reference_data
-                    )
+                    score = ProbabilisticAnomalyScorer.gaussian_likelihood_score(value, reference_data)
                 elif method == "GaussianMixture":
-                    score = ProbabilisticAnomalyScorer.mixture_model_score(
-                        value, reference_data
-                    )
+                    score = ProbabilisticAnomalyScorer.mixture_model_score(value, reference_data)
                 elif method == "Bayesian":
-                    score = ProbabilisticAnomalyScorer.bayesian_anomaly_probability(
-                        value, reference_data
-                    )
+                    score = ProbabilisticAnomalyScorer.bayesian_anomaly_probability(value, reference_data)
                 elif method == "KDE":
-                    score = ProbabilisticAnomalyScorer.kernel_density_score(
-                        value, reference_data
-                    )
+                    score = ProbabilisticAnomalyScorer.kernel_density_score(value, reference_data)
                 else:
                     continue
 
@@ -393,20 +365,12 @@ class ProbabilisticAnomalyScorer:
 
         if not scores_list:
             # Fallback
-            return ProbabilisticAnomalyScorer.gaussian_likelihood_score(
-                value, reference_data
-            )
+            return ProbabilisticAnomalyScorer.gaussian_likelihood_score(value, reference_data)
 
         # Weighted average
-        ensemble_score = sum(
-            s.score * w for s, w in zip(scores_list, weights[: len(scores_list)])
-        )
-        ensemble_prob = sum(
-            s.probability * w for s, w in zip(scores_list, weights[: len(scores_list)])
-        )
-        ensemble_likelihood = sum(
-            s.likelihood * w for s, w in zip(scores_list, weights[: len(scores_list)])
-        )
+        ensemble_score = sum(s.score * w for s, w in zip(scores_list, weights[: len(scores_list)]))
+        ensemble_prob = sum(s.probability * w for s, w in zip(scores_list, weights[: len(scores_list)]))
+        ensemble_likelihood = sum(s.likelihood * w for s, w in zip(scores_list, weights[: len(scores_list)]))
 
         return ProbabilisticScore(
             score=ensemble_score,
@@ -444,14 +408,10 @@ class AnomalyConfidenceEstimator:
 
         for _ in range(n_bootstrap):
             # Bootstrap sample
-            bootstrap_sample = np.random.choice(
-                reference_data, size=len(reference_data), replace=True
-            )
+            bootstrap_sample = np.random.choice(reference_data, size=len(reference_data), replace=True)
 
             # Compute score
-            result = ProbabilisticAnomalyScorer.gaussian_likelihood_score(
-                value, bootstrap_sample
-            )
+            result = ProbabilisticAnomalyScorer.gaussian_likelihood_score(value, bootstrap_sample)
             scores.append(result.score)
 
         scores = np.array(scores)
@@ -469,9 +429,7 @@ class AnomalyConfidenceEstimator:
         }
 
     @staticmethod
-    def prediction_interval(
-        reference_data: np.ndarray, confidence_level: float = 0.95
-    ) -> Tuple[float, float]:
+    def prediction_interval(reference_data: np.ndarray, confidence_level: float = 0.95) -> Tuple[float, float]:
         """
         Prediction interval for normal values
 

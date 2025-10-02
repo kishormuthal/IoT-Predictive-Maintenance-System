@@ -124,9 +124,7 @@ class AnomalyMonitor:
         model_summary = unified_data_orchestrator.get_model_performance_summary()
 
         logger.info("✓ Anomaly Monitor initialized with NASA SMAP/MSL data")
-        logger.info(
-            f"  Monitoring {self.equipment_summary['total_equipment']} equipment components"
-        )
+        logger.info(f"  Monitoring {self.equipment_summary['total_equipment']} equipment components")
         logger.info(f"  Total sensors: {self.equipment_summary['total_sensors']}")
         logger.info(f"  Loaded {len(available_models)} pre-trained models")
         avg_accuracy = model_summary.get("average_accuracy", 0.92)
@@ -187,9 +185,7 @@ class AnomalyMonitor:
                                         ),
                                         dbc.Button(
                                             [
-                                                html.I(
-                                                    className="fas fa-download me-2"
-                                                ),
+                                                html.I(className="fas fa-download me-2"),
                                                 "Export",
                                             ],
                                             id="export-anomalies-btn",
@@ -218,20 +214,12 @@ class AnomalyMonitor:
                 # Phase 2 Enhanced Tabbed Interface
                 self._create_enhanced_tabbed_interface(),
                 # Global Control Store Components
-                dcc.Interval(
-                    id="anomaly-update-interval", interval=1000, n_intervals=0
-                ),
+                dcc.Interval(id="anomaly-update-interval", interval=1000, n_intervals=0),
                 dcc.Interval(id="anomaly-slow-interval", interval=5000, n_intervals=0),
                 # Enhanced State Management for Phase 2
-                dcc.Store(
-                    id="central-equipment-store", storage_type="session", data=None
-                ),
-                dcc.Store(
-                    id="central-time-window-store", storage_type="session", data="5min"
-                ),
-                dcc.Store(
-                    id="central-subsystem-store", storage_type="session", data=None
-                ),
+                dcc.Store(id="central-equipment-store", storage_type="session", data=None),
+                dcc.Store(id="central-time-window-store", storage_type="session", data="5min"),
+                dcc.Store(id="central-subsystem-store", storage_type="session", data=None),
                 dcc.Store(id="anomaly-data-store", storage_type="memory"),
                 dcc.Store(id="selected-anomaly-store", storage_type="session"),
                 dcc.Store(id="alert-actions-store", storage_type="session"),
@@ -315,9 +303,7 @@ class AnomalyMonitor:
                                 # Quick sensor selection buttons
                                 html.Div(
                                     [
-                                        html.Small(
-                                            "Quick Select:", className="text-muted me-2"
-                                        ),
+                                        html.Small("Quick Select:", className="text-muted me-2"),
                                         dbc.ButtonGroup(
                                             [
                                                 dbc.Button(
@@ -528,9 +514,7 @@ class AnomalyMonitor:
                                 dbc.Card(
                                     [
                                         dbc.CardHeader("🚨 Recent Anomalies"),
-                                        dbc.CardBody(
-                                            [html.Div(id="recent-anomalies-list")]
-                                        ),
+                                        dbc.CardBody([html.Div(id="recent-anomalies-list")]),
                                     ]
                                 )
                             ],
@@ -552,12 +536,8 @@ class AnomalyMonitor:
                             [
                                 dbc.Card(
                                     [
-                                        dbc.CardHeader(
-                                            "🛰️ NASA Subsystem Health Dashboard"
-                                        ),
-                                        dbc.CardBody(
-                                            [html.Div(id="subsystem-health-overview")]
-                                        ),
+                                        dbc.CardHeader("🛰️ NASA Subsystem Health Dashboard"),
+                                        dbc.CardBody([html.Div(id="subsystem-health-overview")]),
                                     ]
                                 )
                             ],
@@ -614,9 +594,7 @@ class AnomalyMonitor:
                                                 ),
                                             ]
                                         ),
-                                        dbc.CardBody(
-                                            [html.Div(id="subsystem-analysis-content")]
-                                        ),
+                                        dbc.CardBody([html.Div(id="subsystem-analysis-content")]),
                                     ]
                                 )
                             ],
@@ -680,9 +658,7 @@ class AnomalyMonitor:
                             [
                                 dbc.Card(
                                     [
-                                        dbc.CardHeader(
-                                            "🔍 Select Equipment for Detailed Analysis"
-                                        ),
+                                        dbc.CardHeader("🔍 Select Equipment for Detailed Analysis"),
                                         dbc.CardBody(
                                             [
                                                 dcc.Dropdown(
@@ -690,9 +666,7 @@ class AnomalyMonitor:
                                                     placeholder="Select equipment for detailed anomaly analysis...",
                                                     className="mb-3",
                                                 ),
-                                                html.Div(
-                                                    id="equipment-detection-summary"
-                                                ),
+                                                html.Div(id="equipment-detection-summary"),
                                             ]
                                         ),
                                     ]
@@ -760,9 +734,7 @@ class AnomalyMonitor:
                                                 ),
                                             ]
                                         ),
-                                        dbc.CardBody(
-                                            [html.Div(id="active-alerts-summary")]
-                                        ),
+                                        dbc.CardBody([html.Div(id="active-alerts-summary")]),
                                     ]
                                 )
                             ],
@@ -802,9 +774,7 @@ class AnomalyMonitor:
                                 dbc.Card(
                                     [
                                         dbc.CardHeader("📋 Recent Alert Actions"),
-                                        dbc.CardBody(
-                                            [html.Div(id="recent-alert-actions")]
-                                        ),
+                                        dbc.CardBody([html.Div(id="recent-alert-actions")]),
                                     ]
                                 )
                             ],
@@ -842,9 +812,7 @@ class AnomalyMonitor:
         # Get real-time inference stats from model manager
         performance_summary = pretrained_model_manager.get_model_performance_summary()
         total_inferences = performance_summary.get("total_inferences", 0)
-        avg_inference_time = pretrained_model_manager.inference_stats.get(
-            "avg_inference_time", 0.0
-        )
+        avg_inference_time = pretrained_model_manager.inference_stats.get("avg_inference_time", 0.0)
 
         return dbc.Card(
             [
@@ -870,9 +838,7 @@ class AnomalyMonitor:
                             className="mt-3",
                         ),
                         dbc.Progress(
-                            value=min(
-                                processing_rate * 10, 100
-                            ),  # Scale for visual representation
+                            value=min(processing_rate * 10, 100),  # Scale for visual representation
                             color="success" if is_active else "danger",
                             striped=True,
                             animated=is_active,
@@ -895,33 +861,17 @@ class AnomalyMonitor:
         from src.dashboard.unified_data_orchestrator import unified_data_orchestrator
 
         # Get recent anomaly predictions
-        predictions = pretrained_model_manager.get_real_time_predictions(
-            time_window_minutes=5
-        )
+        predictions = pretrained_model_manager.get_real_time_predictions(time_window_minutes=5)
 
         # Calculate actual anomaly rate from real predictions
         total_predictions = len(predictions)
-        anomalous_predictions = sum(
-            1 for pred in predictions if pred.get("is_anomaly", False)
-        )
-        anomaly_rate = (
-            (anomalous_predictions / total_predictions * 100)
-            if total_predictions > 0
-            else 0.0
-        )
+        anomalous_predictions = sum(1 for pred in predictions if pred.get("is_anomaly", False))
+        anomaly_rate = (anomalous_predictions / total_predictions * 100) if total_predictions > 0 else 0.0
 
         # Calculate trend based on anomaly scores
-        avg_anomaly_score = (
-            np.mean([pred.get("anomaly_score", 0.0) for pred in predictions])
-            if predictions
-            else 0.0
-        )
+        avg_anomaly_score = np.mean([pred.get("anomaly_score", 0.0) for pred in predictions]) if predictions else 0.0
         trend_direction = "up" if avg_anomaly_score > 0.3 else "down"
-        trend_icon = (
-            "fas fa-arrow-up text-danger"
-            if trend_direction == "up"
-            else "fas fa-arrow-down text-success"
-        )
+        trend_icon = "fas fa-arrow-up text-danger" if trend_direction == "up" else "fas fa-arrow-down text-success"
         trend_text = f"Avg score: {avg_anomaly_score:.2f}"
 
         return dbc.Card(
@@ -932,9 +882,7 @@ class AnomalyMonitor:
                         html.Div(
                             [
                                 html.H3(f"{anomaly_rate:.1f}%", className="mb-0"),
-                                html.Small(
-                                    [html.I(className=trend_icon + " me-1"), trend_text]
-                                ),
+                                html.Small([html.I(className=trend_icon + " me-1"), trend_text]),
                             ]
                         ),
                         # Mini sparkline chart with real data
@@ -973,9 +921,7 @@ class AnomalyMonitor:
 
         for equipment_id in available_models:
             model_info = pretrained_model_manager.get_model_info(equipment_id)
-            if model_info and not pretrained_model_manager.loaded_models[
-                equipment_id
-            ].get("is_simulated", False):
+            if model_info and not pretrained_model_manager.loaded_models[equipment_id].get("is_simulated", False):
                 real_models += 1
             else:
                 simulated_models += 1
@@ -987,15 +933,9 @@ class AnomalyMonitor:
                         html.H6("Active Models", className="text-muted mb-3"),
                         html.Div(
                             [
-                                self._create_model_indicator(
-                                    "Real Models", real_models > 0, real_models
-                                ),
-                                self._create_model_indicator(
-                                    "Simulated", simulated_models > 0, simulated_models
-                                ),
-                                self._create_model_indicator(
-                                    "Avg Accuracy", avg_accuracy > 0, avg_accuracy * 100
-                                ),
+                                self._create_model_indicator("Real Models", real_models > 0, real_models),
+                                self._create_model_indicator("Simulated", simulated_models > 0, simulated_models),
+                                self._create_model_indicator("Avg Accuracy", avg_accuracy > 0, avg_accuracy * 100),
                                 self._create_model_indicator(
                                     "NASA Service",
                                     unified_data_orchestrator.is_nasa_service_running(),
@@ -1008,9 +948,7 @@ class AnomalyMonitor:
                             [
                                 f"Active: {real_models}/{total_models} models | ",
                                 "Avg Accuracy: ",
-                                html.Strong(
-                                    f"{avg_accuracy*100:.1f}%", className="text-success"
-                                ),
+                                html.Strong(f"{avg_accuracy*100:.1f}%", className="text-success"),
                             ]
                         ),
                     ]
@@ -1018,9 +956,7 @@ class AnomalyMonitor:
             ]
         )
 
-    def _create_model_indicator(
-        self, name: str, active: bool, accuracy: int
-    ) -> html.Div:
+    def _create_model_indicator(self, name: str, active: bool, accuracy: int) -> html.Div:
         """Create model status indicator
 
         Args:
@@ -1147,29 +1083,19 @@ class AnomalyMonitor:
         from src.dashboard.model_manager import pretrained_model_manager
 
         # Get real-time predictions from all models
-        recent_predictions = pretrained_model_manager.get_real_time_predictions(
-            time_window_minutes=10
-        )
+        recent_predictions = pretrained_model_manager.get_real_time_predictions(time_window_minutes=10)
 
         # Find the highest anomaly score from real model predictions
         highest_anomaly_pred = None
         if recent_predictions:
-            highest_anomaly_pred = max(
-                recent_predictions, key=lambda x: x.get("anomaly_score", 0.0)
-            )
+            highest_anomaly_pred = max(recent_predictions, key=lambda x: x.get("anomaly_score", 0.0))
 
         # Get recent NASA alerts
         active_alerts = self.alert_manager.get_active_alerts()
-        nasa_alerts = [
-            alert for alert in active_alerts if alert.source.startswith("NASA_")
-        ]
+        nasa_alerts = [alert for alert in active_alerts if alert.source.startswith("NASA_")]
 
         # Get latest alert
-        latest_alert = (
-            max(nasa_alerts, key=lambda x: x.created_at, default=None)
-            if nasa_alerts
-            else None
-        )
+        latest_alert = max(nasa_alerts, key=lambda x: x.created_at, default=None) if nasa_alerts else None
 
         # Use real model prediction if available and anomalous, otherwise use alert
         if highest_anomaly_pred and highest_anomaly_pred.get("is_anomaly", False):
@@ -1194,9 +1120,7 @@ class AnomalyMonitor:
             else:
                 severity = "LOW"
 
-            model = f"LSTM-AE ({model_type})" + (
-                " [Simulated]" if is_simulated else " [Real Model]"
-            )
+            model = f"LSTM-AE ({model_type})" + (" [Simulated]" if is_simulated else " [Real Model]")
             failure_risk = f"Real-time ML prediction: {score:.3f}"
 
             # Calculate confidence from model type and simulation status
@@ -1206,17 +1130,11 @@ class AnomalyMonitor:
         elif latest_alert:
             subsystem = latest_alert.details.get("subsystem", "Unknown")
             criticality = latest_alert.details.get("criticality_level", "Unknown")
-            failure_risk = latest_alert.details.get(
-                "failure_risk", "Assessment unavailable"
-            )
+            failure_risk = latest_alert.details.get("failure_risk", "Assessment unavailable")
 
             # Calculate confidence from alert metrics
             confidence = int(latest_alert.metrics.get("confidence_level", 0.0) * 100)
-            confidence_color = (
-                "danger"
-                if confidence > 80
-                else "warning" if confidence > 60 else "info"
-            )
+            confidence_color = "danger" if confidence > 80 else "warning" if confidence > 60 else "info"
 
         else:
             # Fallback to anomaly data if no alerts
@@ -1224,9 +1142,7 @@ class AnomalyMonitor:
                 unified_data_orchestrator,
             )
 
-            recent_anomalies = unified_data_orchestrator.get_anomaly_data(
-                time_window="1hour"
-            )
+            recent_anomalies = unified_data_orchestrator.get_anomaly_data(time_window="1hour")
             latest_anomaly = recent_anomalies[0] if recent_anomalies else None
 
             if latest_anomaly:
@@ -1241,14 +1157,8 @@ class AnomalyMonitor:
                 # Get equipment threshold for confidence calculation
                 thresholds = unified_data_orchestrator.get_equipment_thresholds()
                 equipment_threshold = thresholds.get(equipment_id, {})
-                confidence = self._calculate_display_confidence(
-                    score, equipment_threshold
-                )
-                confidence_color = (
-                    "danger"
-                    if confidence > 80
-                    else "warning" if confidence > 60 else "info"
-                )
+                confidence = self._calculate_display_confidence(score, equipment_threshold)
+                confidence_color = "danger" if confidence > 80 else "warning" if confidence > 60 else "info"
             else:
                 # Default values when no recent anomalies
                 equipment_id = "No Recent Anomalies"
@@ -1282,12 +1192,8 @@ class AnomalyMonitor:
                         ),
                         html.Div(
                             [
-                                html.Small(
-                                    "Mission Criticality:", className="text-muted"
-                                ),
-                                html.P(
-                                    criticality, className="mb-2 fw-bold text-warning"
-                                ),
+                                html.Small("Mission Criticality:", className="text-muted"),
+                                html.P(criticality, className="mb-2 fw-bold text-warning"),
                             ]
                         ),
                         html.Div(
@@ -1298,9 +1204,7 @@ class AnomalyMonitor:
                         ),
                         html.Div(
                             [
-                                html.Small(
-                                    "Detection Confidence:", className="text-muted"
-                                ),
+                                html.Small("Detection Confidence:", className="text-muted"),
                                 dbc.Progress(
                                     value=confidence,
                                     label=f"{confidence}%",
@@ -1317,9 +1221,7 @@ class AnomalyMonitor:
                         ),
                         html.Div(
                             [
-                                html.Small(
-                                    "Failure Risk Assessment:", className="text-muted"
-                                ),
+                                html.Small("Failure Risk Assessment:", className="text-muted"),
                                 html.P(
                                     failure_risk,
                                     className="mb-2 small",
@@ -1376,18 +1278,10 @@ class AnomalyMonitor:
                 unified_data_orchestrator,
             )
 
-            telemetry_data = unified_data_orchestrator.get_real_time_telemetry(
-                time_window="1min"
-            )
+            telemetry_data = unified_data_orchestrator.get_real_time_telemetry(time_window="1min")
 
             if not telemetry_data:
-                return html.Div(
-                    [
-                        self._create_metric_row(
-                            "No Data", "Waiting for NASA stream", "info"
-                        )
-                    ]
-                )
+                return html.Div([self._create_metric_row("No Data", "Waiting for NASA stream", "info")])
 
             # Get latest reading
             latest_reading = telemetry_data[-1] if telemetry_data else {}
@@ -1408,13 +1302,7 @@ class AnomalyMonitor:
             }
 
             if not sensor_values:
-                return html.Div(
-                    [
-                        self._create_metric_row(
-                            "No Sensors", "No sensor data available", "warning"
-                        )
-                    ]
-                )
+                return html.Div([self._create_metric_row("No Sensors", "No sensor data available", "warning")])
 
             # Show first 4 sensors with appropriate formatting
             metrics = []
@@ -1424,21 +1312,13 @@ class AnomalyMonitor:
                 # Format value based on sensor name
                 if "temperature" in sensor_name.lower():
                     formatted_value = f"{value:.1f}°C"
-                    color = (
-                        "danger"
-                        if abs(value) > 50
-                        else "warning" if abs(value) > 30 else "success"
-                    )
+                    color = "danger" if abs(value) > 50 else "warning" if abs(value) > 30 else "success"
                 elif "voltage" in sensor_name.lower():
                     formatted_value = f"{value:.1f}V"
                     color = "danger" if value > 32 or value < 24 else "success"
                 elif "current" in sensor_name.lower():
                     formatted_value = f"{value:.1f}A"
-                    color = (
-                        "danger"
-                        if value > 18
-                        else "warning" if value > 12 else "success"
-                    )
+                    color = "danger" if value > 18 else "warning" if value > 12 else "success"
                 elif "pressure" in sensor_name.lower():
                     formatted_value = f"{value:.0f}Pa"
                     color = "info"
@@ -1446,17 +1326,13 @@ class AnomalyMonitor:
                     formatted_value = f"{value:.2f}"
                     color = "info"
 
-                metrics.append(
-                    self._create_metric_row(sensor_name[:15], formatted_value, color)
-                )
+                metrics.append(self._create_metric_row(sensor_name[:15], formatted_value, color))
 
             return html.Div(metrics)
 
         except Exception as e:
             logger.error(f"Error creating NASA sensor metrics: {e}")
-            return html.Div(
-                [self._create_metric_row("Error", "Unable to load sensors", "danger")]
-            )
+            return html.Div([self._create_metric_row("Error", "Unable to load sensors", "danger")])
 
     def _create_nasa_model_performance_chart(self) -> go.Figure:
         """Create pre-trained model performance chart with real metrics - FIXED PLOTLY COMPATIBILITY"""
@@ -1498,19 +1374,11 @@ class AnomalyMonitor:
             model_types = []
             subsystems = []
 
-            for equipment_id in available_models[
-                :8
-            ]:  # Show top 8 models for better display
+            for equipment_id in available_models[:8]:  # Show top 8 models for better display
                 model_info = unified_data_orchestrator.get_model_info(equipment_id)
                 if model_info:
-                    equipment_ids.append(
-                        equipment_id.split("-")[1]
-                        if "-" in equipment_id
-                        else equipment_id[:6]
-                    )
-                    accuracies.append(
-                        model_info.get("accuracy", 0.85) * 100
-                    )  # Convert to percentage
+                    equipment_ids.append(equipment_id.split("-")[1] if "-" in equipment_id else equipment_id[:6])
+                    accuracies.append(model_info.get("accuracy", 0.85) * 100)  # Convert to percentage
                     model_types.append(model_info.get("model_type", "unknown"))
                     subsystems.append(model_info.get("subsystem", "Unknown"))
 
@@ -1562,12 +1430,8 @@ class AnomalyMonitor:
                     x=accuracies,
                     y=equipment_ids,
                     orientation="h",
-                    marker=dict(
-                        color=colors, line=dict(color="rgba(0,0,0,0.1)", width=1)
-                    ),
-                    text=[
-                        f"{acc:.1f}% ({mt})" for acc, mt in zip(accuracies, model_types)
-                    ],
+                    marker=dict(color=colors, line=dict(color="rgba(0,0,0,0.1)", width=1)),
+                    text=[f"{acc:.1f}% ({mt})" for acc, mt in zip(accuracies, model_types)],
                     textposition="inside",
                     hovertemplate="<b>%{y}</b><br>Accuracy: %{x:.1f}%<br>Subsystem: %{customdata}<extra></extra>",
                     customdata=subsystems,
@@ -1594,9 +1458,7 @@ class AnomalyMonitor:
                 yaxis_title="Equipment Models",
                 height=400,
                 margin=dict(l=100, r=100, t=50, b=50),
-                legend=dict(
-                    orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5
-                ),
+                legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5),
                 xaxis=dict(range=[0, 100]),
             )
 
@@ -1635,9 +1497,7 @@ class AnomalyMonitor:
             from src.presentation.dashboard.services import pretrained_model_manager
 
             # Get real-time predictions from all models for heatmap
-            predictions = pretrained_model_manager.get_real_time_predictions(
-                time_window_minutes=60
-            )
+            predictions = pretrained_model_manager.get_real_time_predictions(time_window_minutes=60)
 
             # If we have real predictions, use them; otherwise fall back to unified orchestrator
             if predictions and len(predictions) > 0:
@@ -1645,9 +1505,7 @@ class AnomalyMonitor:
                 equipment_ids = [pred["equipment_id"] for pred in predictions]
                 anomaly_scores = [pred["anomaly_score"] for pred in predictions]
                 is_anomaly = [pred["is_anomaly"] for pred in predictions]
-                model_types = [
-                    pred.get("model_type", "unknown") for pred in predictions
-                ]
+                model_types = [pred.get("model_type", "unknown") for pred in predictions]
 
                 # Create time series for last hour (12 points, 5 minutes apart)
                 timestamps = pd.date_range(end=datetime.now(), periods=12, freq="5min")
@@ -1657,20 +1515,14 @@ class AnomalyMonitor:
                 equipment_labels = []
 
                 for eq_id in equipment_ids:
-                    equipment_labels.append(
-                        eq_id.split("-")[1] if "-" in eq_id else eq_id[:6]
-                    )
+                    equipment_labels.append(eq_id.split("-")[1] if "-" in eq_id else eq_id[:6])
 
                     # Get multiple predictions over time for this equipment
                     eq_scores = []
                     for _ in timestamps:
                         # Get fresh prediction for this timestamp
-                        sensor_data = pretrained_model_manager.simulate_real_time_data(
-                            eq_id
-                        )
-                        pred = pretrained_model_manager.predict_anomaly(
-                            eq_id, sensor_data
-                        )
+                        sensor_data = pretrained_model_manager.simulate_real_time_data(eq_id)
+                        pred = pretrained_model_manager.predict_anomaly(eq_id, sensor_data)
                         eq_scores.append(pred.get("anomaly_score", 0.0))
 
                     heatmap_matrix.append(eq_scores)
@@ -1713,18 +1565,12 @@ class AnomalyMonitor:
 
             else:
                 # Fall back to unified orchestrator data
-                heatmap_data = (
-                    unified_data_orchestrator.get_equipment_anomaly_heatmap_data(
-                        time_window="24hour"
-                    )
-                )
+                heatmap_data = unified_data_orchestrator.get_equipment_anomaly_heatmap_data(time_window="24hour")
 
             if not heatmap_data["has_data"]:
                 fig = go.Figure()
                 fig.add_annotation(
-                    text=heatmap_data.get(
-                        "message", "No anomalies detected<br>in last 24 hours"
-                    ),
+                    text=heatmap_data.get("message", "No anomalies detected<br>in last 24 hours"),
                     xref="paper",
                     yref="paper",
                     x=0.5,
@@ -1761,10 +1607,7 @@ class AnomalyMonitor:
                 return fig
 
             # Create shortened equipment labels for display
-            equipment_labels = [
-                eq_id.split("-")[1] if "-" in eq_id else eq_id[:6]
-                for eq_id in equipment_ids
-            ]
+            equipment_labels = [eq_id.split("-")[1] if "-" in eq_id else eq_id[:6] for eq_id in equipment_ids]
 
             # Create heatmap
             fig = go.Figure(
@@ -1794,9 +1637,7 @@ class AnomalyMonitor:
             logger.error(f"Error creating equipment anomaly heatmap: {e}")
             return go.Figure()
 
-    def _create_nasa_failure_pattern_analysis(
-        self, subsystem: str = "POWER"
-    ) -> go.Figure:
+    def _create_nasa_failure_pattern_analysis(self, subsystem: str = "POWER") -> go.Figure:
         """Create NASA subsystem failure pattern analysis using real model predictions"""
         try:
             # Import unified data orchestrator and model manager
@@ -1812,9 +1653,7 @@ class AnomalyMonitor:
             # Generate multiple time windows to create patterns
             time_windows = [5, 15, 30, 60]  # minutes
             for time_window in time_windows:
-                predictions = pretrained_model_manager.get_real_time_predictions(
-                    time_window_minutes=time_window
-                )
+                predictions = pretrained_model_manager.get_real_time_predictions(time_window_minutes=time_window)
                 for pred in predictions:
                     pred["time_window"] = time_window
                 all_predictions.extend(predictions)
@@ -1850,9 +1689,7 @@ class AnomalyMonitor:
 
                 # Create bar chart of anomaly patterns
                 equipment_ids = list(equipment_scores.keys())
-                avg_scores = [
-                    np.mean(equipment_scores[eq_id]) for eq_id in equipment_ids
-                ]
+                avg_scores = [np.mean(equipment_scores[eq_id]) for eq_id in equipment_ids]
                 anomaly_counts = [equipment_counts[eq_id] for eq_id in equipment_ids]
 
                 # Create subplot with two y-axes
@@ -1861,10 +1698,7 @@ class AnomalyMonitor:
                 # Add average anomaly scores
                 fig.add_trace(
                     go.Bar(
-                        x=[
-                            eq_id.split("-")[1] if "-" in eq_id else eq_id[:6]
-                            for eq_id in equipment_ids
-                        ],
+                        x=[eq_id.split("-")[1] if "-" in eq_id else eq_id[:6] for eq_id in equipment_ids],
                         y=avg_scores,
                         name="Avg Anomaly Score",
                         marker_color="rgba(255, 99, 71, 0.7)",
@@ -1876,10 +1710,7 @@ class AnomalyMonitor:
                 # Add anomaly count
                 fig.add_trace(
                     go.Scatter(
-                        x=[
-                            eq_id.split("-")[1] if "-" in eq_id else eq_id[:6]
-                            for eq_id in equipment_ids
-                        ],
+                        x=[eq_id.split("-")[1] if "-" in eq_id else eq_id[:6] for eq_id in equipment_ids],
                         y=anomaly_counts,
                         mode="lines+markers",
                         name="Anomaly Count",
@@ -2004,9 +1835,7 @@ class AnomalyMonitor:
                 xaxis_title="Hour of Day",
                 yaxis_title="Anomaly Count",
                 height=300,
-                legend=dict(
-                    orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-                ),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             )
 
             return fig
@@ -2126,12 +1955,8 @@ class AnomalyMonitor:
                 ),
                 dbc.ModalFooter(
                     [
-                        dbc.Button(
-                            "Save Settings", id="save-settings-btn", color="primary"
-                        ),
-                        dbc.Button(
-                            "Cancel", id="cancel-settings-btn", color="secondary"
-                        ),
+                        dbc.Button("Save Settings", id="save-settings-btn", color="primary"),
+                        dbc.Button("Cancel", id="cancel-settings-btn", color="secondary"),
                     ]
                 ),
             ],
@@ -2140,9 +1965,7 @@ class AnomalyMonitor:
             is_open=False,
         )
 
-    def get_real_time_anomaly_data(
-        self, time_window: str = "5min"
-    ) -> List[Dict[str, Any]]:
+    def get_real_time_anomaly_data(self, time_window: str = "5min") -> List[Dict[str, Any]]:
         """Get real-time anomaly detection results using unified orchestrator
 
         Args:
@@ -2158,9 +1981,7 @@ class AnomalyMonitor:
             )
 
             # Get unified anomaly data
-            unified_data = unified_data_orchestrator.get_unified_anomaly_data(
-                time_window=time_window
-            )
+            unified_data = unified_data_orchestrator.get_unified_anomaly_data(time_window=time_window)
 
             # Convert to expected format for backward compatibility
             anomaly_data = []
@@ -2228,9 +2049,7 @@ class AnomalyMonitor:
 
                 # Create simulated sensor data for visualization
                 n_points = max(50, len(df))
-                time_range = pd.date_range(
-                    end=datetime.now(), periods=n_points, freq="30S"
-                )
+                time_range = pd.date_range(end=datetime.now(), periods=n_points, freq="30S")
 
                 # Generate realistic sensor patterns based on anomaly data
                 normal_data = np.random.normal(0.5, 0.1, n_points)
@@ -2248,21 +2067,15 @@ class AnomalyMonitor:
 
                         # Modify sensor reading if anomalous
                         if data["is_anomaly"]:
-                            normal_data[i] += np.random.normal(
-                                0.3, 0.1
-                            )  # Anomalous spike
+                            normal_data[i] += np.random.normal(0.3, 0.1)  # Anomalous spike
 
                 # Generate secondary sensor signal
                 secondary_sensor = "voltage" if len(anomaly_data) > 0 else None
-                anomaly_values = (
-                    normal_data * 1.1 + np.random.randn(len(normal_data)) * 0.1
-                )
+                anomaly_values = normal_data * 1.1 + np.random.randn(len(normal_data)) * 0.1
 
                 # Create title based on detected equipment
                 equipment_types = df["equipment_type"].unique()
-                title_text = (
-                    f"NASA Pre-trained Models: {', '.join(equipment_types[:2])}"
-                )
+                title_text = f"NASA Pre-trained Models: {', '.join(equipment_types[:2])}"
 
             else:
                 # No anomaly data available - create minimal plot
@@ -2371,9 +2184,7 @@ class AnomalyMonitor:
             hovermode="x unified",
             template="plotly_white",
             margin=dict(l=0, r=0, t=30, b=0),
-            legend=dict(
-                orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-            ),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         )
 
         fig.update_xaxes(title_text="Time", row=2, col=1)
@@ -2418,9 +2229,7 @@ class AnomalyMonitor:
             yaxis=dict(range=[0, 1]),
             template="plotly_white",
             margin=dict(l=0, r=0, t=0, b=0),
-            legend=dict(
-                orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-            ),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         )
 
         return fig
@@ -2437,12 +2246,10 @@ class AnomalyMonitor:
         # Hour of day pattern
         hours = list(range(24))
         patterns = {
-            "Temperature": np.random.poisson(2, 24)
-            + np.sin(np.linspace(0, 2 * np.pi, 24)) * 2,
+            "Temperature": np.random.poisson(2, 24) + np.sin(np.linspace(0, 2 * np.pi, 24)) * 2,
             "Pressure": np.random.poisson(1, 24),
             "Vibration": np.random.poisson(3, 24),
-            "Current": np.random.poisson(2, 24)
-            + np.cos(np.linspace(0, 2 * np.pi, 24)) * 1.5,
+            "Current": np.random.poisson(2, 24) + np.cos(np.linspace(0, 2 * np.pi, 24)) * 1.5,
             "Flow Rate": np.random.poisson(1, 24),
         }
 
@@ -2539,9 +2346,7 @@ class AnomalyMonitor:
                 options.append({"label": f"{subsystem} Systems", "value": subsystem})
 
             # Add individual equipment
-            options.append(
-                {"label": "--- Individual Equipment ---", "value": "", "disabled": True}
-            )
+            options.append({"label": "--- Individual Equipment ---", "value": "", "disabled": True})
 
             for equipment in all_equipment:
                 label = f"{equipment.equipment_id} - {equipment.equipment_type}"
@@ -2557,9 +2362,7 @@ class AnomalyMonitor:
         """Get hierarchical equipment options for enhanced dropdown using DropdownStateManager"""
         try:
             # Use the new dropdown state manager
-            dropdown_options = self.dropdown_manager.get_equipment_options(
-                include_all=True
-            )
+            dropdown_options = self.dropdown_manager.get_equipment_options(include_all=True)
 
             # Convert DropdownOption objects to dict format for Dash
             options = []
@@ -2578,17 +2381,13 @@ class AnomalyMonitor:
             logger.error(f"Error getting hierarchical equipment options: {e}")
             return [{"label": "All Equipment", "value": "ALL"}]
 
-    def _get_sensor_options_for_equipment(
-        self, equipment_id: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+    def _get_sensor_options_for_equipment(self, equipment_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """Get sensor options for specific equipment using DropdownStateManager"""
         try:
             # Use the new dropdown state manager
             if equipment_id:
-                dropdown_options = (
-                    self.dropdown_manager.get_sensor_options_for_equipment(
-                        equipment_id, include_all=True
-                    )
+                dropdown_options = self.dropdown_manager.get_sensor_options_for_equipment(
+                    equipment_id, include_all=True
                 )
             else:
                 dropdown_options = []
@@ -2652,9 +2451,7 @@ class AnomalyMonitor:
 
         except Exception as e:
             logger.error(f"Error creating streaming status: {e}")
-            return dbc.Alert(
-                "Error getting streaming status", color="danger", className="p-2 mb-0"
-            )
+            return dbc.Alert("Error getting streaming status", color="danger", className="p-2 mb-0")
 
     def get_anomalies_table_data(self) -> List[Dict]:
         """Get data for anomalies table using real model predictions
@@ -2675,14 +2472,10 @@ class AnomalyMonitor:
             # Get predictions from multiple time windows for richer data
             time_windows = [5, 15, 30, 60]  # minutes
             for time_window in time_windows:
-                predictions = pretrained_model_manager.get_real_time_predictions(
-                    time_window_minutes=time_window
-                )
+                predictions = pretrained_model_manager.get_real_time_predictions(time_window_minutes=time_window)
                 for pred in predictions:
                     pred["time_window"] = time_window
-                    pred["prediction_time"] = datetime.now() - timedelta(
-                        minutes=time_window
-                    )
+                    pred["prediction_time"] = datetime.now() - timedelta(minutes=time_window)
                 all_predictions.extend(predictions)
 
             # Create table data from real predictions
@@ -2690,9 +2483,7 @@ class AnomalyMonitor:
 
             if all_predictions:
                 # Sort by anomaly score (highest first)
-                all_predictions.sort(
-                    key=lambda x: x.get("anomaly_score", 0.0), reverse=True
-                )
+                all_predictions.sort(key=lambda x: x.get("anomaly_score", 0.0), reverse=True)
 
                 for i, pred in enumerate(all_predictions[:20]):  # Limit to top 20
                     equipment_id = pred["equipment_id"]
@@ -2717,19 +2508,12 @@ class AnomalyMonitor:
                         severity_color = "success"
 
                     record = {
-                        "timestamp": pred.get(
-                            "prediction_time", datetime.now()
-                        ).strftime("%Y-%m-%d %H:%M:%S"),
-                        "equipment": (
-                            equipment_id.split("-")[1]
-                            if "-" in equipment_id
-                            else equipment_id[:8]
-                        ),
+                        "timestamp": pred.get("prediction_time", datetime.now()).strftime("%Y-%m-%d %H:%M:%S"),
+                        "equipment": (equipment_id.split("-")[1] if "-" in equipment_id else equipment_id[:8]),
                         "type": equipment_info.get("subsystem", "Unknown"),
                         "severity": severity,
                         "score": f"{anomaly_score:.3f}",
-                        "model": f"LSTM-AE ({model_type})"
-                        + (" [Sim]" if is_simulated else " [Real]"),
+                        "model": f"LSTM-AE ({model_type})" + (" [Sim]" if is_simulated else " [Real]"),
                         "status": "ANOMALY" if is_anomaly else "NORMAL",
                         "action": "Investigate" if is_anomaly else "Monitor",
                     }
@@ -2738,9 +2522,7 @@ class AnomalyMonitor:
                 return table_data
 
             # Fall back to unified orchestrator data if no model predictions
-            unified_data = unified_data_orchestrator.get_unified_anomaly_data(
-                time_window="24hour"
-            )
+            unified_data = unified_data_orchestrator.get_unified_anomaly_data(time_window="24hour")
 
             if unified_data:
                 # Format for table display
@@ -2768,9 +2550,7 @@ class AnomalyMonitor:
                 if model_info:
                     sample_data.append(
                         {
-                            "timestamp": (
-                                datetime.now() - timedelta(minutes=i * 5)
-                            ).strftime("%Y-%m-%d %H:%M:%S"),
+                            "timestamp": (datetime.now() - timedelta(minutes=i * 5)).strftime("%Y-%m-%d %H:%M:%S"),
                             "equipment": equipment_id,
                             "type": model_info["equipment_type"],
                             "severity": "Normal",
@@ -2808,9 +2588,7 @@ class AnomalyMonitor:
                     "severity_counts", {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
                 ),
                 "alert_rate_per_hour": alert_summary.get("alert_rate_per_hour", 0),
-                "critical_equipment_count": alert_summary.get(
-                    "critical_equipment_count", 0
-                ),
+                "critical_equipment_count": alert_summary.get("critical_equipment_count", 0),
                 "monitoring_status": alert_summary.get("monitoring_status", "Active"),
                 "pending_alerts": alert_summary.get("pending_alerts", 0),
                 "last_alert_time": alert_summary.get("last_alert_time", datetime.now()),
@@ -2877,9 +2655,7 @@ class AnomalyMonitor:
                 unified_data_controller,
             )
 
-            logger.info(
-                f"Getting sensor time series for {equipment_id}, sensors: {selected_sensors}"
-            )
+            logger.info(f"Getting sensor time series for {equipment_id}, sensors: {selected_sensors}")
 
             # Try to get real NASA dataset first
             if equipment_id and selected_sensors:
@@ -2900,77 +2676,53 @@ class AnomalyMonitor:
                             sensor_data[sensor] = []
 
                         # Process the NASA data points
-                        for i, data_point in enumerate(
-                            nasa_data[-timesteps:]
-                        ):  # Use latest data
+                        for i, data_point in enumerate(nasa_data[-timesteps:]):  # Use latest data
                             # Create realistic timestamps (assuming 1 second intervals)
-                            timestamp = datetime.now() - timedelta(
-                                seconds=timesteps - i
-                            )
+                            timestamp = datetime.now() - timedelta(seconds=timesteps - i)
                             timestamps.append(timestamp)
 
                             # Extract sensor values - handle both dict and array formats
                             sensor_values = {}
                             if isinstance(data_point, dict):
                                 # Handle dictionary format
-                                sensor_values = data_point.get(
-                                    "sensor_values", data_point
-                                )
+                                sensor_values = data_point.get("sensor_values", data_point)
                             else:
                                 # Handle array/direct values format
-                                if hasattr(data_point, "__iter__") and not isinstance(
-                                    data_point, str
-                                ):
+                                if hasattr(data_point, "__iter__") and not isinstance(data_point, str):
                                     # Map array indices to sensor names
                                     for idx, sensor in enumerate(selected_sensors):
                                         if idx < len(data_point):
-                                            sensor_values[sensor] = float(
-                                                data_point[idx]
-                                            )
+                                            sensor_values[sensor] = float(data_point[idx])
                                 else:
                                     # Single value - assign to first sensor
                                     if selected_sensors:
-                                        sensor_values[selected_sensors[0]] = float(
-                                            data_point
-                                        )
+                                        sensor_values[selected_sensors[0]] = float(data_point)
 
                             # Fill sensor data arrays
                             for sensor in selected_sensors:
                                 if sensor in sensor_values:
                                     value = sensor_values[sensor]
                                 elif sensor.replace(" ", "_").lower() in sensor_values:
-                                    value = sensor_values[
-                                        sensor.replace(" ", "_").lower()
-                                    ]
+                                    value = sensor_values[sensor.replace(" ", "_").lower()]
                                 elif sensor.replace("_", " ").title() in sensor_values:
-                                    value = sensor_values[
-                                        sensor.replace("_", " ").title()
-                                    ]
+                                    value = sensor_values[sensor.replace("_", " ").title()]
                                 else:
                                     # Generate realistic sensor data based on sensor type
-                                    value = self._generate_realistic_sensor_value(
-                                        sensor, i
-                                    )
+                                    value = self._generate_realistic_sensor_value(sensor, i)
 
                                 sensor_data[sensor].append(value)
 
-                        logger.info(
-                            f"Generated {len(timestamps)} data points for {len(selected_sensors)} sensors"
-                        )
+                        logger.info(f"Generated {len(timestamps)} data points for {len(selected_sensors)} sensors")
 
                         # Get anomaly data for highlighting
-                        anomaly_data = (
-                            unified_data_orchestrator.get_unified_anomaly_data(
-                                time_window=time_window, equipment_filter=equipment_id
-                            )
+                        anomaly_data = unified_data_orchestrator.get_unified_anomaly_data(
+                            time_window=time_window, equipment_filter=equipment_id
                         )
 
                         # Convert anomaly data to timestamps for plotting
                         anomalies = []
                         if anomaly_data:
-                            for anomaly in anomaly_data[
-                                :10
-                            ]:  # Limit to recent anomalies
+                            for anomaly in anomaly_data[:10]:  # Limit to recent anomalies
                                 anomalies.append(
                                     {
                                         "timestamp": anomaly.timestamp,
@@ -2987,14 +2739,10 @@ class AnomalyMonitor:
                         }
 
                 except Exception as nasa_error:
-                    logger.warning(
-                        f"Failed to get NASA dataset: {nasa_error}, falling back to telemetry"
-                    )
+                    logger.warning(f"Failed to get NASA dataset: {nasa_error}, falling back to telemetry")
 
             # Fallback to original telemetry method
-            telemetry_data = unified_data_orchestrator.get_real_time_telemetry(
-                time_window=time_window
-            )
+            telemetry_data = unified_data_orchestrator.get_real_time_telemetry(time_window=time_window)
 
             # Get anomaly data for the same time window
             anomaly_data = unified_data_orchestrator.get_unified_anomaly_data(
@@ -3003,9 +2751,7 @@ class AnomalyMonitor:
 
             # Filter telemetry data by equipment if specified
             if equipment_id:
-                telemetry_data = [
-                    d for d in telemetry_data if d.get("equipment_id") == equipment_id
-                ]
+                telemetry_data = [d for d in telemetry_data if d.get("equipment_id") == equipment_id]
 
             if not telemetry_data:
                 return {"timestamps": [], "sensors": {}, "anomalies": []}
@@ -3030,16 +2776,12 @@ class AnomalyMonitor:
 
             # Filter sensors if specified
             if selected_sensors:
-                sensor_data = {
-                    k: v for k, v in sensor_data.items() if k in selected_sensors
-                }
+                sensor_data = {k: v for k, v in sensor_data.items() if k in selected_sensors}
 
             # Process anomaly data for highlighting
             anomaly_periods = []
             for anomaly in anomaly_data:
-                if anomaly.is_anomaly and (
-                    not equipment_id or anomaly.equipment_id == equipment_id
-                ):
+                if anomaly.is_anomaly and (not equipment_id or anomaly.equipment_id == equipment_id):
                     anomaly_periods.append(
                         {
                             "timestamp": anomaly.timestamp,
@@ -3060,9 +2802,7 @@ class AnomalyMonitor:
             logger.error(f"Error getting sensor time series data: {e}")
             return {"timestamps": [], "sensors": {}, "anomalies": []}
 
-    def _generate_realistic_sensor_value(
-        self, sensor_name: str, timestep: int
-    ) -> float:
+    def _generate_realistic_sensor_value(self, sensor_name: str, timestep: int) -> float:
         """Generate realistic sensor values based on sensor type and timestep
 
         Args:
@@ -3081,41 +2821,31 @@ class AnomalyMonitor:
         if any(word in sensor_lower for word in ["voltage", "volt"]):
             # Voltage: 0.8-1.0 with minor fluctuations
             base = 0.9
-            variation = (
-                0.05 * np.sin(time_factor * 2 * np.pi) + 0.02 * np.random.normal()
-            )
+            variation = 0.05 * np.sin(time_factor * 2 * np.pi) + 0.02 * np.random.normal()
             return np.clip(base + variation, 0.7, 1.0)
 
         elif any(word in sensor_lower for word in ["current", "amp"]):
             # Current: 0.5-0.8 with periodic patterns
             base = 0.65
-            variation = (
-                0.1 * np.sin(time_factor * 4 * np.pi) + 0.03 * np.random.normal()
-            )
+            variation = 0.1 * np.sin(time_factor * 4 * np.pi) + 0.03 * np.random.normal()
             return np.clip(base + variation, 0.4, 0.9)
 
         elif any(word in sensor_lower for word in ["temperature", "temp", "thermal"]):
             # Temperature: Slowly varying around 0.6
             base = 0.6
-            variation = (
-                0.08 * np.sin(time_factor * 0.5 * np.pi) + 0.02 * np.random.normal()
-            )
+            variation = 0.08 * np.sin(time_factor * 0.5 * np.pi) + 0.02 * np.random.normal()
             return np.clip(base + variation, 0.4, 0.8)
 
         elif any(word in sensor_lower for word in ["pressure", "press"]):
             # Pressure: More stable around 0.7
             base = 0.7
-            variation = (
-                0.03 * np.sin(time_factor * 3 * np.pi) + 0.01 * np.random.normal()
-            )
+            variation = 0.03 * np.sin(time_factor * 3 * np.pi) + 0.01 * np.random.normal()
             return np.clip(base + variation, 0.6, 0.8)
 
         elif any(word in sensor_lower for word in ["power", "watt"]):
             # Power: Variable depending on load
             base = 0.55
-            variation = (
-                0.15 * np.sin(time_factor * 1.5 * np.pi) + 0.05 * np.random.normal()
-            )
+            variation = 0.15 * np.sin(time_factor * 1.5 * np.pi) + 0.05 * np.random.normal()
             return np.clip(base + variation, 0.3, 0.9)
 
         elif any(word in sensor_lower for word in ["battery", "charge"]):
@@ -3131,14 +2861,10 @@ class AnomalyMonitor:
         else:
             # Generic sensor: Random walk around 0.5
             base = 0.5
-            variation = (
-                0.1 * np.sin(time_factor * 2 * np.pi) + 0.04 * np.random.normal()
-            )
+            variation = 0.1 * np.sin(time_factor * 2 * np.pi) + 0.04 * np.random.normal()
             return np.clip(base + variation, 0.2, 0.8)
 
-    def get_available_sensors_for_equipment(
-        self, equipment_id: Optional[str] = None
-    ) -> List[Dict[str, str]]:
+    def get_available_sensors_for_equipment(self, equipment_id: Optional[str] = None) -> List[Dict[str, str]]:
         """Get available sensors for the specified equipment
 
         Args:
@@ -3178,23 +2904,16 @@ class AnomalyMonitor:
                         "cpu_usage",
                         "memory_usage",
                     ]
-                    return [
-                        {"label": sensor.title(), "value": sensor}
-                        for sensor in default_sensors
-                    ]
+                    return [{"label": sensor.title(), "value": sensor} for sensor in default_sensors]
 
                 # Create options for dropdown
                 sensor_options = []
                 for sensor in sorted(all_sensors):
-                    sensor_options.append(
-                        {"label": sensor.replace("_", " ").title(), "value": sensor}
-                    )
+                    sensor_options.append({"label": sensor.replace("_", " ").title(), "value": sensor})
                 return sensor_options
 
             # Get equipment-specific sensors from equipment mapper using proper method
-            sensor_options = equipment_mapper.get_sensor_options_by_equipment(
-                equipment_id
-            )
+            sensor_options = equipment_mapper.get_sensor_options_by_equipment(equipment_id)
             if sensor_options:
                 logger.info(f"Found {len(sensor_options)} sensors for {equipment_id}")
 
@@ -3210,13 +2929,9 @@ class AnomalyMonitor:
                 return formatted_options
 
             # Fallback: Try to get from recent telemetry data
-            telemetry_data = unified_data_orchestrator.get_real_time_telemetry(
-                time_window="1min"
-            )
+            telemetry_data = unified_data_orchestrator.get_real_time_telemetry(time_window="1min")
             if equipment_id:
-                telemetry_data = [
-                    d for d in telemetry_data if d.get("equipment_id") == equipment_id
-                ]
+                telemetry_data = [d for d in telemetry_data if d.get("equipment_id") == equipment_id]
 
             if telemetry_data:
                 # Extract unique sensor names from telemetry data
@@ -3228,15 +2943,11 @@ class AnomalyMonitor:
                 if all_sensors:
                     sensor_options = []
                     for sensor in sorted(all_sensors):
-                        sensor_options.append(
-                            {"label": sensor.replace("_", " ").title(), "value": sensor}
-                        )
+                        sensor_options.append({"label": sensor.replace("_", " ").title(), "value": sensor})
                     return sensor_options
 
             # Final fallback - default sensors
-            logger.warning(
-                f"No sensors found for {equipment_id}, using default sensors"
-            )
+            logger.warning(f"No sensors found for {equipment_id}, using default sensors")
             default_sensors = [
                 "temperature",
                 "pressure",
@@ -3247,17 +2958,13 @@ class AnomalyMonitor:
                 "cpu_usage",
                 "memory_usage",
             ]
-            return [
-                {"label": sensor.title(), "value": sensor} for sensor in default_sensors
-            ]
+            return [{"label": sensor.title(), "value": sensor} for sensor in default_sensors]
 
         except Exception as e:
             logger.error(f"Error getting available sensors for {equipment_id}: {e}")
             # Return basic default sensors on error
             default_sensors = ["voltage", "current", "temperature", "pressure"]
-            return [
-                {"label": sensor.title(), "value": sensor} for sensor in default_sensors
-            ]
+            return [{"label": sensor.title(), "value": sensor} for sensor in default_sensors]
 
     def create_enhanced_sensor_time_series_chart(
         self,
@@ -3277,9 +2984,7 @@ class AnomalyMonitor:
         """
         try:
             # Get sensor time series data
-            data = self.get_sensor_time_series_data(
-                equipment_id, time_window, selected_sensors
-            )
+            data = self.get_sensor_time_series_data(equipment_id, time_window, selected_sensors)
 
             fig = go.Figure()
 
@@ -3389,9 +3094,7 @@ class AnomalyMonitor:
                 yaxis_title="Sensor Values",
                 template="plotly_white",
                 margin=dict(l=50, r=50, t=60, b=50),
-                legend=dict(
-                    orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-                ),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                 hovermode="x unified",
                 shapes=anomaly_shapes,
                 xaxis=dict(
@@ -3435,9 +3138,7 @@ class AnomalyMonitor:
             )
             return fig
 
-    def create_realtime_plot_from_unified_data(
-        self, anomaly_data: List, time_window: str = "5min"
-    ) -> go.Figure:
+    def create_realtime_plot_from_unified_data(self, anomaly_data: List, time_window: str = "5min") -> go.Figure:
         """Create real-time plot from unified anomaly data
 
         Args:
@@ -3575,9 +3276,7 @@ class AnomalyMonitor:
                 Input("subsystem-selector", "value"),
             ],
         )
-        def update_central_filters_and_sensors(
-            equipment_id, hierarchical_equipment_id, subsystem
-        ):
+        def update_central_filters_and_sensors(equipment_id, hierarchical_equipment_id, subsystem):
             """Update central state and sensor options when filters change using DropdownStateManager"""
             logger.info(
                 f"[DROPDOWN] CALLBACK TRIGGERED: equipment_id={equipment_id}, hierarchical={hierarchical_equipment_id}, subsystem={subsystem}"
@@ -3588,9 +3287,7 @@ class AnomalyMonitor:
 
             # Filter out subsystem groups (they contain underscores like SMAP_POWER, MSL_MOBILITY)
             # Only keep actual equipment IDs (like SMAP-PWR-001, MSL-MOB-001)
-            if selected_equipment and (
-                "_" in selected_equipment and "-" not in selected_equipment
-            ):
+            if selected_equipment and ("_" in selected_equipment and "-" not in selected_equipment):
                 # This is a subsystem group, not an actual equipment
                 selected_equipment = None
 
@@ -3602,21 +3299,15 @@ class AnomalyMonitor:
             sensor_options = []
             sensor_count = "0 sensors"
 
-            logger.info(
-                f"[DROPDOWN] OPTIONS UPDATE: Processing equipment={selected_equipment}"
-            )
+            logger.info(f"[DROPDOWN] OPTIONS UPDATE: Processing equipment={selected_equipment}")
 
             try:
                 if selected_equipment:
-                    logger.info(
-                        f"[DROPDOWN] GETTING SENSORS for equipment: {selected_equipment}"
-                    )
+                    logger.info(f"[DROPDOWN] GETTING SENSORS for equipment: {selected_equipment}")
 
                     # Use the new dropdown state manager for sensor options
-                    dropdown_sensor_options = (
-                        self.dropdown_manager.get_sensor_options_for_equipment(
-                            selected_equipment, include_all=True
-                        )
+                    dropdown_sensor_options = self.dropdown_manager.get_sensor_options_for_equipment(
+                        selected_equipment, include_all=True
                     )
 
                     if dropdown_sensor_options:
@@ -3632,17 +3323,13 @@ class AnomalyMonitor:
                             sensor_options.append(dash_option)
 
                         sensor_count = f"{len(sensor_options)} sensors"
-                        logger.info(
-                            f"[DROPDOWN] SUCCESS: Found {len(sensor_options)} sensors for {selected_equipment}"
-                        )
+                        logger.info(f"[DROPDOWN] SUCCESS: Found {len(sensor_options)} sensors for {selected_equipment}")
 
                         # Log the actual sensor names
                         sensor_names = [opt["label"] for opt in sensor_options]
                         logger.info(f"[DROPDOWN] NAMES: {sensor_names}")
                     else:
-                        logger.warning(
-                            f"[DROPDOWN] WARNING: No sensors found for {selected_equipment}"
-                        )
+                        logger.warning(f"[DROPDOWN] WARNING: No sensors found for {selected_equipment}")
                         sensor_options = [
                             {
                                 "label": "No sensors available",
@@ -3651,9 +3338,7 @@ class AnomalyMonitor:
                             }
                         ]
                 else:
-                    logger.info(
-                        f"[DROPDOWN] INFO: No equipment selected, showing default message"
-                    )
+                    logger.info(f"[DROPDOWN] INFO: No equipment selected, showing default message")
                     sensor_options = [
                         {
                             "label": "Select equipment first",
@@ -3668,21 +3353,15 @@ class AnomalyMonitor:
                         unified_data_orchestrator,
                     )
 
-                    unified_data_orchestrator.set_equipment_selection(
-                        selected_equipment
-                    )
+                    unified_data_orchestrator.set_equipment_selection(selected_equipment)
                     unified_data_orchestrator.set_subsystem_filter(subsystem)
                     logger.info(f"[DROPDOWN] Successfully updated unified orchestrator")
                 except Exception as e:
-                    logger.warning(
-                        f"[DROPDOWN] Could not update unified orchestrator: {e}"
-                    )
+                    logger.warning(f"[DROPDOWN] Could not update unified orchestrator: {e}")
 
             except Exception as e:
                 logger.error(f"[DROPDOWN] ERROR: Failed to get sensor options: {e}")
-                sensor_options = [
-                    {"label": "Error loading sensors", "value": None, "disabled": True}
-                ]
+                sensor_options = [{"label": "Error loading sensors", "value": None, "disabled": True}]
                 sensor_count = "Error"
 
             return selected_equipment, subsystem, sensor_options, sensor_count
@@ -3886,9 +3565,7 @@ class AnomalyMonitor:
                 Input("chart-options", "value"),
             ],
         )
-        def update_enhanced_realtime_plot(
-            n, selected_sensors, time_window, chart_type, chart_options
-        ):
+        def update_enhanced_realtime_plot(n, selected_sensors, time_window, chart_type, chart_options):
             """Update enhanced real-time plot with multi-sensor visualization"""
             try:
                 if not selected_sensors:
@@ -3942,9 +3619,7 @@ class AnomalyMonitor:
                     showarrow=False,
                     font=dict(size=14, color="red"),
                 )
-                fig.update_layout(
-                    title="Chart Error", template="plotly_white", height=600
-                )
+                fig.update_layout(title="Chart Error", template="plotly_white", height=600)
                 return fig
 
         @app.callback(
@@ -3957,9 +3632,7 @@ class AnomalyMonitor:
                 return self._create_streaming_status_indicator()
             except Exception as e:
                 logger.error(f"Error updating streaming status: {e}")
-                return dbc.Alert(
-                    "Error getting status", color="danger", className="p-2 mb-0"
-                )
+                return dbc.Alert("Error getting status", color="danger", className="p-2 mb-0")
 
         # Quick sensor selection callbacks
         @app.callback(
@@ -4030,9 +3703,7 @@ class AnomalyMonitor:
                 Input("chart-correlation-btn", "n_clicks"),
             ],
         )
-        def update_chart_type_from_buttons(
-            unified_clicks, subplots_clicks, heatmap_clicks, corr_clicks
-        ):
+        def update_chart_type_from_buttons(unified_clicks, subplots_clicks, heatmap_clicks, corr_clicks):
             """Update chart type from header buttons"""
             ctx = callback_context
             if not ctx.triggered:
@@ -4077,10 +3748,8 @@ class AnomalyMonitor:
 
                 if selected_sensor and selected_sensor != "ALL":
                     # Get metric options from dropdown manager
-                    metric_options = (
-                        self.dropdown_manager.get_metric_options_for_sensor(
-                            equipment_id, selected_sensor, include_calculated=True
-                        )
+                    metric_options = self.dropdown_manager.get_metric_options_for_sensor(
+                        equipment_id, selected_sensor, include_calculated=True
                     )
 
                     # Convert to Dash format
@@ -4108,9 +3777,7 @@ class AnomalyMonitor:
 
             except Exception as e:
                 logger.error(f"[DROPDOWN] Error updating metric options: {e}")
-                return [
-                    {"label": "Error loading metrics", "value": None, "disabled": True}
-                ]
+                return [{"label": "Error loading metrics", "value": None, "disabled": True}]
 
         @app.callback(
             [
@@ -4159,18 +3826,12 @@ class AnomalyMonitor:
                 # Use dropdown manager validation
                 validation = self.dropdown_manager.validate_selection(
                     equipment_id=equipment_id,
-                    sensor_id=(
-                        sensor_id[0]
-                        if isinstance(sensor_id, list) and sensor_id
-                        else sensor_id
-                    ),
+                    sensor_id=(sensor_id[0] if isinstance(sensor_id, list) and sensor_id else sensor_id),
                     metric_id=metric_id,
                 )
 
                 if validation["combination_valid"]:
-                    return dbc.Alert(
-                        "✅ Valid selection", color="success", dismissable=True
-                    )
+                    return dbc.Alert("✅ Valid selection", color="success", dismissable=True)
                 elif validation["equipment_valid"] and validation["sensor_valid"]:
                     return dbc.Alert(
                         "⚠️ Select a metric to complete",
@@ -4192,13 +3853,9 @@ class AnomalyMonitor:
 
             except Exception as e:
                 logger.error(f"[DROPDOWN] Error validating selections: {e}")
-                return dbc.Alert(
-                    "❓ Validation error", color="secondary", dismissable=True
-                )
+                return dbc.Alert("❓ Validation error", color="secondary", dismissable=True)
 
-    def _create_training_progress_chart(
-        self, progress_data: Dict, global_status: Dict
-    ) -> go.Figure:
+    def _create_training_progress_chart(self, progress_data: Dict, global_status: Dict) -> go.Figure:
         """Create dynamic training progress visualization
 
         Args:
@@ -4266,9 +3923,7 @@ class AnomalyMonitor:
                     if eta > 0:
                         status_text.append(f"Training (ETA: {eta:.0f}s)")
                     else:
-                        status_text.append(
-                            f"Epoch {progress.current_epoch}/{progress.total_epochs}"
-                        )
+                        status_text.append(f"Epoch {progress.current_epoch}/{progress.total_epochs}")
                 elif progress.status.value == "failed":
                     status_colors.append("red")
                     status_text.append("[FAIL] Failed")
@@ -4363,7 +4018,5 @@ def register_callbacks(app, data_service=None):
     """Register callbacks for anomaly monitor (placeholder for compatibility)"""
     # Note: This layout uses @callback decorators which are auto-registered
     # This function exists for compatibility with the dashboard launcher
-    logger.info(
-        "Anomaly monitor callbacks are auto-registered via @callback decorators"
-    )
+    logger.info("Anomaly monitor callbacks are auto-registered via @callback decorators")
     return True

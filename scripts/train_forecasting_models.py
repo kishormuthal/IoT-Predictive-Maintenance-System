@@ -71,9 +71,7 @@ class ForecastingModelTrainer:
         self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.training_results = {}
 
-        logger.info(
-            f"Forecasting Model Trainer initialized (Session: {self.session_id})"
-        )
+        logger.info(f"Forecasting Model Trainer initialized (Session: {self.session_id})")
         logger.info(f"Data root: {self.data_root}")
         logger.info(f"Models directory: {self.models_dir}")
         logger.info(f"TensorFlow available: {TENSORFLOW_AVAILABLE}")
@@ -127,14 +125,10 @@ class ForecastingModelTrainer:
                 return None
 
             # Get sensor data (extended history for training)
-            sensor_data = self.data_loader.get_sensor_data(
-                sensor_id, hours_back=8760
-            )  # 1 year
+            sensor_data = self.data_loader.get_sensor_data(sensor_id, hours_back=8760)  # 1 year
 
             if not sensor_data["values"] or len(sensor_data["values"]) < 300:
-                logger.warning(
-                    f"Insufficient data for forecasting training: {sensor_id}"
-                )
+                logger.warning(f"Insufficient data for forecasting training: {sensor_id}")
                 return None
 
             # Convert to numpy array
@@ -160,9 +154,7 @@ class ForecastingModelTrainer:
             }
 
         except Exception as e:
-            logger.error(
-                f"Error preparing forecasting training data for {sensor_id}: {e}"
-            )
+            logger.error(f"Error preparing forecasting training data for {sensor_id}: {e}")
             return None
 
     def validate_forecasting_model(
@@ -178,9 +170,7 @@ class ForecastingModelTrainer:
             forecast_horizon = config.forecast_horizon
 
             if len(validation_data) < sequence_length + forecast_horizon:
-                logger.warning(
-                    "Insufficient validation data for proper forecasting validation"
-                )
+                logger.warning("Insufficient validation data for proper forecasting validation")
                 return {"validation_performed": False, "insufficient_data": True}
 
             # Create test sequences from validation data
@@ -193,9 +183,7 @@ class ForecastingModelTrainer:
                 forecast_horizon,
             ):
                 input_seq = validation_data[i : i + sequence_length]
-                actual_forecast = validation_data[
-                    i + sequence_length : i + sequence_length + forecast_horizon
-                ]
+                actual_forecast = validation_data[i + sequence_length : i + sequence_length + forecast_horizon]
 
                 test_sequences.append(input_seq.flatten())
                 actual_targets.append(actual_forecast.flatten())
@@ -208,9 +196,7 @@ class ForecastingModelTrainer:
             for seq in test_sequences[:5]:  # Test on first 5 sequences
                 seq_reshaped = seq.reshape(-1, 1)
                 forecast_result = model.predict(seq_reshaped, forecast_horizon)
-                predictions.append(
-                    forecast_result["forecast_values"][:forecast_horizon]
-                )
+                predictions.append(forecast_result["forecast_values"][:forecast_horizon])
 
             # Calculate accuracy metrics
             if predictions and actual_targets:
@@ -237,10 +223,7 @@ class ForecastingModelTrainer:
                     mape = (
                         np.mean(
                             np.abs(
-                                (
-                                    actuals_flat[non_zero_actuals]
-                                    - predictions_flat[non_zero_actuals]
-                                )
+                                (actuals_flat[non_zero_actuals] - predictions_flat[non_zero_actuals])
                                 / actuals_flat[non_zero_actuals]
                             )
                         )
@@ -263,11 +246,7 @@ class ForecastingModelTrainer:
                     "mape": float(mape),
                     "r2_score": float(r2),
                     "forecast_horizon_tested": forecast_horizon,
-                    "validation_quality": (
-                        "excellent"
-                        if r2 > 0.8
-                        else "good" if r2 > 0.5 else "needs_improvement"
-                    ),
+                    "validation_quality": ("excellent" if r2 > 0.8 else "good" if r2 > 0.5 else "needs_improvement"),
                 }
 
                 return validation_metrics
@@ -286,9 +265,7 @@ class ForecastingModelTrainer:
             logger.error(f"Error during forecasting validation: {e}")
             return {"validation_performed": False, "error": str(e)}
 
-    def train_sensor_model(
-        self, sensor_id: str, config: TransformerConfig
-    ) -> Optional[Dict[str, Any]]:
+    def train_sensor_model(self, sensor_id: str, config: TransformerConfig) -> Optional[Dict[str, Any]]:
         """
         Train Transformer forecasting model for specific sensor
 
@@ -315,9 +292,7 @@ class ForecastingModelTrainer:
             training_metrics = transformer.train(data_prep["train_data"])
 
             # Validate model
-            validation_metrics = self.validate_forecasting_model(
-                transformer, data_prep["validation_data"], config
-            )
+            validation_metrics = self.validate_forecasting_model(transformer, data_prep["validation_data"], config)
 
             # Calculate training time
             training_time = time.time() - start_time
@@ -364,9 +339,7 @@ class ForecastingModelTrainer:
             logger.info(f"  Version ID: {version_id}")
             logger.info(f"  Training time: {training_time:.1f}s")
             logger.info(f"  R² Score: {validation_metrics.get('r2_score', 'N/A')}")
-            logger.info(
-                f"  Model parameters: {training_metrics.get('model_parameters', 'N/A')}"
-            )
+            logger.info(f"  Model parameters: {training_metrics.get('model_parameters', 'N/A')}")
 
             return result
 
@@ -374,9 +347,7 @@ class ForecastingModelTrainer:
             logger.error(f"Error training forecasting model for {sensor_id}: {e}")
             return None
 
-    def train_all_sensors(
-        self, sensor_list: List[str], config: TransformerConfig
-    ) -> Dict[str, Any]:
+    def train_all_sensors(self, sensor_list: List[str], config: TransformerConfig) -> Dict[str, Any]:
         """
         Train forecasting models for all specified sensors
 
@@ -387,9 +358,7 @@ class ForecastingModelTrainer:
         Returns:
             Training summary
         """
-        logger.info(
-            f"Starting batch forecasting training for {len(sensor_list)} sensors"
-        )
+        logger.info(f"Starting batch forecasting training for {len(sensor_list)} sensors")
         logger.info(f"Configuration: {config.__dict__}")
 
         successful_trains = 0
@@ -397,9 +366,7 @@ class ForecastingModelTrainer:
         total_start_time = time.time()
 
         for i, sensor_id in enumerate(sensor_list, 1):
-            logger.info(
-                f"Training forecasting model {i}/{len(sensor_list)}: {sensor_id}"
-            )
+            logger.info(f"Training forecasting model {i}/{len(sensor_list)}: {sensor_id}")
 
             result = self.train_sensor_model(sensor_id, config)
             if result:
@@ -424,18 +391,14 @@ class ForecastingModelTrainer:
             "successful_trains": successful_trains,
             "failed_trains": failed_trains,
             "total_time_seconds": total_time,
-            "average_time_per_sensor": (
-                total_time / len(sensor_list) if sensor_list else 0
-            ),
+            "average_time_per_sensor": (total_time / len(sensor_list) if sensor_list else 0),
             "tensorflow_available": TENSORFLOW_AVAILABLE,
             "configuration": config.__dict__,
             "results": self.training_results,
         }
 
         # Save training summary
-        summary_file = (
-            self.models_dir / f"forecasting_training_summary_{self.session_id}.json"
-        )
+        summary_file = self.models_dir / f"forecasting_training_summary_{self.session_id}.json"
         with open(summary_file, "w") as f:
             json.dump(summary, f, indent=2, default=str)
 
@@ -451,18 +414,14 @@ class ForecastingModelTrainer:
 def main():
     """Main training script"""
     parser = argparse.ArgumentParser(description="Train Transformer Forecasting Models")
-    parser.add_argument(
-        "--sensors", nargs="+", help="Specific sensors to train (default: all)"
-    )
+    parser.add_argument("--sensors", nargs="+", help="Specific sensors to train (default: all)")
     parser.add_argument(
         "--quick",
         action="store_true",
         help="Quick training mode (faster, less accurate)",
     )
     parser.add_argument("--data-root", default="data/raw", help="Data root directory")
-    parser.add_argument(
-        "--models-dir", default="data/models", help="Models output directory"
-    )
+    parser.add_argument("--models-dir", default="data/models", help="Models output directory")
 
     args = parser.parse_args()
 
@@ -521,9 +480,7 @@ def main():
         # Print individual results
         for sensor_id, result in summary["results"].items():
             if "version_id" in result:
-                validation_quality = result.get("validation_metrics", {}).get(
-                    "validation_quality", "unknown"
-                )
+                validation_quality = result.get("validation_metrics", {}).get("validation_quality", "unknown")
                 r2_score = result.get("validation_metrics", {}).get("r2_score", 0.0)
                 print(
                     f"✓ {sensor_id}: Version {result['version_id']} "

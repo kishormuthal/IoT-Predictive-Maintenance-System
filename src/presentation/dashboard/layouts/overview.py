@@ -169,9 +169,7 @@ class OverviewPage:
                                                 ),
                                             ]
                                         ),
-                                        dbc.CardBody(
-                                            [dcc.Graph(id="anomaly-trend-chart")]
-                                        ),
+                                        dbc.CardBody([dcc.Graph(id="anomaly-trend-chart")]),
                                     ]
                                 )
                             ],
@@ -182,9 +180,7 @@ class OverviewPage:
                                 dbc.Card(
                                     [
                                         dbc.CardHeader("Equipment Status"),
-                                        dbc.CardBody(
-                                            [dcc.Graph(id="equipment-status-chart")]
-                                        ),
+                                        dbc.CardBody([dcc.Graph(id="equipment-status-chart")]),
                                     ]
                                 )
                             ],
@@ -201,9 +197,7 @@ class OverviewPage:
                                 dbc.Card(
                                     [
                                         dbc.CardHeader("Equipment Performance Matrix"),
-                                        dbc.CardBody(
-                                            [html.Div(id="performance-heatmap")]
-                                        ),
+                                        dbc.CardBody([html.Div(id="performance-heatmap")]),
                                     ]
                                 )
                             ],
@@ -214,9 +208,7 @@ class OverviewPage:
                                 dbc.Card(
                                     [
                                         dbc.CardHeader("Failure Predictions"),
-                                        dbc.CardBody(
-                                            [html.Div(id="failure-predictions")]
-                                        ),
+                                        dbc.CardBody([html.Div(id="failure-predictions")]),
                                     ]
                                 )
                             ],
@@ -234,9 +226,7 @@ class OverviewPage:
                                     [
                                         dbc.CardHeader(
                                             [
-                                                html.H5(
-                                                    "Recent Activity", className="mb-0"
-                                                ),
+                                                html.H5("Recent Activity", className="mb-0"),
                                                 dbc.Button(
                                                     "View All",
                                                     size="sm",
@@ -350,9 +340,7 @@ class OverviewPage:
             Metric card component
         """
         trend_color = "success" if trend > 0 else "danger" if trend < 0 else "secondary"
-        trend_icon = (
-            "fa-arrow-up" if trend > 0 else "fa-arrow-down" if trend < 0 else "fa-minus"
-        )
+        trend_icon = "fa-arrow-up" if trend > 0 else "fa-arrow-down" if trend < 0 else "fa-minus"
 
         return dbc.Card(
             [
@@ -379,9 +367,7 @@ class OverviewPage:
                                                 (
                                                     html.Span(
                                                         [
-                                                            html.I(
-                                                                className=f"fas {trend_icon} ms-2"
-                                                            ),
+                                                            html.I(className=f"fas {trend_icon} ms-2"),
                                                             f" {abs(trend):.1f}%",
                                                         ],
                                                         className=f"text-{trend_color}",
@@ -478,29 +464,15 @@ class OverviewPage:
                             className="mb-3",
                         ),
                         # Equipment Types
-                        html.H6(
-                            "Equipment Configuration", className="text-primary mb-3"
-                        ),
+                        html.H6("Equipment Configuration", className="text-primary mb-3"),
                         html.Div(
                             [
-                                self._create_equipment_type_badge(
-                                    "Power Systems", 2, "danger"
-                                ),
-                                self._create_equipment_type_badge(
-                                    "Communication", 2, "info"
-                                ),
-                                self._create_equipment_type_badge(
-                                    "Attitude Control", 2, "primary"
-                                ),
-                                self._create_equipment_type_badge(
-                                    "Thermal Mgmt", 2, "warning"
-                                ),
-                                self._create_equipment_type_badge(
-                                    "Payload/Science", 2, "success"
-                                ),
-                                self._create_equipment_type_badge(
-                                    "Mobility/Nav", 2, "secondary"
-                                ),
+                                self._create_equipment_type_badge("Power Systems", 2, "danger"),
+                                self._create_equipment_type_badge("Communication", 2, "info"),
+                                self._create_equipment_type_badge("Attitude Control", 2, "primary"),
+                                self._create_equipment_type_badge("Thermal Mgmt", 2, "warning"),
+                                self._create_equipment_type_badge("Payload/Science", 2, "success"),
+                                self._create_equipment_type_badge("Mobility/Nav", 2, "secondary"),
                             ],
                             className="d-flex flex-wrap gap-2",
                         ),
@@ -509,9 +481,7 @@ class OverviewPage:
             ]
         )
 
-    def _create_equipment_type_badge(
-        self, name: str, count: int, color: str
-    ) -> html.Div:
+    def _create_equipment_type_badge(self, name: str, count: int, color: str) -> html.Div:
         """Create equipment type badge
 
         Args:
@@ -550,9 +520,7 @@ class OverviewPage:
                     ],
                     className="d-flex justify-content-between mb-1",
                 ),
-                dbc.Progress(
-                    value=value, color=status, className="mb-2", style={"height": "5px"}
-                ),
+                dbc.Progress(value=value, color=status, className="mb-2", style={"height": "5px"}),
             ]
         )
 
@@ -597,9 +565,7 @@ class OverviewPage:
                                     "15 min ago",
                                     "warning",
                                 ),
-                                self._create_mini_alert(
-                                    "Scheduled maintenance due", "1 hour ago", "info"
-                                ),
+                                self._create_mini_alert("Scheduled maintenance due", "1 hour ago", "info"),
                             ],
                         ),
                     ]
@@ -622,9 +588,7 @@ class OverviewPage:
             [
                 html.Span(
                     [
-                        html.I(
-                            className="fas fa-circle me-2", style={"fontSize": "8px"}
-                        ),
+                        html.I(className="fas fa-circle me-2", style={"fontSize": "8px"}),
                         severity,
                     ],
                     className=f"text-{color}",
@@ -649,9 +613,7 @@ class OverviewPage:
             [
                 html.Small(
                     [
-                        html.I(
-                            className=f"fas fa-exclamation-circle text-{severity} me-2"
-                        ),
+                        html.I(className=f"fas fa-exclamation-circle text-{severity} me-2"),
                         message,
                     ]
                 ),
@@ -685,9 +647,7 @@ class OverviewPage:
                                 dbc.Col(
                                     [
                                         html.H4("5", className="mb-0 text-warning"),
-                                        html.Small(
-                                            "In Progress", className="text-muted"
-                                        ),
+                                        html.Small("In Progress", className="text-muted"),
                                     ],
                                     width=4,
                                     className="text-center",
@@ -722,9 +682,7 @@ class OverviewPage:
                                     className="mb-1",
                                     style={"height": "8px"},
                                 ),
-                                html.Small(
-                                    "Unavailable (15%)", className="text-danger"
-                                ),
+                                html.Small("Unavailable (15%)", className="text-danger"),
                                 dbc.Progress(
                                     value=15,
                                     color="danger",
@@ -733,9 +691,7 @@ class OverviewPage:
                                 ),
                             ]
                         ),
-                        html.Small(
-                            "6 Available, 3 Busy, 1 Off-duty", className="text-muted"
-                        ),
+                        html.Small("6 Available, 3 Busy, 1 Off-duty", className="text-muted"),
                         html.Hr(),
                         # Quick actions
                         dbc.ButtonGroup(
@@ -805,9 +761,7 @@ class OverviewPage:
                     # If no pressure column found, use second numeric column
                     if not pressure_col:
                         numeric_cols = df.select_dtypes(include=[np.number]).columns
-                        pressure_col = (
-                            numeric_cols[1] if len(numeric_cols) > 1 else None
-                        )
+                        pressure_col = numeric_cols[1] if len(numeric_cols) > 1 else None
 
                 # Add traces if columns exist
                 if temp_col and temp_col in df.columns:
@@ -835,9 +789,7 @@ class OverviewPage:
 
                 # Add anomaly points
                 if anomalies_data and temp_col and temp_col in df.columns:
-                    anomaly_times = [
-                        pd.to_datetime(anom["timestamp"]) for anom in anomalies_data
-                    ]
+                    anomaly_times = [pd.to_datetime(anom["timestamp"]) for anom in anomalies_data]
                     anomaly_temps = []
 
                     for anom_time in anomaly_times:
@@ -875,9 +827,7 @@ class OverviewPage:
 
         # Create sample anomaly data
         np.random.seed(42)
-        anomaly_counts = (
-            np.random.poisson(5, hours) + np.sin(np.arange(hours) * 0.1) * 3
-        )
+        anomaly_counts = np.random.poisson(5, hours) + np.sin(np.arange(hours) * 0.1) * 3
         critical = np.random.poisson(1, hours)
         high = np.random.poisson(2, hours)
         medium = np.random.poisson(3, hours)
@@ -942,9 +892,7 @@ class OverviewPage:
             yaxis_title="Number of Anomalies",
             hovermode="x unified",
             showlegend=True,
-            legend=dict(
-                orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-            ),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             margin=dict(l=0, r=0, t=30, b=0),
             height=350,
             template="plotly_white",
@@ -1012,9 +960,7 @@ class OverviewPage:
             showlegend=False,
             margin=dict(l=0, r=0, t=0, b=0),
             height=350,
-            annotations=[
-                dict(text="100<br>Total", x=0.5, y=0.5, font_size=20, showarrow=False)
-            ],
+            annotations=[dict(text="100<br>Total", x=0.5, y=0.5, font_size=20, showarrow=False)],
         )
 
         return fig
@@ -1092,15 +1038,9 @@ class OverviewPage:
                     {
                         "equipment": anom.get("equipment_id", f"SMAP_{i+1:03d}"),
                         "probability": probability,
-                        "timeframe": (
-                            "2-4 days" if anom.get("severity") == "HIGH" else "1 week"
-                        ),
+                        "timeframe": ("2-4 days" if anom.get("severity") == "HIGH" else "1 week"),
                         "component": "Sensor Array",
-                        "severity": (
-                            "critical"
-                            if probability > 80
-                            else "high" if probability > 60 else "medium"
-                        ),
+                        "severity": ("critical" if probability > 80 else "high" if probability > 60 else "medium"),
                     }
                 )
 
@@ -1162,9 +1102,7 @@ class OverviewPage:
                                     [
                                         dbc.Col(
                                             [
-                                                html.H6(
-                                                    pred["equipment"], className="mb-1"
-                                                ),
+                                                html.H6(pred["equipment"], className="mb-1"),
                                                 html.Small(
                                                     f"{pred['component']} - {pred['timeframe']}",
                                                     className="text-muted",
@@ -1234,9 +1172,7 @@ class OverviewPage:
                 activities.append(
                     {
                         "icon": "fa-exclamation-triangle",
-                        "color": (
-                            "danger" if anom.get("severity") == "HIGH" else "warning"
-                        ),
+                        "color": ("danger" if anom.get("severity") == "HIGH" else "warning"),
                         "title": f"Anomaly detected on {anom.get('equipment_id', 'SMAP_001')}",
                         "description": f"Anomaly score: {anom.get('anomaly_score', 0):.3f} - NASA {anom.get('equipment_id', 'SMAP')[:4]} telemetry",
                         "time": f"{time_diff} minutes ago",
@@ -1323,9 +1259,7 @@ class OverviewPage:
                                             [
                                                 html.I(
                                                     className=f"fas {activity['icon']} fa-fw",
-                                                    style={
-                                                        "color": f"var(--bs-{activity['color']})"
-                                                    },
+                                                    style={"color": f"var(--bs-{activity['color']})"},
                                                 )
                                             ],
                                             className="activity-icon",
@@ -1384,8 +1318,7 @@ class OverviewPage:
                 "uptime_trend": 0.2,
                 "equipment_online": max(
                     0,
-                    metrics.get("total_equipment", 25)
-                    - metrics.get("active_anomalies", 0),
+                    metrics.get("total_equipment", 25) - metrics.get("active_anomalies", 0),
                 ),
                 "total_equipment": metrics.get("total_equipment", 25),
                 "maintenance_cost": 45280,
@@ -1456,9 +1389,7 @@ class OverviewPage:
             """Update failure predictions"""
             return self.create_failure_predictions()
 
-        @app.callback(
-            Output("activity-feed", "children"), Input("overview-time-range", "value")
-        )
+        @app.callback(Output("activity-feed", "children"), Input("overview-time-range", "value"))
         @fast_callback(ttl=15)
         def update_activity_feed(time_range):
             """Update activity feed"""

@@ -82,9 +82,7 @@ class SensorStream:
         anomaly_flag: bool = False,
     ) -> bool:
         """Add data point using optimized memory manager"""
-        success = add_sensor_data(
-            self.sensor_id, timestamp, value, anomaly_score, anomaly_flag
-        )
+        success = add_sensor_data(self.sensor_id, timestamp, value, anomaly_score, anomaly_flag)
 
         if success:
             self.last_update = timestamp
@@ -98,13 +96,9 @@ class SensorStream:
         """Get recent data points using memory manager"""
         return get_sensor_data(self.sensor_id, count)
 
-    def get_time_range_data(
-        self, start_time: datetime, end_time: datetime
-    ) -> Optional[Dict[str, np.ndarray]]:
+    def get_time_range_data(self, start_time: datetime, end_time: datetime) -> Optional[Dict[str, np.ndarray]]:
         """Get data within time range using memory manager"""
-        return memory_manager.get_sensor_time_range(
-            self.sensor_id, start_time, end_time
-        )
+        return memory_manager.get_sensor_time_range(self.sensor_id, start_time, end_time)
 
     def get_latest_value(self) -> Optional[float]:
         """Get the most recent sensor value"""
@@ -190,12 +184,8 @@ class SensorStreamManager:
         optimize_for_sensors(sensor_count)
 
         logger.info(f"Initialized SensorStreamManager with {sensor_count} sensors")
-        logger.info(
-            f"SMAP sensors: {len([s for s in self.sensor_streams if 'SMAP' in s])}"
-        )
-        logger.info(
-            f"MSL sensors: {len([s for s in self.sensor_streams if 'MSL' in s])}"
-        )
+        logger.info(f"SMAP sensors: {len([s for s in self.sensor_streams if 'SMAP' in s])}")
+        logger.info(f"MSL sensors: {len([s for s in self.sensor_streams if 'MSL' in s])}")
         logger.info(f"Memory manager optimized for {sensor_count} sensors")
 
     def _initialize_sensor_streams(self):
@@ -251,18 +241,14 @@ class SensorStreamManager:
         # Start async processing if enabled
         if self.async_enabled:
             # Create event loop in separate thread
-            self.stream_thread = threading.Thread(
-                target=self._async_stream_wrapper, daemon=True
-            )
+            self.stream_thread = threading.Thread(target=self._async_stream_wrapper, daemon=True)
         else:
             # Fallback to traditional threading
             self.stream_thread = threading.Thread(target=self._stream_loop, daemon=True)
 
         self.stream_thread.start()
 
-        logger.info(
-            f"Started real-time sensor streaming (async={'enabled' if self.async_enabled else 'disabled'})"
-        )
+        logger.info(f"Started real-time sensor streaming (async={'enabled' if self.async_enabled else 'disabled'})")
 
     def _async_stream_wrapper(self):
         """Wrapper to run async streaming in separate thread"""
@@ -332,9 +318,7 @@ class SensorStreamManager:
             # Create async tasks for this batch
             tasks = []
             for equipment_id, records in batch:
-                task = asyncio.create_task(
-                    self._process_equipment_async(equipment_id, records, current_time)
-                )
+                task = asyncio.create_task(self._process_equipment_async(equipment_id, records, current_time))
                 tasks.append(task)
 
             # Execute batch in parallel
@@ -344,13 +328,9 @@ class SensorStreamManager:
             for j, result in enumerate(results):
                 if isinstance(result, Exception):
                     equipment_id = batch[j][0]
-                    logger.error(
-                        f"Async processing failed for equipment {equipment_id}: {result}"
-                    )
+                    logger.error(f"Async processing failed for equipment {equipment_id}: {result}")
 
-    async def _process_equipment_async(
-        self, equipment_id: str, records: List[Dict[str, Any]], current_time: datetime
-    ):
+    async def _process_equipment_async(self, equipment_id: str, records: List[Dict[str, Any]], current_time: datetime):
         """Process equipment data asynchronously"""
         if equipment_id not in self.equipment_sensors:
             return
@@ -393,9 +373,7 @@ class SensorStreamManager:
 
                     # Strategy 1: Name matching
                     for sensor_name, value in sensor_values.items():
-                        if self._match_sensor_name(
-                            sensor_stream.sensor_name, sensor_name
-                        ):
+                        if self._match_sensor_name(sensor_stream.sensor_name, sensor_name):
                             sensor_value = float(value)
                             break
 
@@ -406,9 +384,7 @@ class SensorStreamManager:
                     if sensor_value is not None:
                         # Create async task for sensor processing
                         task = asyncio.create_task(
-                            self._process_sensor_data_async(
-                                sensor_stream, sensor_value, timestamp
-                            )
+                            self._process_sensor_data_async(sensor_stream, sensor_value, timestamp)
                         )
                         sensor_tasks.append(task)
 
@@ -419,20 +395,14 @@ class SensorStreamManager:
 
         # Debug logging
         if equipment_id == "SMAP-PWR-001":
-            logger.debug(
-                f"Async updated {sensors_updated}/{len(equipment_sensor_ids)} sensors for {equipment_id}"
-            )
+            logger.debug(f"Async updated {sensors_updated}/{len(equipment_sensor_ids)} sensors for {equipment_id}")
 
     @async_sensor_task
-    async def _process_sensor_data_async(
-        self, sensor_stream: SensorStream, sensor_value: float, timestamp: datetime
-    ):
+    async def _process_sensor_data_async(self, sensor_stream: SensorStream, sensor_value: float, timestamp: datetime):
         """Process individual sensor data asynchronously"""
         try:
             # Perform sensor-level anomaly detection
-            anomaly_result = await self._detect_sensor_anomaly_async(
-                sensor_stream, sensor_value, timestamp
-            )
+            anomaly_result = await self._detect_sensor_anomaly_async(sensor_stream, sensor_value, timestamp)
 
             # Update sensor stream using memory manager
             success = sensor_stream.add_data_point(
@@ -448,9 +418,7 @@ class SensorStreamManager:
             return success
 
         except Exception as e:
-            logger.error(
-                f"Async sensor processing error for {sensor_stream.sensor_id}: {e}"
-            )
+            logger.error(f"Async sensor processing error for {sensor_stream.sensor_id}: {e}")
             return False
 
     async def _detect_sensor_anomaly_async(
@@ -459,9 +427,7 @@ class SensorStreamManager:
         """Async version of anomaly detection"""
         # Run the existing anomaly detection in thread pool to avoid blocking
         loop = asyncio.get_event_loop()
-        result = await loop.run_in_executor(
-            self.executor, self._detect_sensor_anomaly, sensor_stream, value, timestamp
-        )
+        result = await loop.run_in_executor(self.executor, self._detect_sensor_anomaly, sensor_stream, value, timestamp)
         return result
 
     def stop_streaming(self):
@@ -472,9 +438,7 @@ class SensorStreamManager:
         if self.async_loop and self.async_enabled:
             try:
                 # Schedule cleanup in the async loop
-                future = asyncio.run_coroutine_threadsafe(
-                    self._async_cleanup(), self.async_loop
-                )
+                future = asyncio.run_coroutine_threadsafe(self._async_cleanup(), self.async_loop)
                 future.result(timeout=5.0)
             except Exception as e:
                 logger.error(f"Error during async cleanup: {e}")
@@ -554,17 +518,13 @@ class SensorStreamManager:
                     self.stream_stats["total_updates"] += 1
                     self.stream_stats["last_update_time"] = datetime.now()
                     self.stream_stats["update_rate"] = (
-                        1.0 / (current_time - last_update)
-                        if current_time > last_update
-                        else 0
+                        1.0 / (current_time - last_update) if current_time > last_update else 0
                     )
 
                 last_update = current_time
 
                 # Sleep to maintain update frequency
-                sleep_time = max(
-                    0, (1.0 / self.update_frequency) - (time.time() - current_time)
-                )
+                sleep_time = max(0, (1.0 / self.update_frequency) - (time.time() - current_time))
                 time.sleep(sleep_time)
 
             except Exception as e:
@@ -575,9 +535,7 @@ class SensorStreamManager:
         """Get latest NASA telemetry data"""
         try:
             # Get real-time data from NASA service
-            telemetry_data = self.nasa_service.get_real_time_telemetry(
-                time_window="30s", max_records=50
-            )
+            telemetry_data = self.nasa_service.get_real_time_telemetry(time_window="30s", max_records=50)
 
             return telemetry_data
 
@@ -617,12 +575,8 @@ class SensorStreamManager:
                     sensor_values[key] = value
 
             # Debug logging to understand the data structure
-            if (
-                equipment_id == "SMAP-PWR-001" and sensor_values
-            ):  # Log first equipment to avoid spam
-                logger.debug(
-                    f"Equipment {equipment_id}: Found sensor values: {list(sensor_values.keys())}"
-                )
+            if equipment_id == "SMAP-PWR-001" and sensor_values:  # Log first equipment to avoid spam
+                logger.debug(f"Equipment {equipment_id}: Found sensor values: {list(sensor_values.keys())}")
 
             # Update each sensor stream for this equipment
             if equipment_id in self.equipment_sensors:
@@ -637,9 +591,7 @@ class SensorStreamManager:
                     sensor_value = None
                     matched_key = None
                     for sensor_name, value in sensor_values.items():
-                        if self._match_sensor_name(
-                            sensor_stream.sensor_name, sensor_name
-                        ):
+                        if self._match_sensor_name(sensor_stream.sensor_name, sensor_name):
                             sensor_value = float(value)
                             matched_key = sensor_name
                             break
@@ -652,9 +604,7 @@ class SensorStreamManager:
 
                     if sensor_value is not None:
                         # Perform sensor-level anomaly detection
-                        anomaly_result = self._detect_sensor_anomaly(
-                            sensor_stream, sensor_value, timestamp
-                        )
+                        anomaly_result = self._detect_sensor_anomaly(sensor_stream, sensor_value, timestamp)
 
                         # Update sensor stream using memory manager
                         success = sensor_stream.add_data_point(
@@ -669,16 +619,12 @@ class SensorStreamManager:
                             if anomaly_result.is_anomaly:
                                 self.stream_stats["anomalies_detected"] += 1
                         else:
-                            logger.warning(
-                                f"Failed to add data point for sensor {sensor_id}"
-                            )
+                            logger.warning(f"Failed to add data point for sensor {sensor_id}")
 
                         sensors_updated += 1
                     else:
                         # Log failed matches for debugging
-                        if (
-                            equipment_id == "SMAP-PWR-001"
-                        ):  # Log only for one equipment to avoid spam
+                        if equipment_id == "SMAP-PWR-001":  # Log only for one equipment to avoid spam
                             logger.debug(
                                 f"No match for sensor '{sensor_stream.sensor_name}' in available keys: {list(sensor_values.keys())}"
                             )
@@ -689,24 +635,13 @@ class SensorStreamManager:
                     )
             else:
                 if equipment_id:  # Only log if equipment_id is not None
-                    logger.debug(
-                        f"Equipment {equipment_id} not found in equipment_sensors"
-                    )
+                    logger.debug(f"Equipment {equipment_id} not found in equipment_sensors")
 
-    def _match_sensor_name(
-        self, stream_sensor_name: str, data_sensor_name: str
-    ) -> bool:
+    def _match_sensor_name(self, stream_sensor_name: str, data_sensor_name: str) -> bool:
         """Match sensor names between stream and telemetry data"""
         # Normalize names for comparison
-        stream_name = (
-            stream_sensor_name.lower()
-            .replace(" ", "_")
-            .replace(".", "")
-            .replace("-", "")
-        )
-        data_name = (
-            data_sensor_name.lower().replace(" ", "_").replace(".", "").replace("-", "")
-        )
+        stream_name = stream_sensor_name.lower().replace(" ", "_").replace(".", "").replace("-", "")
+        data_name = data_sensor_name.lower().replace(" ", "_").replace(".", "").replace("-", "")
 
         # Try exact match first
         if stream_name == data_name:
@@ -719,8 +654,7 @@ class SensorStreamManager:
         # Try matching with common sensor prefixes/suffixes
         # For NASA data, sensors might be numbered like sensor_1, sensor_2, etc.
         if "sensor" in data_name and any(
-            keyword in stream_name
-            for keyword in ["voltage", "current", "temperature", "pressure", "flow"]
+            keyword in stream_name for keyword in ["voltage", "current", "temperature", "pressure", "flow"]
         ):
             return True
 
@@ -744,24 +678,14 @@ class SensorStreamManager:
                 try:
                     # Prepare sensor data for model prediction
                     # Need sequence of values for LSTM model (shape: [1, sequence_length, n_features])
-                    recent_data = sensor_stream.get_recent_data(
-                        50
-                    )  # Get last 50 values
-                    if (
-                        recent_data and len(recent_data["values"]) >= 10
-                    ):  # Need minimum history
+                    recent_data = sensor_stream.get_recent_data(50)  # Get last 50 values
+                    if recent_data and len(recent_data["values"]) >= 10:  # Need minimum history
                         recent_values = recent_data["values"]
 
                         # Create sensor array for this equipment
                         # Get equipment info to know how many sensors
-                        equipment_info = equipment_mapper.get_equipment_info(
-                            equipment_id
-                        )
-                        n_sensors = (
-                            len(equipment_info.get("sensors", []))
-                            if equipment_info
-                            else 5
-                        )
+                        equipment_info = equipment_mapper.get_equipment_info(equipment_id)
+                        n_sensors = len(equipment_info.get("sensors", [])) if equipment_info else 5
 
                         # Create normalized sensor data array
                         sensor_data = np.zeros((1, len(recent_values), n_sensors))
@@ -769,13 +693,11 @@ class SensorStreamManager:
                         # Fill with normalized values (simple min-max normalization)
                         values_array = np.array(recent_values)
                         if sensor_stream.max_value > sensor_stream.min_value:
-                            normalized_values = (
-                                values_array - sensor_stream.min_value
-                            ) / (sensor_stream.max_value - sensor_stream.min_value)
-                        else:
-                            normalized_values = values_array / max(
-                                abs(sensor_stream.max_value), 1.0
+                            normalized_values = (values_array - sensor_stream.min_value) / (
+                                sensor_stream.max_value - sensor_stream.min_value
                             )
+                        else:
+                            normalized_values = values_array / max(abs(sensor_stream.max_value), 1.0)
 
                         # Fill first sensor channel with this sensor's data
                         sensor_data[0, :, 0] = np.clip(normalized_values, 0.0, 1.0)
@@ -783,14 +705,10 @@ class SensorStreamManager:
                         # Fill other channels with simulated correlated data
                         for i in range(1, n_sensors):
                             noise = np.random.normal(0, 0.1, len(recent_values))
-                            sensor_data[0, :, i] = np.clip(
-                                normalized_values + noise, 0.0, 1.0
-                            )
+                            sensor_data[0, :, i] = np.clip(normalized_values + noise, 0.0, 1.0)
 
                         # Get prediction from pretrained model
-                        prediction = pretrained_model_manager.predict_anomaly(
-                            equipment_id, sensor_data
-                        )
+                        prediction = pretrained_model_manager.predict_anomaly(equipment_id, sensor_data)
 
                         if "error" not in prediction:
                             anomaly_score = prediction.get("anomaly_score", 0.0)
@@ -801,14 +719,10 @@ class SensorStreamManager:
                                 f"Model prediction for {equipment_id}: score={anomaly_score:.3f}, anomaly={is_anomaly}"
                             )
                         else:
-                            logger.debug(
-                                f"Model prediction error for {equipment_id}: {prediction['error']}"
-                            )
+                            logger.debug(f"Model prediction error for {equipment_id}: {prediction['error']}")
 
                 except Exception as model_error:
-                    logger.warning(
-                        f"Error using pretrained model for {equipment_id}: {model_error}"
-                    )
+                    logger.warning(f"Error using pretrained model for {equipment_id}: {model_error}")
                     # Fall back to statistical methods
 
             # 2. Threshold-based detection (always check)
@@ -817,14 +731,8 @@ class SensorStreamManager:
                 anomaly_score = max(anomaly_score, 0.4)
 
             # 3. Statistical anomaly detection (if we have enough history and no model prediction)
-            statistical_data = sensor_stream.get_recent_data(
-                100
-            )  # Get recent data for statistics
-            if (
-                statistical_data
-                and len(statistical_data["values"]) > 10
-                and anomaly_score == 0.0
-            ):
+            statistical_data = sensor_stream.get_recent_data(100)  # Get recent data for statistics
+            if statistical_data and len(statistical_data["values"]) > 10 and anomaly_score == 0.0:
                 values_array = statistical_data["values"]
                 mean_val = np.mean(values_array)
                 std_val = np.std(values_array)
@@ -839,9 +747,7 @@ class SensorStreamManager:
             # 3. Range-based detection
             value_range = sensor_stream.max_value - sensor_stream.min_value
             if value_range > 0:
-                normalized_deviation = (
-                    abs(value - sensor_stream.nominal_value) / value_range
-                )
+                normalized_deviation = abs(value - sensor_stream.nominal_value) / value_range
                 if normalized_deviation > 0.8:
                     anomaly_score += 0.2
                 elif normalized_deviation > 0.6:
@@ -934,16 +840,13 @@ class SensorStreamManager:
             sensor_stream = self.sensor_streams[sensor_id]
 
             # Get data using memory manager with time range
-            filtered_data = sensor_stream.get_time_range_data(
-                cutoff_time, datetime.now()
-            )
+            filtered_data = sensor_stream.get_time_range_data(cutoff_time, datetime.now())
 
             if filtered_data:
                 # Convert to expected format
                 formatted_data = {
                     "timestamps": [
-                        ts.isoformat() if hasattr(ts, "isoformat") else str(ts)
-                        for ts in filtered_data["timestamps"]
+                        ts.isoformat() if hasattr(ts, "isoformat") else str(ts) for ts in filtered_data["timestamps"]
                     ],
                     "values": filtered_data["values"].tolist(),
                     "anomaly_scores": filtered_data["anomaly_scores"].tolist(),
@@ -969,11 +872,7 @@ class SensorStreamManager:
                     "nominal_value": sensor_stream.nominal_value,
                     "critical_threshold": sensor_stream.critical_threshold,
                     "is_active": sensor_stream.is_active,
-                    "last_update": (
-                        sensor_stream.last_update.isoformat()
-                        if sensor_stream.last_update
-                        else None
-                    ),
+                    "last_update": (sensor_stream.last_update.isoformat() if sensor_stream.last_update else None),
                     "data_points": sensor_stream.data_points_added,
                     "anomalies_detected": sensor_stream.anomalies_detected,
                 },
@@ -1070,9 +969,7 @@ class SensorStreamManager:
                         # Each record contains an array of values with timestamps
                         base_timestamp = record.timestamp
                         for i, value in enumerate(record.values):
-                            timestamps.append(
-                                (base_timestamp + timedelta(seconds=i)).isoformat()
-                            )
+                            timestamps.append((base_timestamp + timedelta(seconds=i)).isoformat())
                             values.append(float(value))
                             anomaly_scores.append(record.anomaly_score)
                             anomaly_flags.append(record.is_anomaly)
@@ -1093,9 +990,7 @@ class SensorStreamManager:
                 filtered_anomaly_flags = []
 
                 for i, timestamp_str in enumerate(timestamps):
-                    timestamp = datetime.fromisoformat(
-                        timestamp_str.replace("Z", "+00:00")
-                    )
+                    timestamp = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
                     if timestamp >= cutoff_time:
                         filtered_timestamps.append(timestamp_str)
                         filtered_values.append(values[i])
@@ -1118,13 +1013,9 @@ class SensorStreamManager:
                         "min_value": min(filtered_values) if filtered_values else 0.0,
                         "max_value": max(filtered_values) if filtered_values else 1.0,
                         "nominal_value": equipment_info.get("nominal_value", 0.5),
-                        "critical_threshold": equipment_info.get(
-                            "critical_threshold", 0.8
-                        ),
+                        "critical_threshold": equipment_info.get("critical_threshold", 0.8),
                         "is_active": bool(filtered_values),
-                        "last_update": (
-                            filtered_timestamps[0] if filtered_timestamps else None
-                        ),
+                        "last_update": (filtered_timestamps[0] if filtered_timestamps else None),
                         "record_count": len(filtered_values),
                     },
                 }
@@ -1139,9 +1030,7 @@ class SensorStreamManager:
             # Fallback to in-memory approach
             return self.get_sensor_data(sensor_ids, time_window, use_database=False)
 
-    def _filter_sensor_data_by_time(
-        self, sensor_stream: SensorStream, cutoff_time: datetime
-    ) -> Dict[str, List]:
+    def _filter_sensor_data_by_time(self, sensor_stream: SensorStream, cutoff_time: datetime) -> Dict[str, List]:
         """Filter sensor stream data by time window"""
         filtered_timestamps = []
         filtered_values = []
@@ -1193,11 +1082,7 @@ class SensorStreamManager:
                         "subsystem": sensor_stream.subsystem,
                         "is_active": sensor_stream.is_active,
                         "last_value": sensor_stream.get_latest_value(),
-                        "last_update": (
-                            sensor_stream.last_update.isoformat()
-                            if sensor_stream.last_update
-                            else None
-                        ),
+                        "last_update": (sensor_stream.last_update.isoformat() if sensor_stream.last_update else None),
                         "data_count": sensor_stream.get_data_count(),
                         "anomalies_detected": sensor_stream.anomalies_detected,
                     }
@@ -1220,11 +1105,7 @@ class SensorStreamManager:
                         "unit": sensor_stream.unit,
                         "is_active": sensor_stream.is_active,
                         "last_value": sensor_stream.get_latest_value(),
-                        "last_update": (
-                            sensor_stream.last_update.isoformat()
-                            if sensor_stream.last_update
-                            else None
-                        ),
+                        "last_update": (sensor_stream.last_update.isoformat() if sensor_stream.last_update else None),
                         "data_count": sensor_stream.get_data_count(),
                         "anomalies_detected": sensor_stream.anomalies_detected,
                     }

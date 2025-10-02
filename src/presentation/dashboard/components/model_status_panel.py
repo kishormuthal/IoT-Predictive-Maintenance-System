@@ -88,9 +88,7 @@ class ModelStatusManager:
         # Initialize model statuses
         self._initialize_model_statuses()
 
-        logger.info(
-            f"Model Status Manager initialized with {len(self.model_statuses)} models"
-        )
+        logger.info(f"Model Status Manager initialized with {len(self.model_statuses)} models")
 
     def _initialize_services(self):
         """Initialize service connections with error handling"""
@@ -140,9 +138,7 @@ class ModelStatusManager:
 
     def _create_model_status_from_info(self, model_id: str, model_info: Dict[str, Any]):
         """Create model status from model manager info"""
-        spacecraft = (
-            "SMAP" if "SMAP" in model_id else "MSL" if "MSL" in model_id else "Unknown"
-        )
+        spacecraft = "SMAP" if "SMAP" in model_id else "MSL" if "MSL" in model_id else "Unknown"
 
         # Determine subsystem based on sensor number
         if spacecraft == "SMAP":
@@ -164,12 +160,9 @@ class ModelStatusManager:
             is_active=True,
             is_loaded=True,
             is_processing=np.random.choice([True, False], p=[0.7, 0.3]),
-            last_inference_time=datetime.now()
-            - timedelta(seconds=np.random.randint(1, 60)),
+            last_inference_time=datetime.now() - timedelta(seconds=np.random.randint(1, 60)),
             accuracy=model_info.get("accuracy", 0.95),
-            inference_count=model_info.get(
-                "inference_count", np.random.randint(1000, 5000)
-            ),
+            inference_count=model_info.get("inference_count", np.random.randint(1000, 5000)),
             avg_inference_time_ms=np.random.uniform(15.0, 50.0),
             error_count=np.random.randint(0, 10),
             inferences_per_minute=np.random.uniform(10.0, 60.0),
@@ -241,16 +234,11 @@ class ModelStatusManager:
             spacecraft=spacecraft,
             sensor_id=model_id,
             subsystem=subsystem,
-            model_type=np.random.choice(
-                ["best", "quick", "nasa_telemanom"], p=[0.4, 0.3, 0.3]
-            ),
+            model_type=np.random.choice(["best", "quick", "nasa_telemanom"], p=[0.4, 0.3, 0.3]),
             is_active=np.random.choice([True, False], p=[0.95, 0.05]),
             is_loaded=np.random.choice([True, False], p=[0.98, 0.02]),
-            is_processing=np.random.choice(
-                [True, False], p=[processing_probability, 1 - processing_probability]
-            ),
-            last_inference_time=datetime.now()
-            - timedelta(seconds=np.random.randint(1, 300)),
+            is_processing=np.random.choice([True, False], p=[processing_probability, 1 - processing_probability]),
+            last_inference_time=datetime.now() - timedelta(seconds=np.random.randint(1, 300)),
             accuracy=base_accuracy + np.random.uniform(-0.05, 0.03),
             inference_count=np.random.randint(500, 10000),
             avg_inference_time_ms=np.random.uniform(12.0, 80.0),
@@ -326,9 +314,7 @@ class ModelStatusManager:
                 if model_id in self.model_manager.get_available_models():
                     model_info = self.model_manager.get_model_info(model_id)
                     if model_info:
-                        model_status.inference_count = model_info.get(
-                            "inference_count", model_status.inference_count
-                        )
+                        model_status.inference_count = model_info.get("inference_count", model_status.inference_count)
                         model_status.avg_inference_time_ms = avg_inference_time * 1000
                         model_status.last_inference_time = datetime.now()
 
@@ -361,9 +347,7 @@ class ModelStatusManager:
                 # Health score can slowly change
                 model_status.model_health_score = max(
                     0,
-                    min(
-                        100, model_status.model_health_score + np.random.normal(0, 0.5)
-                    ),
+                    min(100, model_status.model_health_score + np.random.normal(0, 0.5)),
                 )
 
     def _update_group_statistics(self):
@@ -420,11 +404,7 @@ class ModelStatusManager:
         if spacecraft == "All":
             return list(self.model_statuses.values())
         else:
-            return [
-                model
-                for model in self.model_statuses.values()
-                if model.spacecraft == spacecraft
-            ]
+            return [model for model in self.model_statuses.values() if model.spacecraft == spacecraft]
 
     def get_models_by_subsystem(self, subsystem: str) -> List[ModelStatus]:
         """Get models filtered by subsystem
@@ -435,11 +415,7 @@ class ModelStatusManager:
         Returns:
             List of model statuses
         """
-        return [
-            model
-            for model in self.model_statuses.values()
-            if model.subsystem == subsystem
-        ]
+        return [model for model in self.model_statuses.values() if model.subsystem == subsystem]
 
     def get_active_models_count(self) -> Dict[str, int]:
         """Get count of active models by category
@@ -504,9 +480,7 @@ class ModelStatusManager:
             grid_data["model_ids"].append(model.model_id)
             grid_data["statuses"].append("ACTIVE" if model.is_active else "INACTIVE")
             grid_data["health_scores"].append(model.model_health_score)
-            grid_data["processing_states"].append(
-                "PROCESSING" if model.is_processing else "IDLE"
-            )
+            grid_data["processing_states"].append("PROCESSING" if model.is_processing else "IDLE")
 
             # Hover text
             hover_text = (
@@ -547,25 +521,15 @@ class ModelStatusManager:
         return {
             "total_models": len(self.model_statuses),
             "active_models": active_counts["total_active"],
-            "smap_models": len(
-                [m for m in self.model_statuses.values() if m.spacecraft == "SMAP"]
-            ),
-            "msl_models": len(
-                [m for m in self.model_statuses.values() if m.spacecraft == "MSL"]
-            ),
+            "smap_models": len([m for m in self.model_statuses.values() if m.spacecraft == "SMAP"]),
+            "msl_models": len([m for m in self.model_statuses.values() if m.spacecraft == "MSL"]),
             "processing_models": active_counts["processing"],
             "loaded_models": active_counts["loaded"],
             "group_stats": self.group_stats,
             "last_update": self.last_update_time.strftime("%H:%M:%S"),
-            "total_inferences": sum(
-                [m.inference_count for m in self.model_statuses.values()]
-            ),
-            "average_health": np.mean(
-                [m.model_health_score for m in self.model_statuses.values()]
-            ),
-            "recent_anomalies": sum(
-                [m.recent_anomalies_detected for m in self.model_statuses.values()]
-            ),
+            "total_inferences": sum([m.inference_count for m in self.model_statuses.values()]),
+            "average_health": np.mean([m.model_health_score for m in self.model_statuses.values()]),
+            "recent_anomalies": sum([m.recent_anomalies_detected for m in self.model_statuses.values()]),
         }
 
 

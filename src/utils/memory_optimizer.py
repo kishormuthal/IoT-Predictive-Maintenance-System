@@ -90,9 +90,7 @@ class MemoryMonitor:
             return
 
         self.is_running = True
-        self.monitor_thread = threading.Thread(
-            target=self._monitoring_loop, daemon=True
-        )
+        self.monitor_thread = threading.Thread(target=self._monitoring_loop, daemon=True)
         self.monitor_thread.start()
         logger.info("Memory monitoring started")
 
@@ -117,16 +115,12 @@ class MemoryMonitor:
 
                 # Check if cleanup is needed
                 if stats.process_percent > self.cleanup_threshold * 100:
-                    logger.warning(
-                        f"Memory usage {stats.process_percent:.1f}% exceeds threshold"
-                    )
+                    logger.warning(f"Memory usage {stats.process_percent:.1f}% exceeds threshold")
                     self._trigger_cleanup()
 
                 # Log memory stats periodically
                 if len(self.memory_history) % 20 == 0:  # Every 10 minutes
-                    logger.info(
-                        f"Memory: {stats.process_memory_mb:.1f}MB ({stats.process_percent:.1f}%)"
-                    )
+                    logger.info(f"Memory: {stats.process_memory_mb:.1f}MB ({stats.process_percent:.1f}%)")
 
                 time.sleep(self.monitoring_interval)
 
@@ -206,9 +200,7 @@ class MemoryMonitor:
 
         # If still over threshold, log warning
         if final_stats.process_percent > self.cleanup_threshold * 100:
-            logger.warning(
-                f"Memory usage still high after cleanup: {final_stats.process_percent:.1f}%"
-            )
+            logger.warning(f"Memory usage still high after cleanup: {final_stats.process_percent:.1f}%")
 
     def _force_garbage_collection(self):
         """Force comprehensive garbage collection"""
@@ -245,9 +237,7 @@ class MemoryMonitor:
                             else:
                                 break
 
-                    logger.info(
-                        f"Reduced model cache from {cache_size} to {len(manager.cache.cache)} models"
-                    )
+                    logger.info(f"Reduced model cache from {cache_size} to {len(manager.cache.cache)} models")
 
         except Exception as e:
             logger.debug(f"Could not cleanup model cache: {e}")
@@ -316,9 +306,7 @@ class MemoryMonitor:
         trend = "stable"
         if len(recent_history) > 1:
             recent_avg = sum(s.process_memory_mb for s in recent_history[-5:]) / 5
-            older_avg = sum(s.process_memory_mb for s in recent_history[:5]) / min(
-                5, len(recent_history)
-            )
+            older_avg = sum(s.process_memory_mb for s in recent_history[:5]) / min(5, len(recent_history))
 
             if recent_avg > older_avg * 1.1:
                 trend = "increasing"
@@ -361,9 +349,7 @@ class MemoryMonitor:
         cutoff_time = datetime.now() - timedelta(minutes=minutes)
 
         with self.lock:
-            return [
-                stats for stats in self.memory_history if stats.timestamp >= cutoff_time
-            ]
+            return [stats for stats in self.memory_history if stats.timestamp >= cutoff_time]
 
     def optimize_for_target(self, target_mb: int = None):
         """Optimize memory usage for target size
@@ -377,14 +363,10 @@ class MemoryMonitor:
         current_stats = self.get_memory_stats()
 
         if current_stats.process_memory_mb <= target_mb:
-            logger.info(
-                f"Memory usage {current_stats.process_memory_mb:.1f}MB already within target {target_mb}MB"
-            )
+            logger.info(f"Memory usage {current_stats.process_memory_mb:.1f}MB already within target {target_mb}MB")
             return
 
-        logger.info(
-            f"Optimizing memory usage from {current_stats.process_memory_mb:.1f}MB to {target_mb}MB"
-        )
+        logger.info(f"Optimizing memory usage from {current_stats.process_memory_mb:.1f}MB to {target_mb}MB")
 
         # Progressive cleanup
         self._trigger_cleanup()
@@ -392,9 +374,7 @@ class MemoryMonitor:
         # Check if we need more aggressive cleanup
         new_stats = self.get_memory_stats()
         if new_stats.process_memory_mb > target_mb:
-            logger.warning(
-                f"Aggressive cleanup needed: {new_stats.process_memory_mb:.1f}MB > {target_mb}MB"
-            )
+            logger.warning(f"Aggressive cleanup needed: {new_stats.process_memory_mb:.1f}MB > {target_mb}MB")
             self._aggressive_cleanup()
 
     def _aggressive_cleanup(self):
@@ -523,15 +503,11 @@ def memory_efficient(target_mb: int = None):
 
                 # Check memory after execution
                 final_stats = get_memory_stats()
-                memory_increase = (
-                    final_stats.process_memory_mb - initial_stats.process_memory_mb
-                )
+                memory_increase = final_stats.process_memory_mb - initial_stats.process_memory_mb
 
                 # If memory increased significantly, trigger cleanup
                 if memory_increase > 50:  # 50MB increase
-                    logger.debug(
-                        f"Function {func.__name__} increased memory by {memory_increase:.1f}MB"
-                    )
+                    logger.debug(f"Function {func.__name__} increased memory by {memory_increase:.1f}MB")
                     if target_mb and final_stats.process_memory_mb > target_mb:
                         optimize_memory(target_mb)
 

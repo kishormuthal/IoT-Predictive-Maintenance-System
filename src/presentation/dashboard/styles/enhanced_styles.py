@@ -581,9 +581,7 @@ def create_error_component(error_message="An error occurred"):
     )
 
 
-def create_empty_state_component(
-    title="No Data", message="No data available to display"
-):
+def create_empty_state_component(title="No Data", message="No data available to display"):
     """Create an empty state component"""
     return html.Div(
         [

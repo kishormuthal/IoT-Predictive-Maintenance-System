@@ -53,9 +53,7 @@ def create_layout():
                         [
                             html.H3(
                                 [
-                                    html.I(
-                                        className="fas fa-clipboard-list me-3 text-primary"
-                                    ),
+                                    html.I(className="fas fa-clipboard-list me-3 text-primary"),
                                     "Work Order Management",
                                 ]
                             ),
@@ -82,9 +80,7 @@ def create_layout():
                                                 children="0",
                                                 className="text-primary",
                                             ),
-                                            html.P(
-                                                "Total Work Orders", className="mb-0"
-                                            ),
+                                            html.P("Total Work Orders", className="mb-0"),
                                         ]
                                     )
                                 ]
@@ -259,9 +255,7 @@ def create_layout():
                                                         [
                                                             dbc.Button(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-sync-alt me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-sync-alt me-2"),
                                                                     "Refresh",
                                                                 ],
                                                                 id="refresh-work-orders-btn",
@@ -289,16 +283,8 @@ def create_layout():
                         [
                             dbc.Card(
                                 [
-                                    dbc.CardHeader(
-                                        [
-                                            html.H5(
-                                                "Active Work Orders", className="mb-0"
-                                            )
-                                        ]
-                                    ),
-                                    dbc.CardBody(
-                                        [html.Div(id="work-orders-table-container")]
-                                    ),
+                                    dbc.CardHeader([html.H5("Active Work Orders", className="mb-0")]),
+                                    dbc.CardBody([html.Div(id="work-orders-table-container")]),
                                 ]
                             )
                         ]
@@ -314,9 +300,7 @@ def create_layout():
                             dbc.Card(
                                 [
                                     dbc.CardHeader("Work Orders by Status"),
-                                    dbc.CardBody(
-                                        [dcc.Graph(id="work-orders-by-status-chart")]
-                                    ),
+                                    dbc.CardBody([dcc.Graph(id="work-orders-by-status-chart")]),
                                 ]
                             )
                         ],
@@ -327,9 +311,7 @@ def create_layout():
                             dbc.Card(
                                 [
                                     dbc.CardHeader("Work Orders by Priority"),
-                                    dbc.CardBody(
-                                        [dcc.Graph(id="work-orders-by-priority-chart")]
-                                    ),
+                                    dbc.CardBody([dcc.Graph(id="work-orders-by-priority-chart")]),
                                 ]
                             )
                         ],
@@ -340,9 +322,7 @@ def create_layout():
                             dbc.Card(
                                 [
                                     dbc.CardHeader("Work Order Timeline"),
-                                    dbc.CardBody(
-                                        [dcc.Graph(id="work-order-timeline-chart")]
-                                    ),
+                                    dbc.CardBody([dcc.Graph(id="work-order-timeline-chart")]),
                                 ]
                             )
                         ],
@@ -351,9 +331,7 @@ def create_layout():
                 ]
             ),
             # Refresh interval
-            dcc.Interval(
-                id="work-orders-refresh-interval", interval=60000, n_intervals=0
-            ),
+            dcc.Interval(id="work-orders-refresh-interval", interval=60000, n_intervals=0),
         ],
         fluid=True,
         className="mt-2",
@@ -400,9 +378,7 @@ def generate_sample_work_orders():
                     "Equipment ID": equipment_id,
                     "Priority": priority,
                     "Status": status,
-                    "Technician": (
-                        f"Tech-{(i % 5) + 1}" if status != "PENDING" else "Unassigned"
-                    ),
+                    "Technician": (f"Tech-{(i % 5) + 1}" if status != "PENDING" else "Unassigned"),
                     "Created": created_date.strftime("%Y-%m-%d %H:%M"),
                     "Due Date": due_date.strftime("%Y-%m-%d"),
                     "Description": description,
@@ -438,10 +414,7 @@ def update_stats(n_intervals, n_clicks):
         pending = len(df[df["Status"] == "PENDING"])
         in_progress = len(df[df["Status"] == "IN_PROGRESS"])
         completed_today = len(
-            df[
-                (df["Status"] == "COMPLETED")
-                & (pd.to_datetime(df["Created"]).dt.date == datetime.now().date())
-            ]
+            df[(df["Status"] == "COMPLETED") & (pd.to_datetime(df["Created"]).dt.date == datetime.now().date())]
         )
 
         return str(total), str(pending), str(in_progress), str(completed_today)
@@ -461,9 +434,7 @@ def update_stats(n_intervals, n_clicks):
         Input("refresh-work-orders-btn", "n_clicks"),
     ],
 )
-def update_table(
-    status_filter, priority_filter, equipment_filter, n_intervals, n_clicks
-):
+def update_table(status_filter, priority_filter, equipment_filter, n_intervals, n_clicks):
     """Update work orders table"""
     try:
         df = generate_sample_work_orders()
@@ -530,19 +501,13 @@ def update_status_chart(n_intervals, n_clicks):
                 go.Pie(
                     labels=status_counts.index,
                     values=status_counts.values,
-                    marker=dict(
-                        colors=[
-                            STATUS_COLORS.get(s, "#6c757d") for s in status_counts.index
-                        ]
-                    ),
+                    marker=dict(colors=[STATUS_COLORS.get(s, "#6c757d") for s in status_counts.index]),
                     hole=0.3,
                 )
             ]
         )
 
-        fig.update_layout(
-            title=None, showlegend=True, height=300, margin=dict(l=20, r=20, t=20, b=20)
-        )
+        fig.update_layout(title=None, showlegend=True, height=300, margin=dict(l=20, r=20, t=20, b=20))
 
         return fig
 
@@ -569,12 +534,7 @@ def update_priority_chart(n_intervals, n_clicks):
                 go.Bar(
                     x=priority_counts.index,
                     y=priority_counts.values,
-                    marker=dict(
-                        color=[
-                            PRIORITY_COLORS.get(p, "#6c757d")
-                            for p in priority_counts.index
-                        ]
-                    ),
+                    marker=dict(color=[PRIORITY_COLORS.get(p, "#6c757d") for p in priority_counts.index]),
                 )
             ]
         )

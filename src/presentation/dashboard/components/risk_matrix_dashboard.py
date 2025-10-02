@@ -67,9 +67,7 @@ class RiskMatrixDashboardComponent:
                                             id="total-components-count",
                                             className="text-primary",
                                         ),
-                                        html.Small(
-                                            "Total Components", className="text-muted"
-                                        ),
+                                        html.Small("Total Components", className="text-muted"),
                                     ],
                                     width=3,
                                 ),
@@ -80,9 +78,7 @@ class RiskMatrixDashboardComponent:
                                             id="critical-risk-count",
                                             className="text-danger",
                                         ),
-                                        html.Small(
-                                            "Critical Risk", className="text-muted"
-                                        ),
+                                        html.Small("Critical Risk", className="text-muted"),
                                     ],
                                     width=3,
                                 ),
@@ -104,9 +100,7 @@ class RiskMatrixDashboardComponent:
                                             id="total-risk-exposure",
                                             className="text-info",
                                         ),
-                                        html.Small(
-                                            "Risk Exposure", className="text-muted"
-                                        ),
+                                        html.Small("Risk Exposure", className="text-muted"),
                                     ],
                                     width=3,
                                 ),
@@ -296,9 +290,7 @@ class RiskMatrixDashboardComponent:
                     [
                         html.Div(
                             id="risk-mitigation-content",
-                            children=[
-                                dbc.Alert("Loading recommendations...", color="info")
-                            ],
+                            children=[dbc.Alert("Loading recommendations...", color="info")],
                         )
                     ]
                 ),
@@ -371,9 +363,7 @@ class RiskMatrixDashboardComponent:
                 risk_summary = self.risk_matrix_system.get_risk_summary()
 
                 return {
-                    "assessments": [
-                        assessment.to_dict() for assessment in risk_assessments
-                    ],
+                    "assessments": [assessment.to_dict() for assessment in risk_assessments],
                     "summary": risk_summary,
                     "last_updated": datetime.now().isoformat(),
                 }
@@ -400,9 +390,7 @@ class RiskMatrixDashboardComponent:
             summary = risk_data["summary"]
 
             total_components = summary.get("total_components", 0)
-            critical_count = summary.get("risk_level_distribution", {}).get(
-                "critical", 0
-            )
+            critical_count = summary.get("risk_level_distribution", {}).get("critical", 0)
             high_count = summary.get("risk_level_distribution", {}).get("high", 0)
             total_exposure = summary.get("total_financial_impact", 0)
 
@@ -413,9 +401,7 @@ class RiskMatrixDashboardComponent:
                 f"${total_exposure:,.0f}",
             )
 
-        @app.callback(
-            Output("risk-matrix-plot", "figure"), Input("risk-matrix-data", "data")
-        )
+        @app.callback(Output("risk-matrix-plot", "figure"), Input("risk-matrix-data", "data"))
         def update_risk_matrix_plot(risk_data):
             """Update risk matrix visualization"""
 
@@ -471,9 +457,7 @@ class RiskMatrixDashboardComponent:
                             + "Financial Impact: $%{customdata[2]:,.0f}<br>"
                             + "<extra></extra>"
                         ),
-                        customdata=level_data[
-                            ["equipment_id", "overall_risk_score", "financial_impact"]
-                        ].values,
+                        customdata=level_data[["equipment_id", "overall_risk_score", "financial_impact"]].values,
                     )
                 )
 
@@ -485,16 +469,12 @@ class RiskMatrixDashboardComponent:
                 yaxis=dict(range=[0, 1], showgrid=True, gridcolor="lightgray"),
                 template="plotly_white",
                 height=500,
-                legend=dict(
-                    orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-                ),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             )
 
             return fig
 
-        @app.callback(
-            Output("risk-heatmap-plot", "figure"), Input("risk-matrix-data", "data")
-        )
+        @app.callback(Output("risk-heatmap-plot", "figure"), Input("risk-matrix-data", "data"))
         def update_risk_heatmap(risk_data):
             """Update risk heatmap visualization"""
 
@@ -523,10 +503,7 @@ class RiskMatrixDashboardComponent:
                     colorscale="RdYlGn_r",
                     colorbar=dict(title="Risk Score"),
                     hovetemplate=(
-                        "Equipment: %{x}<br>"
-                        + "Component: %{y}<br>"
-                        + "Risk Score: %{z:.3f}<br>"
-                        + "<extra></extra>"
+                        "Equipment: %{x}<br>" + "Component: %{y}<br>" + "Risk Score: %{z:.3f}<br>" + "<extra></extra>"
                     ),
                 )
             )
@@ -541,9 +518,7 @@ class RiskMatrixDashboardComponent:
 
             return fig
 
-        @app.callback(
-            Output("top-risks-table", "data"), Input("risk-matrix-data", "data")
-        )
+        @app.callback(Output("top-risks-table", "data"), Input("risk-matrix-data", "data"))
         def update_top_risks_table(risk_data):
             """Update top risks table"""
 
@@ -585,11 +560,7 @@ class RiskMatrixDashboardComponent:
             timestamps = pd.date_range(end=datetime.now(), periods=periods, freq=freq)
 
             # Mock trend data
-            avg_risk = (
-                0.4
-                + 0.1 * np.sin(np.linspace(0, 2 * np.pi, periods))
-                + 0.05 * np.random.randn(periods)
-            )
+            avg_risk = 0.4 + 0.1 * np.sin(np.linspace(0, 2 * np.pi, periods)) + 0.05 * np.random.randn(periods)
             critical_count = np.random.poisson(2, periods)
             high_count = np.random.poisson(5, periods)
 
@@ -768,9 +739,7 @@ class RiskMatrixDashboardComponent:
         # High financial impact recommendations
         high_financial = df[df["financial_impact"] > 50000]
         if not high_financial.empty:
-            recommendations.append(
-                f"Consider priority maintenance for {len(high_financial)} high-cost components"
-            )
+            recommendations.append(f"Consider priority maintenance for {len(high_financial)} high-cost components")
 
         # Timeline recommendations
         urgent_timeline = df[df["timeline_score"] > 0.8]

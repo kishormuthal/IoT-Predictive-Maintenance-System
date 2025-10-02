@@ -150,9 +150,7 @@ class TrainingConfigManager:
             logger.error(f"Error getting configuration: {e}")
             return self._get_default_config()
 
-    def get_sensor_config(
-        self, sensor_id: str, model_type: str, environment: str = None
-    ) -> Dict[str, Any]:
+    def get_sensor_config(self, sensor_id: str, model_type: str, environment: str = None) -> Dict[str, Any]:
         """
         Get configuration for specific sensor and model type
 
@@ -174,9 +172,7 @@ class TrainingConfigManager:
             model_overrides = equipment_overrides.get(model_type, {})
 
             if model_overrides:
-                logger.info(
-                    f"Applying overrides for {sensor_id} {model_type}: {model_overrides}"
-                )
+                logger.info(f"Applying overrides for {sensor_id} {model_type}: {model_overrides}")
                 model_config = self._merge_configs(model_config, model_overrides)
 
             # Add sensor identification
@@ -189,18 +185,12 @@ class TrainingConfigManager:
             logger.error(f"Error getting sensor configuration for {sensor_id}: {e}")
             return self._get_default_config().get(model_type, {})
 
-    def _merge_configs(
-        self, base: Dict[str, Any], override: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _merge_configs(self, base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
         """Recursively merge configuration dictionaries"""
         result = base.copy()
 
         for key, value in override.items():
-            if (
-                key in result
-                and isinstance(result[key], dict)
-                and isinstance(value, dict)
-            ):
+            if key in result and isinstance(result[key], dict) and isinstance(value, dict):
                 result[key] = self._merge_configs(result[key], value)
             else:
                 result[key] = value
@@ -247,9 +237,7 @@ class TrainingConfigManager:
             logger.error(f"Error applying environment variables: {e}")
             return config
 
-    def validate_config(
-        self, config: Dict[str, Any], model_type: str = None
-    ) -> Dict[str, Any]:
+    def validate_config(self, config: Dict[str, Any], model_type: str = None) -> Dict[str, Any]:
         """
         Validate configuration parameters
 
@@ -270,9 +258,7 @@ class TrainingConfigManager:
                 # Check required paths
                 data_root = Path(global_config.get("data_root", "./data/raw"))
                 if not data_root.exists():
-                    validation_results["warnings"].append(
-                        f"Data root directory does not exist: {data_root}"
-                    )
+                    validation_results["warnings"].append(f"Data root directory does not exist: {data_root}")
 
                 model_path = Path(global_config.get("model_output_path", "./models"))
                 if not model_path.parent.exists():
@@ -281,9 +267,7 @@ class TrainingConfigManager:
                     )
 
             # Model-specific validation
-            models_to_validate = (
-                [model_type] if model_type else ["telemanom", "transformer"]
-            )
+            models_to_validate = [model_type] if model_type else ["telemanom", "transformer"]
 
             for model in models_to_validate:
                 if model in config:
@@ -292,19 +276,13 @@ class TrainingConfigManager:
                     # Telemanom validation
                     if model == "telemanom":
                         if model_config.get("sequence_length", 0) < 10:
-                            validation_results["errors"].append(
-                                "Telemanom sequence_length must be at least 10"
-                            )
+                            validation_results["errors"].append("Telemanom sequence_length must be at least 10")
 
                         if model_config.get("epochs", 0) < 1:
-                            validation_results["errors"].append(
-                                "Telemanom epochs must be at least 1"
-                            )
+                            validation_results["errors"].append("Telemanom epochs must be at least 1")
 
                         if model_config.get("batch_size", 0) < 1:
-                            validation_results["errors"].append(
-                                "Telemanom batch_size must be at least 1"
-                            )
+                            validation_results["errors"].append("Telemanom batch_size must be at least 1")
 
                     # Transformer validation
                     elif model == "transformer":
@@ -313,19 +291,11 @@ class TrainingConfigManager:
                                 "Transformer sequence_length should be at least 24 for daily patterns"
                             )
 
-                        if (
-                            model_config.get("d_model", 0)
-                            % model_config.get("num_heads", 1)
-                            != 0
-                        ):
-                            validation_results["errors"].append(
-                                "Transformer d_model must be divisible by num_heads"
-                            )
+                        if model_config.get("d_model", 0) % model_config.get("num_heads", 1) != 0:
+                            validation_results["errors"].append("Transformer d_model must be divisible by num_heads")
 
                         if model_config.get("forecast_horizon", 0) < 1:
-                            validation_results["errors"].append(
-                                "Transformer forecast_horizon must be at least 1"
-                            )
+                            validation_results["errors"].append("Transformer forecast_horizon must be at least 1")
 
             # Training configuration validation
             if "training" in config:
@@ -333,9 +303,7 @@ class TrainingConfigManager:
 
                 max_workers = training_config.get("max_workers", 1)
                 if max_workers < 1 or max_workers > 16:
-                    validation_results["warnings"].append(
-                        "max_workers should be between 1 and 16"
-                    )
+                    validation_results["warnings"].append("max_workers should be between 1 and 16")
 
             validation_results["valid"] = len(validation_results["errors"]) == 0
 
@@ -345,9 +313,7 @@ class TrainingConfigManager:
 
         return validation_results
 
-    def update_equipment_override(
-        self, sensor_id: str, model_type: str, overrides: Dict[str, Any]
-    ):
+    def update_equipment_override(self, sensor_id: str, model_type: str, overrides: Dict[str, Any]):
         """
         Update equipment-specific configuration overrides
 
@@ -391,9 +357,7 @@ class TrainingConfigManager:
 
             # Create backup of existing config
             if save_path.exists():
-                backup_path = save_path.with_suffix(
-                    f'.backup.{datetime.now().strftime("%Y%m%d_%H%M%S")}.yaml'
-                )
+                backup_path = save_path.with_suffix(f'.backup.{datetime.now().strftime("%Y%m%d_%H%M%S")}.yaml')
                 save_path.rename(backup_path)
                 logger.info(f"Created backup: {backup_path}")
 
@@ -406,9 +370,7 @@ class TrainingConfigManager:
         except Exception as e:
             logger.error(f"Error saving configuration: {e}")
 
-    def create_environment_config(
-        self, environment: str, config_overrides: Dict[str, Any]
-    ):
+    def create_environment_config(self, environment: str, config_overrides: Dict[str, Any]):
         """
         Create environment-specific configuration
 
@@ -443,11 +405,7 @@ class TrainingConfigManager:
                 "equipment_overrides_count": len(self._equipment_overrides),
                 "equipment_with_overrides": list(self._equipment_overrides.keys()),
                 "model_types_configured": (
-                    [
-                        key
-                        for key in self._base_config.keys()
-                        if key in ["telemanom", "transformer"]
-                    ]
+                    [key for key in self._base_config.keys() if key in ["telemanom", "transformer"]]
                     if self._base_config
                     else []
                 ),

@@ -161,9 +161,7 @@ class ModelRegistry:
             if model_path.exists():
                 model_size = self._calculate_model_size(model_path)
                 # Use main model file for hash (e.g., model.h5 or model.pkl)
-                main_files = list(model_path.glob("*.h5")) + list(
-                    model_path.glob("*.pkl")
-                )
+                main_files = list(model_path.glob("*.h5")) + list(model_path.glob("*.pkl"))
                 if main_files:
                     model_hash = self._calculate_file_hash(main_files[0])
 
@@ -219,10 +217,7 @@ class ModelRegistry:
             current_active = self.models_index[model_id]["active_version"]
             if current_active != version_id:
                 current_metadata = self.get_model_metadata(current_active)
-                if (
-                    current_metadata
-                    and performance_score > current_metadata.performance_score
-                ):
+                if current_metadata and performance_score > current_metadata.performance_score:
                     self.models_index[model_id]["active_version"] = version_id
                     # Mark old version as inactive
                     self._set_version_active_status(current_active, False)
@@ -233,9 +228,7 @@ class ModelRegistry:
             # Save indices
             self._save_indices()
 
-            logger.info(
-                f"Model registered: {model_id} v{version_id} (score: {performance_score:.4f})"
-            )
+            logger.info(f"Model registered: {model_id} v{version_id} (score: {performance_score:.4f})")
             return version_id
 
         except Exception as e:
@@ -245,9 +238,7 @@ class ModelRegistry:
     def _calculate_performance_score(self, validation_metrics: Dict[str, Any]) -> float:
         """Calculate overall performance score"""
         try:
-            if not validation_metrics or not validation_metrics.get(
-                "validation_performed", False
-            ):
+            if not validation_metrics or not validation_metrics.get("validation_performed", False):
                 return 0.0
 
             # For anomaly detection (telemanom)
@@ -308,9 +299,7 @@ class ModelRegistry:
             logger.error(f"Error loading model metadata: {e}")
             return None
 
-    def get_active_model_version(
-        self, sensor_id: str, model_type: str
-    ) -> Optional[str]:
+    def get_active_model_version(self, sensor_id: str, model_type: str) -> Optional[str]:
         """Get active version for a model"""
         model_id = self._generate_model_id(sensor_id, model_type)
         return self.models_index.get(model_id, {}).get("active_version")
@@ -390,18 +379,14 @@ class ModelRegistry:
 
             # Don't delete active version unless forced
             if metadata.is_active and not force:
-                logger.warning(
-                    f"Cannot delete active version {version_id} without force=True"
-                )
+                logger.warning(f"Cannot delete active version {version_id} without force=True")
                 return False
 
             # Remove from indices
             model_id = metadata.model_id
             if model_id in self.models_index:
                 self.models_index[model_id]["versions"] = [
-                    v
-                    for v in self.models_index[model_id]["versions"]
-                    if v["version_id"] != version_id
+                    v for v in self.models_index[model_id]["versions"] if v["version_id"] != version_id
                 ]
 
             if version_id in self.versions_index:
@@ -427,9 +412,7 @@ class ModelRegistry:
         cleaned = 0
         try:
             for model_id, info in self.models_index.items():
-                versions = sorted(
-                    info["versions"], key=lambda x: x["created_at"], reverse=True
-                )
+                versions = sorted(info["versions"], key=lambda x: x["created_at"], reverse=True)
 
                 # Keep active version and last N versions
                 active_version = info["active_version"]
@@ -463,9 +446,7 @@ class ModelRegistry:
             metadata = self.get_model_metadata(active_version)
             return metadata is not None and metadata.is_active
         except Exception as e:
-            logger.error(
-                f"Error checking model availability for {sensor_id} ({model_type}): {e}"
-            )
+            logger.error(f"Error checking model availability for {sensor_id} ({model_type}): {e}")
             return False
 
     def get_model_availability_report(self) -> Dict[str, Any]:
@@ -488,48 +469,34 @@ class ModelRegistry:
             for sensor_id in EQUIPMENT_REGISTRY.keys():
                 # Check Telemanom availability
                 telemanom_available = self.is_model_available(sensor_id, "telemanom")
-                transformer_available = self.is_model_available(
-                    sensor_id, "transformer"
-                )
+                transformer_available = self.is_model_available(sensor_id, "transformer")
 
                 availability_report["telemanom_models"][sensor_id] = {
                     "available": telemanom_available,
                     "active_version": (
-                        self.get_active_model_version(sensor_id, "telemanom")
-                        if telemanom_available
-                        else None
+                        self.get_active_model_version(sensor_id, "telemanom") if telemanom_available else None
                     ),
                 }
 
                 availability_report["transformer_models"][sensor_id] = {
                     "available": transformer_available,
                     "active_version": (
-                        self.get_active_model_version(sensor_id, "transformer")
-                        if transformer_available
-                        else None
+                        self.get_active_model_version(sensor_id, "transformer") if transformer_available else None
                     ),
                 }
 
                 # Update summary counts
                 if telemanom_available:
-                    availability_report["availability_summary"][
-                        "telemanom_available"
-                    ] += 1
+                    availability_report["availability_summary"]["telemanom_available"] += 1
                 if transformer_available:
-                    availability_report["availability_summary"][
-                        "transformer_available"
-                    ] += 1
+                    availability_report["availability_summary"]["transformer_available"] += 1
                 if telemanom_available and transformer_available:
                     availability_report["availability_summary"]["both_available"] += 1
                 if not telemanom_available and not transformer_available:
                     availability_report["availability_summary"]["none_available"] += 1
 
             availability_report["availability_summary"]["coverage_percentage"] = (
-                (
-                    availability_report["availability_summary"]["both_available"]
-                    / len(EQUIPMENT_REGISTRY)
-                )
-                * 100
+                (availability_report["availability_summary"]["both_available"] / len(EQUIPMENT_REGISTRY)) * 100
                 if EQUIPMENT_REGISTRY
                 else 0
             )
@@ -550,9 +517,7 @@ class ModelRegistry:
                 },
             }
 
-    def get_model_health_status(
-        self, sensor_id: str, model_type: str
-    ) -> Dict[str, Any]:
+    def get_model_health_status(self, sensor_id: str, model_type: str) -> Dict[str, Any]:
         """Get detailed health status for a specific model"""
         try:
             active_version = self.get_active_model_version(sensor_id, model_type)
@@ -579,20 +544,14 @@ class ModelRegistry:
             model_files_exist = False
             if model_path and model_path.exists():
                 if model_type == "telemanom":
-                    model_files_exist = (model_path / "metadata.json").exists() and (
+                    model_files_exist = (model_path / "metadata.json").exists() and (model_path / "scaler.pkl").exists()
+                elif model_type == "transformer":
+                    model_files_exist = (model_path / "transformer_metadata.json").exists() and (
                         model_path / "scaler.pkl"
                     ).exists()
-                elif model_type == "transformer":
-                    model_files_exist = (
-                        model_path / "transformer_metadata.json"
-                    ).exists() and (model_path / "scaler.pkl").exists()
 
             # Determine overall health
-            if (
-                metadata.is_active
-                and model_files_exist
-                and metadata.performance_score > 0.5
-            ):
+            if metadata.is_active and model_files_exist and metadata.performance_score > 0.5:
                 status = "healthy"
                 message = f"Model is healthy and ready for inference"
             elif metadata.is_active and model_files_exist:
@@ -617,9 +576,7 @@ class ModelRegistry:
             }
 
         except Exception as e:
-            logger.error(
-                f"Error checking model health for {sensor_id} ({model_type}): {e}"
-            )
+            logger.error(f"Error checking model health for {sensor_id} ({model_type}): {e}")
             return {"status": "error", "message": f"Error checking model health: {e}"}
 
     def get_registry_stats(self) -> Dict[str, Any]:
@@ -634,9 +591,7 @@ class ModelRegistry:
             for version_id in self.versions_index:
                 metadata = self.get_model_metadata(version_id)
                 if metadata:
-                    model_types[metadata.model_type] = (
-                        model_types.get(metadata.model_type, 0) + 1
-                    )
+                    model_types[metadata.model_type] = model_types.get(metadata.model_type, 0) + 1
                     total_size += metadata.model_size_bytes
 
             return {

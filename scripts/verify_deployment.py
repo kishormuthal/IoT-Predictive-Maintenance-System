@@ -28,13 +28,9 @@ class TestResult:
         self.warnings = 0
         self.tests = []
 
-    def add_test(
-        self, name: str, passed: bool, message: str = "", warning: bool = False
-    ):
+    def add_test(self, name: str, passed: bool, message: str = "", warning: bool = False):
         """Add test result"""
-        self.tests.append(
-            {"name": name, "passed": passed, "warning": warning, "message": message}
-        )
+        self.tests.append({"name": name, "passed": passed, "warning": warning, "message": message})
 
         if warning:
             self.warnings += 1
@@ -168,13 +164,9 @@ def test_dashboard_creation(result: TestResult):
         if thread.is_alive():
             result.add_test("Dashboard creation", False, "Timeout after 30 seconds")
         elif creation_result["success"]:
-            result.add_test(
-                "Dashboard creation", True, "Dashboard created successfully"
-            )
+            result.add_test("Dashboard creation", True, "Dashboard created successfully")
         else:
-            result.add_test(
-                "Dashboard creation", False, f"Error: {creation_result['error']}"
-            )
+            result.add_test("Dashboard creation", False, f"Error: {creation_result['error']}")
 
     except Exception as e:
         result.add_test("Dashboard creation", False, str(e))
@@ -225,13 +217,9 @@ def test_data_access(result: TestResult):
         try:
             sensor_data = data_loader.get_sensor_data("SMAP-PWR-001", hours_back=24)
             if sensor_data and sensor_data.get("values"):
-                result.add_test(
-                    "Load SMAP data", True, f"{len(sensor_data['values'])} data points"
-                )
+                result.add_test("Load SMAP data", True, f"{len(sensor_data['values'])} data points")
             else:
-                result.add_test(
-                    "Load SMAP data", True, "No data (will use mock)", warning=True
-                )
+                result.add_test("Load SMAP data", True, "No data (will use mock)", warning=True)
         except Exception as e:
             result.add_test(
                 "Load SMAP data",
@@ -252,9 +240,7 @@ def test_model_availability(result: TestResult):
     models_dir = project_root / "data" / "models"
 
     if not models_dir.exists():
-        result.add_test(
-            "Model availability", True, "No models (forecasting disabled)", warning=True
-        )
+        result.add_test("Model availability", True, "No models (forecasting disabled)", warning=True)
         return
 
     model_files = list(models_dir.glob("**/*.h5"))
@@ -262,9 +248,7 @@ def test_model_availability(result: TestResult):
     if model_files:
         result.add_test("Model availability", True, f"{len(model_files)} models found")
     else:
-        result.add_test(
-            "Model availability", True, "No models (forecasting disabled)", warning=True
-        )
+        result.add_test("Model availability", True, "No models (forecasting disabled)", warning=True)
 
 
 def test_startup_scripts(result: TestResult):

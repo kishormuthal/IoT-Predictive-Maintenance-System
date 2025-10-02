@@ -93,9 +93,7 @@ def create_training_monitor_layout() -> html.Div:
                                         [
                                             html.Div(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-running fa-2x text-success mb-2"
-                                                    ),
+                                                    html.I(className="fas fa-running fa-2x text-success mb-2"),
                                                     html.H3(
                                                         id="training-active-jobs",
                                                         children="0",
@@ -122,9 +120,7 @@ def create_training_monitor_layout() -> html.Div:
                                         [
                                             html.Div(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-hourglass-half fa-2x text-warning mb-2"
-                                                    ),
+                                                    html.I(className="fas fa-hourglass-half fa-2x text-warning mb-2"),
                                                     html.H3(
                                                         id="training-queued-jobs",
                                                         children="0",
@@ -151,9 +147,7 @@ def create_training_monitor_layout() -> html.Div:
                                         [
                                             html.Div(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-check-circle fa-2x text-info mb-2"
-                                                    ),
+                                                    html.I(className="fas fa-check-circle fa-2x text-info mb-2"),
                                                     html.H3(
                                                         id="training-completed-jobs",
                                                         children="0",
@@ -180,9 +174,7 @@ def create_training_monitor_layout() -> html.Div:
                                         [
                                             html.Div(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-times-circle fa-2x text-danger mb-2"
-                                                    ),
+                                                    html.I(className="fas fa-times-circle fa-2x text-danger mb-2"),
                                                     html.H3(
                                                         id="training-failed-jobs",
                                                         children="0",
@@ -209,15 +201,7 @@ def create_training_monitor_layout() -> html.Div:
                 [
                     # Tab 1: Active Training Jobs
                     dbc.Tab(
-                        [
-                            dbc.Card(
-                                [
-                                    dbc.CardBody(
-                                        [html.Div(id="active-training-jobs-container")]
-                                    )
-                                ]
-                            )
-                        ],
+                        [dbc.Card([dbc.CardBody([html.Div(id="active-training-jobs-container")])])],
                         label="Active Jobs",
                         tab_id="active-jobs",
                     ),
@@ -228,9 +212,7 @@ def create_training_monitor_layout() -> html.Div:
                                 [
                                     dbc.CardBody(
                                         [
-                                            html.H5(
-                                                "Training Job Queue", className="mb-3"
-                                            ),
+                                            html.H5("Training Job Queue", className="mb-3"),
                                             html.Div(id="training-queue-container"),
                                         ]
                                     )
@@ -251,9 +233,7 @@ def create_training_monitor_layout() -> html.Div:
                                                 [
                                                     dbc.Col(
                                                         [
-                                                            html.Label(
-                                                                "Filter by Status:"
-                                                            ),
+                                                            html.Label("Filter by Status:"),
                                                             dcc.Dropdown(
                                                                 id="training-status-filter",
                                                                 options=[
@@ -282,9 +262,7 @@ def create_training_monitor_layout() -> html.Div:
                                                     ),
                                                     dbc.Col(
                                                         [
-                                                            html.Label(
-                                                                "Filter by Model Type:"
-                                                            ),
+                                                            html.Label("Filter by Model Type:"),
                                                             dcc.Dropdown(
                                                                 id="training-model-filter",
                                                                 options=[
@@ -363,25 +341,15 @@ def create_training_monitor_layout() -> html.Div:
                                 [
                                     dbc.CardBody(
                                         [
-                                            html.H5(
-                                                "Resource Utilization", className="mb-3"
-                                            ),
+                                            html.H5("Resource Utilization", className="mb-3"),
                                             dbc.Row(
                                                 [
                                                     dbc.Col(
-                                                        [
-                                                            dcc.Graph(
-                                                                id="training-cpu-usage-chart"
-                                                            )
-                                                        ],
+                                                        [dcc.Graph(id="training-cpu-usage-chart")],
                                                         width=6,
                                                     ),
                                                     dbc.Col(
-                                                        [
-                                                            dcc.Graph(
-                                                                id="training-gpu-usage-chart"
-                                                            )
-                                                        ],
+                                                        [dcc.Graph(id="training-gpu-usage-chart")],
                                                         width=6,
                                                     ),
                                                 ],
@@ -390,19 +358,11 @@ def create_training_monitor_layout() -> html.Div:
                                             dbc.Row(
                                                 [
                                                     dbc.Col(
-                                                        [
-                                                            dcc.Graph(
-                                                                id="training-memory-usage-chart"
-                                                            )
-                                                        ],
+                                                        [dcc.Graph(id="training-memory-usage-chart")],
                                                         width=6,
                                                     ),
                                                     dbc.Col(
-                                                        [
-                                                            dcc.Graph(
-                                                                id="training-disk-usage-chart"
-                                                            )
-                                                        ],
+                                                        [dcc.Graph(id="training-disk-usage-chart")],
                                                         width=6,
                                                     ),
                                                 ]
@@ -429,9 +389,7 @@ def create_training_monitor_layout() -> html.Div:
                                 [
                                     dbc.Col(
                                         [
-                                            html.Label(
-                                                "Model Type:", className="fw-bold"
-                                            ),
+                                            html.Label("Model Type:", className="fw-bold"),
                                             dcc.Dropdown(
                                                 id="new-training-model-type",
                                                 options=[
@@ -506,9 +464,7 @@ def create_training_monitor_layout() -> html.Div:
                                     ),
                                     dbc.Col(
                                         [
-                                            html.Label(
-                                                "Batch Size:", className="fw-bold"
-                                            ),
+                                            html.Label("Batch Size:", className="fw-bold"),
                                             dcc.Dropdown(
                                                 id="new-training-batch-size",
                                                 options=[
@@ -529,9 +485,7 @@ def create_training_monitor_layout() -> html.Div:
                                 [
                                     dbc.Col(
                                         [
-                                            html.Label(
-                                                "Learning Rate:", className="fw-bold"
-                                            ),
+                                            html.Label("Learning Rate:", className="fw-bold"),
                                             dbc.Input(
                                                 id="new-training-learning-rate",
                                                 type="number",
@@ -545,9 +499,7 @@ def create_training_monitor_layout() -> html.Div:
                                     ),
                                     dbc.Col(
                                         [
-                                            html.Label(
-                                                "Validation Split:", className="fw-bold"
-                                            ),
+                                            html.Label("Validation Split:", className="fw-bold"),
                                             dbc.Input(
                                                 id="new-training-val-split",
                                                 type="number",
@@ -747,9 +699,7 @@ def register_training_monitor_callbacks(app: dash.Dash):
                                         [
                                             html.H5(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-brain me-2"
-                                                    ),
+                                                    html.I(className="fas fa-brain me-2"),
                                                     job["model"],
                                                 ],
                                                 className="mb-0",
@@ -764,9 +714,7 @@ def register_training_monitor_callbacks(app: dash.Dash):
                                                 color="info",
                                                 className="me-2",
                                             ),
-                                            dbc.Badge(
-                                                f"ETA: {job['eta']}", color="secondary"
-                                            ),
+                                            dbc.Badge(f"ETA: {job['eta']}", color="secondary"),
                                         ],
                                         width=6,
                                         className="text-end",
@@ -791,11 +739,7 @@ def register_training_monitor_callbacks(app: dash.Dash):
                                         color=(
                                             "success"
                                             if job["progress"] > 66
-                                            else (
-                                                "warning"
-                                                if job["progress"] > 33
-                                                else "info"
-                                            )
+                                            else ("warning" if job["progress"] > 33 else "info")
                                         ),
                                         className="mb-3",
                                     ),
@@ -828,18 +772,14 @@ def register_training_monitor_callbacks(app: dash.Dash):
                                             html.P(
                                                 [
                                                     html.Strong("Started: "),
-                                                    datetime.fromisoformat(
-                                                        job["started"]
-                                                    ).strftime("%H:%M:%S"),
+                                                    datetime.fromisoformat(job["started"]).strftime("%H:%M:%S"),
                                                 ],
                                                 className="mb-1",
                                             ),
                                             html.P(
                                                 [
                                                     html.Strong("Status: "),
-                                                    dbc.Badge(
-                                                        "Running", color="success"
-                                                    ),
+                                                    dbc.Badge("Running", color="success"),
                                                 ],
                                                 className="mb-1",
                                             ),
@@ -906,11 +846,7 @@ def register_training_monitor_callbacks(app: dash.Dash):
                         dbc.Row(
                             [
                                 dbc.Col(
-                                    [
-                                        html.Strong(
-                                            f"#{job['position']}: {job['model']}"
-                                        )
-                                    ],
+                                    [html.Strong(f"#{job['position']}: {job['model']}")],
                                     width=6,
                                 ),
                                 dbc.Col(
@@ -1132,9 +1068,7 @@ def register_training_monitor_callbacks(app: dash.Dash):
                 line=dict(color="#f39c12"),
             )
         )
-        disk_fig.update_layout(
-            title="Disk I/O (MB/s)", height=250, margin=dict(l=40, r=20, t=40, b=30)
-        )
+        disk_fig.update_layout(title="Disk I/O (MB/s)", height=250, margin=dict(l=40, r=20, t=40, b=30))
 
         return cpu_fig, gpu_fig, mem_fig, disk_fig
 

@@ -95,9 +95,7 @@ class PerformanceMetrics:
                     if isinstance(value, list):
                         result[key] = value
                     else:
-                        result[key] = (
-                            float(value) if isinstance(value, (int, float)) else value
-                        )
+                        result[key] = float(value) if isinstance(value, (int, float)) else value
 
         return result
 
@@ -270,8 +268,7 @@ class ModelMonitoringService:
         self._check_degradation(metrics)
 
         logger.info(
-            f"Logged metrics for {metrics.sensor_id} ({metrics.model_type}): "
-            f"type={metrics.metric_type.value}"
+            f"Logged metrics for {metrics.sensor_id} ({metrics.model_type}): " f"type={metrics.metric_type.value}"
         )
 
     def _save_metrics_to_disk(self, metrics: PerformanceMetrics):
@@ -291,9 +288,7 @@ class ModelMonitoringService:
         except Exception as e:
             logger.error(f"Error saving metrics to disk: {e}")
 
-    def set_baseline(
-        self, sensor_id: str, model_type: str, baseline_metrics: Dict[str, float]
-    ):
+    def set_baseline(self, sensor_id: str, model_type: str, baseline_metrics: Dict[str, float]):
         """
         Set baseline metrics for a model
 
@@ -306,10 +301,7 @@ class ModelMonitoringService:
         self.baselines[key] = baseline_metrics
         self._save_baselines()
 
-        logger.info(
-            f"Set baseline for {sensor_id} ({model_type}): "
-            f"{list(baseline_metrics.keys())}"
-        )
+        logger.info(f"Set baseline for {sensor_id} ({model_type}): " f"{list(baseline_metrics.keys())}")
 
     def compute_baseline_from_history(
         self, sensor_id: str, model_type: str, days_back: Optional[int] = None
@@ -420,14 +412,10 @@ class ModelMonitoringService:
 
             # Calculate degradation
             if higher_is_better:
-                degradation = (baseline_value - current_value) / (
-                    baseline_value + 1e-10
-                )
+                degradation = (baseline_value - current_value) / (baseline_value + 1e-10)
             else:
                 # For error metrics (lower is better), degradation is increase
-                degradation = (current_value - baseline_value) / (
-                    baseline_value + 1e-10
-                )
+                degradation = (current_value - baseline_value) / (baseline_value + 1e-10)
 
             # Check thresholds
             if degradation >= self.critical_threshold:
@@ -495,9 +483,7 @@ class ModelMonitoringService:
 
         logger.warning(message)
 
-    def get_recent_metrics(
-        self, sensor_id: str, model_type: str, limit: int = 10
-    ) -> List[PerformanceMetrics]:
+    def get_recent_metrics(self, sensor_id: str, model_type: str, limit: int = 10) -> List[PerformanceMetrics]:
         """Get recent metrics for a model"""
         key = self._get_key(sensor_id, model_type)
 
@@ -579,12 +565,8 @@ class ModelMonitoringService:
         """Get overall monitoring summary"""
         recent_alerts = self.get_alerts(days_back=7)
 
-        critical_alerts = [
-            a for a in recent_alerts if a.severity == AlertSeverity.CRITICAL
-        ]
-        warning_alerts = [
-            a for a in recent_alerts if a.severity == AlertSeverity.WARNING
-        ]
+        critical_alerts = [a for a in recent_alerts if a.severity == AlertSeverity.CRITICAL]
+        warning_alerts = [a for a in recent_alerts if a.severity == AlertSeverity.WARNING]
 
         # Count models being monitored
         monitored_models = len(self.recent_metrics)

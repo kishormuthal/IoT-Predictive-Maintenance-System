@@ -16,9 +16,7 @@ from typing import Any, Dict, List, Tuple
 sys.path.append(str(Path(__file__).parent.parent / "src"))
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -93,9 +91,7 @@ class Phase2IntegrationValidator:
                 logger.info(f"  ✓ Imported {module_name}.{component_name}")
                 success_count += 1
             except Exception as e:
-                logger.error(
-                    f"  ✗ Failed to import {module_name}.{component_name}: {e}"
-                )
+                logger.error(f"  ✗ Failed to import {module_name}.{component_name}: {e}")
 
         return success_count == len(components_to_import)
 
@@ -208,9 +204,7 @@ class Phase2IntegrationValidator:
 
                 # Test retrieval
                 actions = db_mgr.get_alert_actions("validation_test")
-                schema_results["read_operations"] = (
-                    "PASS" if len(actions) > 0 else "FAIL"
-                )
+                schema_results["read_operations"] = "PASS" if len(actions) > 0 else "FAIL"
 
                 logger.info("  ✓ Database read/write operations working")
 
@@ -338,10 +332,7 @@ class Phase2IntegrationValidator:
             alert_mgr = self.components["alert_action_manager"]
 
             # Test dismissal reasons
-            if (
-                hasattr(alert_mgr, "dismissal_reasons")
-                and len(alert_mgr.dismissal_reasons) > 0
-            ):
+            if hasattr(alert_mgr, "dismissal_reasons") and len(alert_mgr.dismissal_reasons) > 0:
                 integration_results["alert_manager_config"] = "PASS"
                 logger.info("  ✓ Alert manager configuration valid")
             else:
@@ -386,9 +377,7 @@ class Phase2IntegrationValidator:
             db_time = time.time() - start_time
 
             performance_results["database_query_time"] = f"{db_time:.3f}s"
-            performance_results["database_performance"] = (
-                "PASS" if db_time < 1.0 else "SLOW"
-            )
+            performance_results["database_performance"] = "PASS" if db_time < 1.0 else "SLOW"
 
             logger.info(f"  ✓ Database query time: {db_time:.3f}s")
 
@@ -400,9 +389,7 @@ class Phase2IntegrationValidator:
             analyzer_time = time.time() - start_time
 
             performance_results["analyzer_time"] = f"{analyzer_time:.3f}s"
-            performance_results["analyzer_performance"] = (
-                "PASS" if analyzer_time < 2.0 else "SLOW"
-            )
+            performance_results["analyzer_performance"] = "PASS" if analyzer_time < 2.0 else "SLOW"
 
             logger.info(f"  ✓ Analyzer processing time: {analyzer_time:.3f}s")
 
@@ -454,21 +441,9 @@ class Phase2IntegrationValidator:
     def generate_validation_report(self) -> Dict[str, Any]:
         """Generate comprehensive validation report"""
         total_validations = len(self.validation_results)
-        passed_validations = sum(
-            1
-            for result in self.validation_results.values()
-            if result["status"] == "PASS"
-        )
-        failed_validations = sum(
-            1
-            for result in self.validation_results.values()
-            if result["status"] == "FAIL"
-        )
-        error_validations = sum(
-            1
-            for result in self.validation_results.values()
-            if result["status"] == "ERROR"
-        )
+        passed_validations = sum(1 for result in self.validation_results.values() if result["status"] == "PASS")
+        failed_validations = sum(1 for result in self.validation_results.values() if result["status"] == "FAIL")
+        error_validations = sum(1 for result in self.validation_results.values() if result["status"] == "ERROR")
 
         report = {
             "timestamp": datetime.now().isoformat(),
@@ -478,16 +453,12 @@ class Phase2IntegrationValidator:
                 "failed": failed_validations,
                 "errors": error_validations,
                 "success_rate": (
-                    f"{(passed_validations / total_validations * 100):.1f}%"
-                    if total_validations > 0
-                    else "0%"
+                    f"{(passed_validations / total_validations * 100):.1f}%" if total_validations > 0 else "0%"
                 ),
             },
             "validation_results": self.validation_results,
             "errors": self.errors,
-            "overall_status": (
-                "PASS" if failed_validations == 0 and error_validations == 0 else "FAIL"
-            ),
+            "overall_status": ("PASS" if failed_validations == 0 and error_validations == 0 else "FAIL"),
         }
 
         return report
@@ -512,9 +483,7 @@ class Phase2IntegrationValidator:
         print("-" * 80)
 
         for validation_name, result in report["validation_results"].items():
-            status_symbol = {"PASS": "✓", "FAIL": "✗", "ERROR": "⚠"}.get(
-                result["status"], "?"
-            )
+            status_symbol = {"PASS": "✓", "FAIL": "✗", "ERROR": "⚠"}.get(result["status"], "?")
 
             print(f"{status_symbol} {validation_name}: {result['status']}")
 

@@ -75,9 +75,7 @@ class EnhancedForecastingDashboard:
         self.risk_matrix_system = None
 
         # Dashboard state
-        self.current_equipment = (
-            self.sensor_ids[0] if self.sensor_ids else "SMAP-PWR-001"
-        )
+        self.current_equipment = self.sensor_ids[0] if self.sensor_ids else "SMAP-PWR-001"
         self.current_component = "power_system"
         self.forecast_horizon = 24
         self.confidence_levels = [0.8, 0.9, 0.95]
@@ -114,29 +112,21 @@ class EnhancedForecastingDashboard:
                 # Control Panel
                 dbc.Card(
                     [
-                        dbc.CardHeader(
-                            [html.H5("Forecasting Controls", className="mb-0")]
-                        ),
+                        dbc.CardHeader([html.H5("Forecasting Controls", className="mb-0")]),
                         dbc.CardBody(
                             [
                                 dbc.Row(
                                     [
                                         dbc.Col(
                                             [
-                                                html.Label(
-                                                    "Equipment", className="form-label"
-                                                ),
+                                                html.Label("Equipment", className="form-label"),
                                                 dcc.Dropdown(
                                                     id="enhanced-forecast-equipment-dropdown",
                                                     options=(
                                                         [
                                                             {
                                                                 "label": (
-                                                                    eq.name
-                                                                    if hasattr(
-                                                                        eq, "name"
-                                                                    )
-                                                                    else eq.equipment_id
+                                                                    eq.name if hasattr(eq, "name") else eq.equipment_id
                                                                 ),
                                                                 "value": eq.equipment_id,
                                                             }
@@ -154,11 +144,7 @@ class EnhancedForecastingDashboard:
                                                             },
                                                         ]
                                                     ),
-                                                    value=(
-                                                        self.sensor_ids[0]
-                                                        if self.sensor_ids
-                                                        else "SMAP"
-                                                    ),
+                                                    value=(self.sensor_ids[0] if self.sensor_ids else "SMAP"),
                                                     clearable=False,
                                                     className="mb-2",
                                                 ),
@@ -167,9 +153,7 @@ class EnhancedForecastingDashboard:
                                         ),
                                         dbc.Col(
                                             [
-                                                html.Label(
-                                                    "Component", className="form-label"
-                                                ),
+                                                html.Label("Component", className="form-label"),
                                                 dcc.Dropdown(
                                                     id="enhanced-forecast-component-dropdown",
                                                     options=[],
@@ -207,9 +191,7 @@ class EnhancedForecastingDashboard:
                                         ),
                                         dbc.Col(
                                             [
-                                                html.Label(
-                                                    "Model Type", className="form-label"
-                                                ),
+                                                html.Label("Model Type", className="form-label"),
                                                 dcc.Dropdown(
                                                     id="enhanced-forecast-model-dropdown",
                                                     options=[
@@ -248,11 +230,7 @@ class EnhancedForecastingDashboard:
                                         dbc.Row(
                                             [
                                                 dbc.Col(
-                                                    [
-                                                        dcc.Graph(
-                                                            id="enhanced-forecast-main-chart"
-                                                        )
-                                                    ],
+                                                    [dcc.Graph(id="enhanced-forecast-main-chart")],
                                                     width=8,
                                                 ),
                                                 dbc.Col(
@@ -260,15 +238,9 @@ class EnhancedForecastingDashboard:
                                                         # Forecast Statistics Card
                                                         dbc.Card(
                                                             [
-                                                                dbc.CardHeader(
-                                                                    "Forecast Statistics"
-                                                                ),
+                                                                dbc.CardHeader("Forecast Statistics"),
                                                                 dbc.CardBody(
-                                                                    [
-                                                                        html.Div(
-                                                                            id="forecast-statistics-content"
-                                                                        )
-                                                                    ]
+                                                                    [html.Div(id="forecast-statistics-content")]
                                                                 ),
                                                             ]
                                                         ),
@@ -276,15 +248,9 @@ class EnhancedForecastingDashboard:
                                                         # Uncertainty Analysis Card
                                                         dbc.Card(
                                                             [
-                                                                dbc.CardHeader(
-                                                                    "Uncertainty Analysis"
-                                                                ),
+                                                                dbc.CardHeader("Uncertainty Analysis"),
                                                                 dbc.CardBody(
-                                                                    [
-                                                                        html.Div(
-                                                                            id="uncertainty-analysis-content"
-                                                                        )
-                                                                    ]
+                                                                    [html.Div(id="uncertainty-analysis-content")]
                                                                 ),
                                                             ]
                                                         ),
@@ -298,19 +264,11 @@ class EnhancedForecastingDashboard:
                                         dbc.Row(
                                             [
                                                 dbc.Col(
-                                                    [
-                                                        dcc.Graph(
-                                                            id="uncertainty-decomposition-chart"
-                                                        )
-                                                    ],
+                                                    [dcc.Graph(id="uncertainty-decomposition-chart")],
                                                     width=6,
                                                 ),
                                                 dbc.Col(
-                                                    [
-                                                        dcc.Graph(
-                                                            id="quantile-forecast-chart"
-                                                        )
-                                                    ],
+                                                    [dcc.Graph(id="quantile-forecast-chart")],
                                                     width=6,
                                                 ),
                                             ]
@@ -330,11 +288,7 @@ class EnhancedForecastingDashboard:
                                         dbc.Row(
                                             [
                                                 dbc.Col(
-                                                    [
-                                                        dcc.Graph(
-                                                            id="failure-probability-chart"
-                                                        )
-                                                    ],
+                                                    [dcc.Graph(id="failure-probability-chart")],
                                                     width=8,
                                                 ),
                                                 dbc.Col(
@@ -342,31 +296,17 @@ class EnhancedForecastingDashboard:
                                                         # Failure Risk Card
                                                         dbc.Card(
                                                             [
-                                                                dbc.CardHeader(
-                                                                    "Failure Risk Assessment"
-                                                                ),
-                                                                dbc.CardBody(
-                                                                    [
-                                                                        html.Div(
-                                                                            id="failure-risk-content"
-                                                                        )
-                                                                    ]
-                                                                ),
+                                                                dbc.CardHeader("Failure Risk Assessment"),
+                                                                dbc.CardBody([html.Div(id="failure-risk-content")]),
                                                             ]
                                                         ),
                                                         html.Br(),
                                                         # Contributing Factors Card
                                                         dbc.Card(
                                                             [
-                                                                dbc.CardHeader(
-                                                                    "Contributing Factors"
-                                                                ),
+                                                                dbc.CardHeader("Contributing Factors"),
                                                                 dbc.CardBody(
-                                                                    [
-                                                                        html.Div(
-                                                                            id="contributing-factors-content"
-                                                                        )
-                                                                    ]
+                                                                    [html.Div(id="contributing-factors-content")]
                                                                 ),
                                                             ]
                                                         ),
@@ -379,19 +319,11 @@ class EnhancedForecastingDashboard:
                                         dbc.Row(
                                             [
                                                 dbc.Col(
-                                                    [
-                                                        dcc.Graph(
-                                                            id="failure-timeline-chart"
-                                                        )
-                                                    ],
+                                                    [dcc.Graph(id="failure-timeline-chart")],
                                                     width=6,
                                                 ),
                                                 dbc.Col(
-                                                    [
-                                                        dcc.Graph(
-                                                            id="cascade-failure-chart"
-                                                        )
-                                                    ],
+                                                    [dcc.Graph(id="cascade-failure-chart")],
                                                     width=6,
                                                 ),
                                             ]
@@ -411,18 +343,14 @@ class EnhancedForecastingDashboard:
                                         # Scenario Controls
                                         dbc.Card(
                                             [
-                                                dbc.CardHeader(
-                                                    "Scenario Configuration"
-                                                ),
+                                                dbc.CardHeader("Scenario Configuration"),
                                                 dbc.CardBody(
                                                     [
                                                         dbc.Row(
                                                             [
                                                                 dbc.Col(
                                                                     [
-                                                                        html.Label(
-                                                                            "Maintenance Strategy"
-                                                                        ),
+                                                                        html.Label("Maintenance Strategy"),
                                                                         dcc.Dropdown(
                                                                             id="scenario-strategy-dropdown",
                                                                             options=[
@@ -450,9 +378,7 @@ class EnhancedForecastingDashboard:
                                                                 ),
                                                                 dbc.Col(
                                                                     [
-                                                                        html.Label(
-                                                                            "Budget Limit ($)"
-                                                                        ),
+                                                                        html.Label("Budget Limit ($)"),
                                                                         dcc.Input(
                                                                             id="scenario-budget-input",
                                                                             type="number",
@@ -464,9 +390,7 @@ class EnhancedForecastingDashboard:
                                                                 ),
                                                                 dbc.Col(
                                                                     [
-                                                                        html.Label(
-                                                                            "Time Horizon (hours)"
-                                                                        ),
+                                                                        html.Label("Time Horizon (hours)"),
                                                                         dcc.Input(
                                                                             id="scenario-horizon-input",
                                                                             type="number",
@@ -498,27 +422,15 @@ class EnhancedForecastingDashboard:
                                         dbc.Row(
                                             [
                                                 dbc.Col(
-                                                    [
-                                                        dcc.Graph(
-                                                            id="scenario-comparison-chart"
-                                                        )
-                                                    ],
+                                                    [dcc.Graph(id="scenario-comparison-chart")],
                                                     width=8,
                                                 ),
                                                 dbc.Col(
                                                     [
                                                         dbc.Card(
                                                             [
-                                                                dbc.CardHeader(
-                                                                    "Scenario Results"
-                                                                ),
-                                                                dbc.CardBody(
-                                                                    [
-                                                                        html.Div(
-                                                                            id="scenario-results-content"
-                                                                        )
-                                                                    ]
-                                                                ),
+                                                                dbc.CardHeader("Scenario Results"),
+                                                                dbc.CardBody([html.Div(id="scenario-results-content")]),
                                                             ]
                                                         )
                                                     ],
@@ -549,32 +461,16 @@ class EnhancedForecastingDashboard:
                                                         # Risk Summary Card
                                                         dbc.Card(
                                                             [
-                                                                dbc.CardHeader(
-                                                                    "Risk Summary"
-                                                                ),
-                                                                dbc.CardBody(
-                                                                    [
-                                                                        html.Div(
-                                                                            id="risk-summary-content"
-                                                                        )
-                                                                    ]
-                                                                ),
+                                                                dbc.CardHeader("Risk Summary"),
+                                                                dbc.CardBody([html.Div(id="risk-summary-content")]),
                                                             ]
                                                         ),
                                                         html.Br(),
                                                         # Top Risks Card
                                                         dbc.Card(
                                                             [
-                                                                dbc.CardHeader(
-                                                                    "Top Risk Components"
-                                                                ),
-                                                                dbc.CardBody(
-                                                                    [
-                                                                        html.Div(
-                                                                            id="top-risks-content"
-                                                                        )
-                                                                    ]
-                                                                ),
+                                                                dbc.CardHeader("Top Risk Components"),
+                                                                dbc.CardBody([html.Div(id="top-risks-content")]),
                                                             ]
                                                         ),
                                                     ],
@@ -586,19 +482,11 @@ class EnhancedForecastingDashboard:
                                         dbc.Row(
                                             [
                                                 dbc.Col(
-                                                    [
-                                                        dcc.Graph(
-                                                            id="risk-heatmap-chart"
-                                                        )
-                                                    ],
+                                                    [dcc.Graph(id="risk-heatmap-chart")],
                                                     width=6,
                                                 ),
                                                 dbc.Col(
-                                                    [
-                                                        dcc.Graph(
-                                                            id="risk-dashboard-chart"
-                                                        )
-                                                    ],
+                                                    [dcc.Graph(id="risk-dashboard-chart")],
                                                     width=6,
                                                 ),
                                             ]
@@ -670,9 +558,7 @@ class EnhancedForecastingDashboard:
                 Input("enhanced-forecast-model-dropdown", "value"),
             ],
         )
-        def update_forecast_data(
-            n_intervals, equipment, component, horizon, model_type
-        ):
+        def update_forecast_data(n_intervals, equipment, component, horizon, model_type):
             """Update forecast data based on current selections"""
 
             if not equipment or not component:
@@ -680,14 +566,10 @@ class EnhancedForecastingDashboard:
 
             try:
                 # Generate mock forecast data (in real application, use actual forecaster)
-                forecast_data = self._generate_mock_forecast_data(
-                    equipment, component, horizon, model_type
-                )
+                forecast_data = self._generate_mock_forecast_data(equipment, component, horizon, model_type)
 
                 # Generate mock failure predictions
-                failure_data = self._generate_mock_failure_predictions(
-                    equipment, component
-                )
+                failure_data = self._generate_mock_failure_predictions(equipment, component)
 
                 # Generate mock risk assessments
                 risk_data = self._generate_mock_risk_assessments(equipment, component)
@@ -739,8 +621,7 @@ class EnhancedForecastingDashboard:
                 if "confidence_upper" in forecast_data["forecast"]:
                     fig.add_trace(
                         go.Scatter(
-                            x=forecast_data["forecast"]["timestamps"]
-                            + forecast_data["forecast"]["timestamps"][::-1],
+                            x=forecast_data["forecast"]["timestamps"] + forecast_data["forecast"]["timestamps"][::-1],
                             y=forecast_data["forecast"]["confidence_upper"]
                             + forecast_data["forecast"]["confidence_lower"][::-1],
                             fill="toself",
@@ -867,9 +748,7 @@ class EnhancedForecastingDashboard:
         historical_values = base_value + trend + seasonal + noise
 
         # Generate forecast data
-        timestamps_forecast = pd.date_range(
-            start=datetime.now(), periods=horizon, freq="H"
-        )
+        timestamps_forecast = pd.date_range(start=datetime.now(), periods=horizon, freq="H")
 
         # Extend trend and seasonal pattern
         forecast_base = base_value + 5
@@ -877,9 +756,7 @@ class EnhancedForecastingDashboard:
         forecast_seasonal = 5 * np.sin(2 * np.pi * np.arange(horizon) / 24)
         forecast_noise = np.random.normal(0, 1, horizon)
 
-        predictions = (
-            forecast_base + forecast_trend + forecast_seasonal + forecast_noise
-        )
+        predictions = forecast_base + forecast_trend + forecast_seasonal + forecast_noise
 
         # Generate confidence intervals
         std_dev = 3.0

@@ -24,9 +24,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def generate_realistic_sensor_data(
-    sensor_info: dict, n_samples: int = 2000
-) -> np.ndarray:
+def generate_realistic_sensor_data(sensor_info: dict, n_samples: int = 2000) -> np.ndarray:
     """Generate realistic sensor data based on sensor specifications
 
     Args:
@@ -139,13 +137,9 @@ def train_sample_sensors():
 
             # Configure model based on criticality
             if sensor_info["criticality"] == "CRITICAL":
-                config = Telemanom_Config(
-                    epochs=10, sequence_length=80, lstm_units=[64, 32], batch_size=32
-                )
+                config = Telemanom_Config(epochs=10, sequence_length=80, lstm_units=[64, 32], batch_size=32)
             else:
-                config = Telemanom_Config(
-                    epochs=5, sequence_length=50, lstm_units=[32, 16], batch_size=16
-                )
+                config = Telemanom_Config(epochs=5, sequence_length=50, lstm_units=[32, 16], batch_size=16)
 
             # Create and train model
             model = NASATelemanom(sensor_info["sensor_key"], config)
@@ -181,9 +175,7 @@ def train_sample_sensors():
             logger.info(f"✅ Successfully trained {sensor_info['sensor_name']}")
             logger.info(f"   Threshold: {model.error_threshold:.4f}")
             logger.info(f"   Training Loss: {history['loss'][-1]:.4f}")
-            logger.info(
-                f"   Test Anomalies: {results[sensor_info['sensor_key']]['test_anomalies']}"
-            )
+            logger.info(f"   Test Anomalies: {results[sensor_info['sensor_key']]['test_anomalies']}")
 
         except Exception as e:
             logger.error(f"❌ Failed to train {sensor_info['sensor_name']}: {e}")
@@ -201,10 +193,7 @@ def train_sample_sensors():
         "results": results,
     }
 
-    summary_path = (
-        models_dir
-        / f"sample_training_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    )
+    summary_path = models_dir / f"sample_training_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     with open(summary_path, "w") as f:
         json.dump(summary, f, indent=2)
 
@@ -242,9 +231,7 @@ def test_trained_models():
             # Run detection
             results = model.predict_anomalies(test_data)
 
-            logger.info(
-                f"✅ {model.sensor_id}: {np.sum(results['anomalies'])} anomalies detected"
-            )
+            logger.info(f"✅ {model.sensor_id}: {np.sum(results['anomalies'])} anomalies detected")
 
         except Exception as e:
             logger.error(f"❌ Failed to test {model_file.name}: {e}")

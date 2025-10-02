@@ -556,20 +556,14 @@ class QuickSelectManager:
 
         # Filter by spacecraft
         if spacecraft:
-            presets = [
-                p
-                for p in presets
-                if spacecraft in p.spacecraft or "both" in p.spacecraft
-            ]
+            presets = [p for p in presets if spacecraft in p.spacecraft or "both" in p.spacecraft]
 
         # Sort by priority
         presets.sort(key=lambda x: x.priority, reverse=True)
 
         return presets
 
-    def get_preset_options(
-        self, include_shortcuts: bool = True
-    ) -> List[Dict[str, Any]]:
+    def get_preset_options(self, include_shortcuts: bool = True) -> List[Dict[str, Any]]:
         """
         Get preset options for dropdown
 
@@ -621,16 +615,12 @@ class QuickSelectManager:
 
             # Apply equipment filter
             if self.filter_manager and preset.equipment_ids:
-                self.filter_manager.set_equipment_filter(
-                    preset.equipment_ids, component_id
-                )
+                self.filter_manager.set_equipment_filter(preset.equipment_ids, component_id)
 
             # Update shared state
             if self.shared_state:
                 updates = {
-                    "selections.equipment_id": (
-                        preset.equipment_ids[0] if preset.equipment_ids else None
-                    ),
+                    "selections.equipment_id": (preset.equipment_ids[0] if preset.equipment_ids else None),
                     "ui.current_preset": preset.id,
                     "ui.preset_applied_at": datetime.now().isoformat(),
                 }
@@ -644,9 +634,7 @@ class QuickSelectManager:
             logger.error(f"Error applying preset {preset_id}: {e}")
             return False
 
-    def apply_quick_action(
-        self, action_id: str, component_id: str = "quick_select"
-    ) -> bool:
+    def apply_quick_action(self, action_id: str, component_id: str = "quick_select") -> bool:
         """
         Apply a quick action
 
@@ -706,9 +694,7 @@ class QuickSelectManager:
             preset = self.mission_presets[preset_id]
 
             # Count by spacecraft
-            smap_count = len(
-                [eq for eq in preset.equipment_ids if eq.startswith("SMAP")]
-            )
+            smap_count = len([eq for eq in preset.equipment_ids if eq.startswith("SMAP")])
             msl_count = len([eq for eq in preset.equipment_ids if eq.startswith("MSL")])
 
             # Estimate sensor count
@@ -717,14 +703,9 @@ class QuickSelectManager:
                 spacecraft = equipment_id.split("-")[0].lower()
                 if spacecraft in self.nasa_equipment_specs:
                     for subsystem in preset.subsystems:
-                        if (
-                            subsystem
-                            in self.nasa_equipment_specs[spacecraft]["subsystems"]
-                        ):
+                        if subsystem in self.nasa_equipment_specs[spacecraft]["subsystems"]:
                             estimated_sensors += len(
-                                self.nasa_equipment_specs[spacecraft]["subsystems"][
-                                    subsystem
-                                ]["sensors"]
+                                self.nasa_equipment_specs[spacecraft]["subsystems"][subsystem]["sensors"]
                             )
 
             return {
@@ -786,9 +767,7 @@ class QuickSelectManager:
 
         for spacecraft, specs in self.nasa_equipment_specs.items():
             if "COMMUNICATION" in specs["subsystems"]:
-                comm_equipment.extend(
-                    specs["subsystems"]["COMMUNICATION"]["equipment_ids"]
-                )
+                comm_equipment.extend(specs["subsystems"]["COMMUNICATION"]["equipment_ids"])
 
         return comm_equipment
 
@@ -798,27 +777,15 @@ class QuickSelectManager:
 
         # SMAP payload
         if "PAYLOAD" in self.nasa_equipment_specs["smap"]["subsystems"]:
-            sci_equipment.extend(
-                self.nasa_equipment_specs["smap"]["subsystems"]["PAYLOAD"][
-                    "equipment_ids"
-                ]
-            )
+            sci_equipment.extend(self.nasa_equipment_specs["smap"]["subsystems"]["PAYLOAD"]["equipment_ids"])
 
         # MSL scientific instruments
         if "SCIENTIFIC" in self.nasa_equipment_specs["msl"]["subsystems"]:
-            sci_equipment.extend(
-                self.nasa_equipment_specs["msl"]["subsystems"]["SCIENTIFIC"][
-                    "equipment_ids"
-                ]
-            )
+            sci_equipment.extend(self.nasa_equipment_specs["msl"]["subsystems"]["SCIENTIFIC"]["equipment_ids"])
 
         # MSL environmental monitoring
         if "ENVIRONMENTAL" in self.nasa_equipment_specs["msl"]["subsystems"]:
-            sci_equipment.extend(
-                self.nasa_equipment_specs["msl"]["subsystems"]["ENVIRONMENTAL"][
-                    "equipment_ids"
-                ]
-            )
+            sci_equipment.extend(self.nasa_equipment_specs["msl"]["subsystems"]["ENVIRONMENTAL"]["equipment_ids"])
 
         return sci_equipment
 

@@ -193,12 +193,8 @@ class EnhancedMaintenanceScheduler:
                 "BearingCorp",
                 5,
             ),
-            "filter_001": InventoryItem(
-                "filter_001", "Oil Filter Assembly", 8, 15, 40, 45.75, "FilterMax", 3
-            ),
-            "sensor_001": InventoryItem(
-                "sensor_001", "Temperature Sensor", 12, 5, 30, 85.00, "SensorTech", 7
-            ),
+            "filter_001": InventoryItem("filter_001", "Oil Filter Assembly", 8, 15, 40, 45.75, "FilterMax", 3),
+            "sensor_001": InventoryItem("sensor_001", "Temperature Sensor", 12, 5, 30, 85.00, "SensorTech", 7),
         }
 
         # Sample compliance rules
@@ -269,9 +265,7 @@ class EnhancedMaintenanceScheduler:
                                         ),
                                         dbc.Button(
                                             [
-                                                html.I(
-                                                    className="fas fa-download me-2"
-                                                ),
+                                                html.I(className="fas fa-download me-2"),
                                                 "Export",
                                             ],
                                             id="enhanced-export-btn",
@@ -370,9 +364,7 @@ class EnhancedMaintenanceScheduler:
                                             [
                                                 html.Div(
                                                     id="enhanced-calendar-container",
-                                                    children=[
-                                                        self._create_drag_drop_calendar()
-                                                    ],
+                                                    children=[self._create_drag_drop_calendar()],
                                                     style={"minHeight": "600px"},
                                                 )
                                             ]
@@ -413,9 +405,7 @@ class EnhancedMaintenanceScheduler:
                                                 )
                                             ]
                                         ),
-                                        dbc.CardBody(
-                                            [html.Div(id="side-panel-content")]
-                                        ),
+                                        dbc.CardBody([html.Div(id="side-panel-content")]),
                                     ]
                                 )
                             ],
@@ -431,12 +421,8 @@ class EnhancedMaintenanceScheduler:
                             [
                                 dbc.Card(
                                     [
-                                        dbc.CardHeader(
-                                            "AI-Powered Optimization Suggestions"
-                                        ),
-                                        dbc.CardBody(
-                                            [html.Div(id="ai-optimization-suggestions")]
-                                        ),
+                                        dbc.CardHeader("AI-Powered Optimization Suggestions"),
+                                        dbc.CardBody([html.Div(id="ai-optimization-suggestions")]),
                                     ]
                                 )
                             ],
@@ -447,9 +433,7 @@ class EnhancedMaintenanceScheduler:
                                 dbc.Card(
                                     [
                                         dbc.CardHeader("Parts Inventory Manager"),
-                                        dbc.CardBody(
-                                            [html.Div(id="inventory-manager")]
-                                        ),
+                                        dbc.CardBody([html.Div(id="inventory-manager")]),
                                     ]
                                 )
                             ],
@@ -465,9 +449,7 @@ class EnhancedMaintenanceScheduler:
                             [
                                 dbc.Card(
                                     [
-                                        dbc.CardHeader(
-                                            "Predictive Analytics Dashboard"
-                                        ),
+                                        dbc.CardHeader("Predictive Analytics Dashboard"),
                                         dbc.CardBody(
                                             [
                                                 dbc.Tabs(
@@ -565,12 +547,8 @@ class EnhancedMaintenanceScheduler:
                         # Real-time task status with AI predictions
                         html.Div(
                             [
-                                self._create_smart_stat(
-                                    "Optimized", 28, "success", "AI-optimized schedule"
-                                ),
-                                self._create_smart_stat(
-                                    "At Risk", 3, "warning", "Potential delays detected"
-                                ),
+                                self._create_smart_stat("Optimized", 28, "success", "AI-optimized schedule"),
+                                self._create_smart_stat("At Risk", 3, "warning", "Potential delays detected"),
                                 self._create_smart_stat(
                                     "Critical",
                                     1,
@@ -585,9 +563,7 @@ class EnhancedMaintenanceScheduler:
                                 html.Hr(className="my-2"),
                                 html.Small(
                                     [
-                                        html.I(
-                                            className="fas fa-lightbulb text-warning me-1"
-                                        ),
+                                        html.I(className="fas fa-lightbulb text-warning me-1"),
                                         "AI suggests rescheduling 2 tasks for 15% cost savings",
                                     ],
                                     className="text-muted",
@@ -599,9 +575,7 @@ class EnhancedMaintenanceScheduler:
             ]
         )
 
-    def _create_smart_stat(
-        self, label: str, value: int, color: str, tooltip: str
-    ) -> html.Div:
+    def _create_smart_stat(self, label: str, value: int, color: str, tooltip: str) -> html.Div:
         """Create smart statistic with tooltip
 
         Args:
@@ -677,18 +651,14 @@ class EnhancedMaintenanceScheduler:
                                 html.Div(
                                     [
                                         html.Span("Technicians: "),
-                                        dbc.Badge(
-                                            "Optimal", color="success", className="ms-1"
-                                        ),
+                                        dbc.Badge("Optimal", color="success", className="ms-1"),
                                     ],
                                     className="mb-1",
                                 ),
                                 html.Div(
                                     [
                                         html.Span("Equipment: "),
-                                        dbc.Badge(
-                                            "Good", color="info", className="ms-1"
-                                        ),
+                                        dbc.Badge("Good", color="info", className="ms-1"),
                                     ],
                                     className="mb-1",
                                 ),
@@ -723,14 +693,10 @@ class EnhancedMaintenanceScheduler:
                         html.H6("Cost Forecasting", className="text-muted mb-3"),
                         html.Div(
                             [
-                                html.H4(
-                                    "$24,500", className="mb-0", id="predicted-cost"
-                                ),
+                                html.H4("$24,500", className="mb-0", id="predicted-cost"),
                                 html.Small(
                                     [
-                                        html.I(
-                                            className="fas fa-chart-line text-primary me-1"
-                                        ),
+                                        html.I(className="fas fa-chart-line text-primary me-1"),
                                         "ML Prediction for next 30 days",
                                     ]
                                 ),
@@ -818,9 +784,7 @@ class EnhancedMaintenanceScheduler:
                                 html.Hr(className="my-2"),
                                 html.Div(
                                     [
-                                        html.I(
-                                            className="fas fa-exclamation-triangle text-warning me-2"
-                                        ),
+                                        html.I(className="fas fa-exclamation-triangle text-warning me-2"),
                                         html.Small("3 audits due this month"),
                                     ],
                                     className="mb-1",
@@ -834,9 +798,7 @@ class EnhancedMaintenanceScheduler:
                                 ),
                                 html.Div(
                                     [
-                                        html.I(
-                                            className="fas fa-check-circle text-success me-2"
-                                        ),
+                                        html.I(className="fas fa-check-circle text-success me-2"),
                                         html.Small("12 compliant tasks completed"),
                                     ]
                                 ),
@@ -861,14 +823,11 @@ class EnhancedMaintenanceScheduler:
                             [
                                 dbc.Col(
                                     [
-                                        html.Label(
-                                            "Smart Date Range", className="fw-bold"
-                                        ),
+                                        html.Label("Smart Date Range", className="fw-bold"),
                                         dcc.DatePickerRange(
                                             id="enhanced-date-range",
                                             start_date=datetime.now(),
-                                            end_date=datetime.now()
-                                            + timedelta(days=30),
+                                            end_date=datetime.now() + timedelta(days=30),
                                             display_format="YYYY-MM-DD",
                                             style={"width": "100%"},
                                         ),
@@ -877,9 +836,7 @@ class EnhancedMaintenanceScheduler:
                                 ),
                                 dbc.Col(
                                     [
-                                        html.Label(
-                                            "Equipment Filter", className="fw-bold"
-                                        ),
+                                        html.Label("Equipment Filter", className="fw-bold"),
                                         dcc.Dropdown(
                                             id="enhanced-equipment-filter",
                                             options=[
@@ -936,9 +893,7 @@ class EnhancedMaintenanceScheduler:
                                 ),
                                 dbc.Col(
                                     [
-                                        html.Label(
-                                            "Technician Skills", className="fw-bold"
-                                        ),
+                                        html.Label("Technician Skills", className="fw-bold"),
                                         dcc.Dropdown(
                                             id="technician-skills-filter",
                                             options=[
@@ -997,9 +952,7 @@ class EnhancedMaintenanceScheduler:
                                             [
                                                 dbc.Button(
                                                     [
-                                                        html.I(
-                                                            className="fas fa-filter me-1"
-                                                        ),
+                                                        html.I(className="fas fa-filter me-1"),
                                                         "Apply",
                                                     ],
                                                     id="apply-filters-btn",
@@ -1008,9 +961,7 @@ class EnhancedMaintenanceScheduler:
                                                 ),
                                                 dbc.Button(
                                                     [
-                                                        html.I(
-                                                            className="fas fa-undo me-1"
-                                                        ),
+                                                        html.I(className="fas fa-undo me-1"),
                                                         "Reset",
                                                     ],
                                                     id="reset-filters-btn",
@@ -1096,9 +1047,7 @@ class EnhancedMaintenanceScheduler:
                                     [
                                         dbc.Button(
                                             [
-                                                html.I(
-                                                    className="fas fa-sync-alt me-1"
-                                                ),
+                                                html.I(className="fas fa-sync-alt me-1"),
                                                 "Refresh",
                                             ],
                                             id="refresh-calendar-btn",
@@ -1205,9 +1154,7 @@ class EnhancedMaintenanceScheduler:
                     )
                 else:
                     # Active day cell with tasks and drop zone
-                    tasks = self._get_enhanced_tasks_for_day(
-                        current_date.year, current_date.month, day
-                    )
+                    tasks = self._get_enhanced_tasks_for_day(current_date.year, current_date.month, day)
                     is_today = day == current_date.day
 
                     day_cell = html.Div(
@@ -1248,9 +1195,7 @@ class EnhancedMaintenanceScheduler:
                                         className="workload-bar",
                                         style={
                                             "width": f"{min(len(tasks) * 25, 100)}%",
-                                            "backgroundColor": self._get_workload_color(
-                                                len(tasks)
-                                            ),
+                                            "backgroundColor": self._get_workload_color(len(tasks)),
                                         },
                                     )
                                 ],
@@ -1270,9 +1215,7 @@ class EnhancedMaintenanceScheduler:
 
         return html.Div([header] + weeks, className="enhanced-calendar-container")
 
-    def _get_enhanced_tasks_for_day(
-        self, year: int, month: int, day: int
-    ) -> List[html.Div]:
+    def _get_enhanced_tasks_for_day(self, year: int, month: int, day: int) -> List[html.Div]:
         """Get enhanced maintenance tasks for specific day with drag-drop capability
 
         Args:
@@ -1372,15 +1315,11 @@ class EnhancedMaintenanceScheduler:
                         ),
                         html.Div(
                             [
-                                html.Span(
-                                    task["technician"], style={"fontSize": "9px"}
-                                ),
+                                html.Span(task["technician"], style={"fontSize": "9px"}),
                                 html.Div(
                                     className="priority-indicator",
                                     style={
-                                        "backgroundColor": priority_colors.get(
-                                            task["priority"], "#6c757d"
-                                        ),
+                                        "backgroundColor": priority_colors.get(task["priority"], "#6c757d"),
                                         "width": "8px",
                                         "height": "8px",
                                         "borderRadius": "50%",
@@ -1435,9 +1374,7 @@ class EnhancedMaintenanceScheduler:
             Plotly figure for cost trends
         """
         # Generate sample cost data with predictions
-        dates = pd.date_range(
-            start=datetime.now() - timedelta(days=30), periods=60, freq="D"
-        )
+        dates = pd.date_range(start=datetime.now() - timedelta(days=30), periods=60, freq="D")
         historical_costs = np.random.normal(23000, 2000, 30)
         predicted_costs = np.random.normal(24500, 1500, 30)
 
@@ -1505,15 +1442,9 @@ class EnhancedMaintenanceScheduler:
                 ),
                 dbc.ModalFooter(
                     [
-                        dbc.Button(
-                            "AI Optimize", id="ai-optimize-task", color="warning"
-                        ),
-                        dbc.Button(
-                            "Schedule", id="schedule-enhanced-task", color="primary"
-                        ),
-                        dbc.Button(
-                            "Cancel", id="cancel-enhanced-task", color="secondary"
-                        ),
+                        dbc.Button("AI Optimize", id="ai-optimize-task", color="warning"),
+                        dbc.Button("Schedule", id="schedule-enhanced-task", color="primary"),
+                        dbc.Button("Cancel", id="cancel-enhanced-task", color="secondary"),
                     ]
                 ),
             ],
@@ -1560,12 +1491,8 @@ class EnhancedMaintenanceScheduler:
                 dbc.ModalBody([html.Div(id="inventory-order-content")]),
                 dbc.ModalFooter(
                     [
-                        dbc.Button(
-                            "Place Order", id="place-inventory-order", color="primary"
-                        ),
-                        dbc.Button(
-                            "Cancel", id="cancel-inventory-order", color="secondary"
-                        ),
+                        dbc.Button("Place Order", id="place-inventory-order", color="primary"),
+                        dbc.Button("Cancel", id="cancel-inventory-order", color="secondary"),
                     ]
                 ),
             ],
@@ -1596,9 +1523,7 @@ class EnhancedMaintenanceScheduler:
                             id="schedule-compliance-audit",
                             color="primary",
                         ),
-                        dbc.Button(
-                            "Close", id="close-compliance-audit", color="secondary"
-                        ),
+                        dbc.Button("Close", id="close-compliance-audit", color="secondary"),
                     ]
                 ),
             ],
@@ -1617,9 +1542,7 @@ def register_enhanced_callbacks(app, data_service=None):
         data_service: Data service instance
     """
 
-    @app.callback(
-        Output("side-panel-content", "children"), Input("side-panel-tabs", "active_tab")
-    )
+    @app.callback(Output("side-panel-content", "children"), Input("side-panel-tabs", "active_tab"))
     def update_side_panel(active_tab):
         """Update side panel content based on selected tab"""
         if active_tab == "task-details-tab":
@@ -1629,9 +1552,7 @@ def register_enhanced_callbacks(app, data_service=None):
                         "Select a task to view enhanced details",
                         className="text-muted text-center",
                     ),
-                    html.I(
-                        className="fas fa-calendar-check fa-3x text-muted d-block text-center mt-4"
-                    ),
+                    html.I(className="fas fa-calendar-check fa-3x text-muted d-block text-center mt-4"),
                 ]
             )
         elif active_tab == "resources-tab":
@@ -1641,9 +1562,7 @@ def register_enhanced_callbacks(app, data_service=None):
         elif active_tab == "compliance-tab":
             return create_compliance_status_panel()
 
-    @app.callback(
-        Output("analytics-content", "children"), Input("analytics-tabs", "active_tab")
-    )
+    @app.callback(Output("analytics-content", "children"), Input("analytics-tabs", "active_tab"))
     def update_analytics_content(active_tab):
         """Update analytics content based on selected tab"""
         if active_tab == "cost-trends":
@@ -1684,9 +1603,7 @@ def create_enhanced_resource_panel():
                             html.Div(
                                 [
                                     html.Span("Jane Doe (Electronics)"),
-                                    dbc.Badge(
-                                        "87% Match", color="info", className="ms-auto"
-                                    ),
+                                    dbc.Badge("87% Match", color="info", className="ms-auto"),
                                 ],
                                 className="d-flex justify-content-between mb-1",
                             ),
@@ -1709,9 +1626,7 @@ def create_enhanced_resource_panel():
             # Equipment availability
             html.Div(
                 [
-                    html.Small(
-                        "Equipment Availability", className="fw-bold d-block mb-2"
-                    ),
+                    html.Small("Equipment Availability", className="fw-bold d-block mb-2"),
                     html.Div(
                         [
                             html.Div(

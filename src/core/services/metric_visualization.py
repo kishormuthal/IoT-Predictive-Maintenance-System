@@ -157,9 +157,7 @@ class MetricVisualizer:
         return fig
 
     @staticmethod
-    def plot_roc_curve(
-        fpr: np.ndarray, tpr: np.ndarray, roc_auc: float, sensor_id: str = ""
-    ) -> go.Figure:
+    def plot_roc_curve(fpr: np.ndarray, tpr: np.ndarray, roc_auc: float, sensor_id: str = "") -> go.Figure:
         """
         Plot ROC curve
 
@@ -289,9 +287,7 @@ class MetricVisualizer:
             yaxis_title="Value",
             hovermode="x unified",
             template="plotly_white",
-            legend=dict(
-                orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-            ),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         )
 
         return fig
@@ -380,9 +376,7 @@ class MetricVisualizer:
         return fig
 
     @staticmethod
-    def plot_alert_timeline(
-        alerts: List[Dict[str, Any]], days_back: int = 30
-    ) -> go.Figure:
+    def plot_alert_timeline(alerts: List[Dict[str, Any]], days_back: int = 30) -> go.Figure:
         """
         Plot alert timeline
 
@@ -492,18 +486,12 @@ class MetricVisualizer:
             Plotly figure
         """
         models = list(summary_data.keys())
-        current_values = [
-            data.get(f"current_{metric_name}", 0) for data in summary_data.values()
-        ]
-        baseline_values = [
-            data.get(f"baseline_{metric_name}", 0) for data in summary_data.values()
-        ]
+        current_values = [data.get(f"current_{metric_name}", 0) for data in summary_data.values()]
+        baseline_values = [data.get(f"baseline_{metric_name}", 0) for data in summary_data.values()]
 
         fig = go.Figure(
             data=[
-                go.Bar(
-                    name="Current", x=models, y=current_values, marker_color="#2E86AB"
-                ),
+                go.Bar(name="Current", x=models, y=current_values, marker_color="#2E86AB"),
                 go.Bar(
                     name="Baseline",
                     x=models,

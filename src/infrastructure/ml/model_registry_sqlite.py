@@ -54,9 +54,7 @@ class ModelMetadata:
         """Create from dictionary with JSON deserialization"""
         # Parse JSON strings back to dicts
         data["training_config"] = (
-            json.loads(data["training_config"])
-            if isinstance(data["training_config"], str)
-            else data["training_config"]
+            json.loads(data["training_config"]) if isinstance(data["training_config"], str) else data["training_config"]
         )
         data["training_metrics"] = (
             json.loads(data["training_metrics"])
@@ -277,12 +275,7 @@ class ModelRegistrySQLite:
 
                 # Good score for reasonable anomaly rate
                 if anomaly_min <= anomaly_rate <= anomaly_max:
-                    return (
-                        0.8
-                        + (anomaly_max - anomaly_rate)
-                        / (anomaly_max - anomaly_min)
-                        * 0.2
-                    )
+                    return 0.8 + (anomaly_max - anomaly_rate) / (anomaly_max - anomaly_min) * 0.2
                 elif anomaly_rate == 0:
                     return 0.3  # Too conservative
                 else:
@@ -369,9 +362,7 @@ class ModelRegistrySQLite:
             if model_path.exists():
                 model_size = self._calculate_model_size(model_path)
                 # Use main model file for hash
-                main_files = list(model_path.glob("*.h5")) + list(
-                    model_path.glob("*.pkl")
-                )
+                main_files = list(model_path.glob("*.h5")) + list(model_path.glob("*.pkl"))
                 if main_files:
                     model_hash = self._calculate_file_hash(main_files[0])
 
@@ -381,9 +372,7 @@ class ModelRegistrySQLite:
                     f"No data_hash provided for {sensor_id}. "
                     f"Consider passing data_hash from training pipeline for proper lineage tracking."
                 )
-                data_hash = hashlib.sha256(
-                    f"{sensor_id}_{timestamp}".encode()
-                ).hexdigest()[:16]
+                data_hash = hashlib.sha256(f"{sensor_id}_{timestamp}".encode()).hexdigest()[:16]
 
             # Calculate performance score
             performance_score = self._calculate_performance_score(validation_metrics)
@@ -470,10 +459,7 @@ class ModelRegistrySQLite:
 
                 best_previous = cursor.fetchone()
 
-                if (
-                    best_previous
-                    and performance_score > best_previous["performance_score"]
-                ):
+                if best_previous and performance_score > best_previous["performance_score"]:
                     # New version is better - make it active
                     cursor.execute(
                         """
@@ -539,9 +525,7 @@ class ModelRegistrySQLite:
             logger.error(f"Error loading model metadata for {version_id}: {e}")
             return None
 
-    def get_active_model_version(
-        self, sensor_id: str, model_type: str
-    ) -> Optional[str]:
+    def get_active_model_version(self, sensor_id: str, model_type: str) -> Optional[str]:
         """Get active version for a model"""
         try:
             with self._get_connection() as conn:
@@ -559,9 +543,7 @@ class ModelRegistrySQLite:
                 return row["active_version"] if row else None
 
         except Exception as e:
-            logger.error(
-                f"Error getting active version for {sensor_id} ({model_type}): {e}"
-            )
+            logger.error(f"Error getting active version for {sensor_id} ({model_type}): {e}")
             return None
 
     def list_models(self, model_type: str = None) -> List[Dict[str, Any]]:
@@ -682,18 +664,14 @@ class ModelRegistrySQLite:
                 )
 
                 conn.commit()
-                logger.info(
-                    f"Promoted version {version_id} to active for model {model_id}"
-                )
+                logger.info(f"Promoted version {version_id} to active for model {model_id}")
                 return True
 
         except Exception as e:
             logger.error(f"Error promoting version {version_id}: {e}")
             return False
 
-    def delete_version(
-        self, version_id: str, force: bool = False, delete_artifacts: bool = True
-    ) -> bool:
+    def delete_version(self, version_id: str, force: bool = False, delete_artifacts: bool = True) -> bool:
         """Delete a model version and optionally its artifacts
 
         Args:
@@ -723,9 +701,7 @@ class ModelRegistrySQLite:
 
                 # Check if active
                 if row["is_active"] and not force:
-                    logger.warning(
-                        f"Cannot delete active version {version_id} without force=True"
-                    )
+                    logger.warning(f"Cannot delete active version {version_id} without force=True")
                     return False
 
                 # Delete model artifacts from disk if requested
@@ -827,9 +803,7 @@ class ModelRegistrySQLite:
                     GROUP BY model_type
                 """
                 )
-                model_types = {
-                    row["model_type"]: row["count"] for row in cursor.fetchall()
-                }
+                model_types = {row["model_type"]: row["count"] for row in cursor.fetchall()}
 
                 # Total size
                 cursor.execute("SELECT SUM(model_size_bytes) as total FROM versions")

@@ -100,9 +100,7 @@ class SafeLayoutLoader:
                 logger.info(f"Successfully loaded layout: {layout_name}")
                 return True
             else:
-                logger.warning(
-                    f"Layout module {layout_module_path} has no create_layout function"
-                )
+                logger.warning(f"Layout module {layout_module_path} has no create_layout function")
                 return False
 
         except Exception as e:
@@ -137,12 +135,8 @@ class SafeLayoutLoader:
                         html.P(f"There was an issue loading the {layout_name} tab:"),
                         html.Code(error_msg),
                         html.Hr(),
-                        html.P(
-                            "The system is running in safe mode. Other features remain available."
-                        ),
-                        dbc.Button(
-                            "Refresh Page", href="/", color="primary", className="mt-2"
-                        ),
+                        html.P("The system is running in safe mode. Other features remain available."),
+                        dbc.Button("Refresh Page", href="/", color="primary", className="mt-2"),
                     ],
                     color="danger",
                 )
@@ -168,9 +162,7 @@ class SafeLayoutLoader:
                         ),
                         dbc.CardBody(
                             [
-                                html.P(
-                                    f"The {layout_name} feature is currently being loaded..."
-                                ),
+                                html.P(f"The {layout_name} feature is currently being loaded..."),
                                 html.P("This advanced feature includes:"),
                                 self._get_feature_description(layout_name),
                                 dbc.Spinner(color="primary", className="mt-3"),
@@ -243,9 +235,7 @@ class ProductionIoTDashboard:
 
     def __init__(self, debug: bool = False):
         """Initialize production dashboard with anti-hanging architecture"""
-        logger.info(
-            "Initializing Production IoT Dashboard with ALL features enabled..."
-        )
+        logger.info("Initializing Production IoT Dashboard with ALL features enabled...")
 
         # Configure assets path for proper CSS loading
         import os
@@ -335,9 +325,7 @@ class ProductionIoTDashboard:
         # Subscribe to events for coordination
         self._subscribe_to_events()
 
-        logger.info(
-            "Production IoT Dashboard initialized successfully with ALL features enabled!"
-        )
+        logger.info("Production IoT Dashboard initialized successfully with ALL features enabled!")
 
     def _initialize_services_safely(self):
         """Initialize services with anti-hanging timeout architecture"""
@@ -359,9 +347,7 @@ class ProductionIoTDashboard:
             thread.join(timeout)
 
             if thread.is_alive():
-                logger.warning(
-                    f"{service_name} initialization timed out after {timeout}s, using mock"
-                )
+                logger.warning(f"{service_name} initialization timed out after {timeout}s, using mock")
                 return MockService(service_name)
             return result["service"] if result["success"] else MockService(service_name)
 
@@ -370,28 +356,16 @@ class ProductionIoTDashboard:
 
             # Core services with timeout
             self.data_loader = safe_service_init(NASADataLoader, "NASA Data Loader", 10)
-            self.anomaly_service = safe_service_init(
-                AnomalyDetectionService, "Anomaly Service", 10
-            )
-            self.forecasting_service = safe_service_init(
-                ForecastingService, "Forecasting Service", 10
-            )
+            self.anomaly_service = safe_service_init(AnomalyDetectionService, "Anomaly Service", 10)
+            self.forecasting_service = safe_service_init(ForecastingService, "Forecasting Service", 10)
 
             # Optional services
-            self.training_use_case = safe_service_init(
-                TrainingUseCase, "Training Use Case", 8
-            )
-            self.config_manager = safe_service_init(
-                TrainingConfigManager, "Config Manager", 5
-            )
+            self.training_use_case = safe_service_init(TrainingUseCase, "Training Use Case", 8)
+            self.config_manager = safe_service_init(TrainingConfigManager, "Config Manager", 5)
             self.model_registry = safe_service_init(ModelRegistry, "Model Registry", 8)
-            self.performance_monitor = safe_service_init(
-                PerformanceMonitor, "Performance Monitor", 5
-            )
+            self.performance_monitor = safe_service_init(PerformanceMonitor, "Performance Monitor", 5)
 
-            logger.info(
-                "All services initialized successfully with anti-hanging protection"
-            )
+            logger.info("All services initialized successfully with anti-hanging protection")
 
         except Exception as e:
             logger.error(f"Error in service initialization: {e}")
@@ -410,9 +384,7 @@ class ProductionIoTDashboard:
 
     def _load_all_rich_layouts(self):
         """Load ALL rich layouts - RE-ENABLING TEMPORARILY DISABLED ONES!"""
-        logger.info(
-            "Loading ALL rich layouts (re-enabling temporarily disabled features)..."
-        )
+        logger.info("Loading ALL rich layouts (re-enabling temporarily disabled features)...")
 
         # ALL THESE WERE TEMPORARILY DISABLED - NOW RE-ENABLING!
         layouts_to_load = [
@@ -439,9 +411,7 @@ class ProductionIoTDashboard:
             if self.layout_loader.safe_import_layout(module_path, layout_name):
                 successfully_loaded += 1
 
-        logger.info(
-            f"Successfully loaded {successfully_loaded}/{len(layouts_to_load)} rich layouts"
-        )
+        logger.info(f"Successfully loaded {successfully_loaded}/{len(layouts_to_load)} rich layouts")
 
         # Also try to load rich components that were disabled
         self._load_rich_components()
@@ -474,9 +444,7 @@ class ProductionIoTDashboard:
                             [
                                 html.H1(
                                     [
-                                        html.I(
-                                            className="fas fa-cogs me-3 text-primary"
-                                        ),
+                                        html.I(className="fas fa-cogs me-3 text-primary"),
                                         "IoT Predictive Maintenance",
                                     ],
                                     className="mb-1",
@@ -509,9 +477,7 @@ class ProductionIoTDashboard:
                             [
                                 html.Div(
                                     [
-                                        html.Div(
-                                            id="alert-notifications", className="mb-2"
-                                        ),
+                                        html.Div(id="alert-notifications", className="mb-2"),
                                         html.Div(id="production-status-panel"),
                                     ],
                                     className="text-end",
@@ -855,9 +821,7 @@ class ProductionIoTDashboard:
                                             [
                                                 dbc.Button(
                                                     [
-                                                        html.I(
-                                                            className="fas fa-sync-alt me-1"
-                                                        ),
+                                                        html.I(className="fas fa-sync-alt me-1"),
                                                         "Refresh",
                                                     ],
                                                     id="overview-refresh-btn",
@@ -885,9 +849,7 @@ class ProductionIoTDashboard:
                                     [
                                         dbc.CardHeader(
                                             [
-                                                html.I(
-                                                    className="fas fa-tachometer-alt me-2"
-                                                ),
+                                                html.I(className="fas fa-tachometer-alt me-2"),
                                                 "System Overview",
                                             ]
                                         ),
@@ -898,9 +860,7 @@ class ProductionIoTDashboard:
                                                         dbc.Col(
                                                             [
                                                                 html.H3(
-                                                                    len(
-                                                                        self.equipment_list
-                                                                    ),
+                                                                    len(self.equipment_list),
                                                                     className="text-primary",
                                                                 ),
                                                                 html.P(
@@ -970,9 +930,7 @@ class ProductionIoTDashboard:
                                     [
                                         dbc.CardHeader(
                                             [
-                                                html.I(
-                                                    className="fas fa-microchip me-2"
-                                                ),
+                                                html.I(className="fas fa-microchip me-2"),
                                                 "Production Features Status",
                                             ]
                                         ),
@@ -988,24 +946,12 @@ class ProductionIoTDashboard:
                                                                 ),
                                                                 html.Ul(
                                                                     [
-                                                                        html.Li(
-                                                                            "NASA SMAP/MSL Integration"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Real-time Anomaly Detection"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Transformer Forecasting"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Maintenance Scheduling"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Work Order Management"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "System Performance Monitoring"
-                                                                        ),
+                                                                        html.Li("NASA SMAP/MSL Integration"),
+                                                                        html.Li("Real-time Anomaly Detection"),
+                                                                        html.Li("Transformer Forecasting"),
+                                                                        html.Li("Maintenance Scheduling"),
+                                                                        html.Li("Work Order Management"),
+                                                                        html.Li("System Performance Monitoring"),
                                                                     ]
                                                                 ),
                                                             ],
@@ -1019,24 +965,12 @@ class ProductionIoTDashboard:
                                                                 ),
                                                                 html.Ul(
                                                                     [
-                                                                        html.Li(
-                                                                            "Anti-hanging Protection"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Error Boundary System"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Service Timeout Management"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Graceful Degradation"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Performance Monitoring"
-                                                                        ),
-                                                                        html.Li(
-                                                                            "Event-driven Architecture"
-                                                                        ),
+                                                                        html.Li("Anti-hanging Protection"),
+                                                                        html.Li("Error Boundary System"),
+                                                                        html.Li("Service Timeout Management"),
+                                                                        html.Li("Graceful Degradation"),
+                                                                        html.Li("Performance Monitoring"),
+                                                                        html.Li("Event-driven Architecture"),
                                                                     ]
                                                                 ),
                                                             ],
@@ -1063,9 +997,7 @@ class ProductionIoTDashboard:
                                     [
                                         dbc.CardHeader(
                                             [
-                                                html.I(
-                                                    className="fas fa-puzzle-piece me-2"
-                                                ),
+                                                html.I(className="fas fa-puzzle-piece me-2"),
                                                 "Rich Layout Status",
                                             ]
                                         ),
@@ -1112,9 +1044,7 @@ class ProductionIoTDashboard:
                 return [html.I(className="fas fa-check me-1 text-success"), "Refreshed"]
             elif ctx.triggered_id == "overview-time-range":
                 # Update time range across components
-                self.time_control_manager.global_time_state["current_range"] = (
-                    time_range
-                )
+                self.time_control_manager.global_time_state["current_range"] = time_range
                 self.event_bus.emit(
                     EventType.TIME_RANGE_CHANGED,
                     "overview_controls",
@@ -1149,9 +1079,7 @@ class ProductionIoTDashboard:
                 status_items.append(
                     dbc.ListGroupItem(
                         [
-                            html.I(
-                                className="fas fa-exclamation-triangle text-warning me-2"
-                            ),
+                            html.I(className="fas fa-exclamation-triangle text-warning me-2"),
                             f"{layout_name.replace('_', ' ').title()} - Using Fallback",
                         ]
                     )
@@ -1257,11 +1185,7 @@ class ProductionIoTDashboard:
                 self.alert_manager.create_alert(
                     f"Anomaly Detected: {sensor_id}",
                     f"Anomaly score: {score:.2f} - Severity: {severity}",
-                    (
-                        AlertSeverity.WARNING
-                        if severity == "medium"
-                        else AlertSeverity.ERROR
-                    ),
+                    (AlertSeverity.WARNING if severity == "medium" else AlertSeverity.ERROR),
                     AlertCategory.ANOMALY,
                     event.source_component,
                 )
@@ -1287,9 +1211,7 @@ class ProductionIoTDashboard:
                 logger.error(f"Error handling forecast event: {e}")
 
         # Subscribe to events
-        self.event_bus.subscribe(
-            EventType.ANOMALY_DETECTED, handle_anomaly_detection, "production_dashboard"
-        )
+        self.event_bus.subscribe(EventType.ANOMALY_DETECTED, handle_anomaly_detection, "production_dashboard")
         self.event_bus.subscribe(
             EventType.FORECAST_GENERATED,
             handle_forecast_generation,
@@ -1318,11 +1240,7 @@ class ProductionIoTDashboard:
                 self.alert_manager.create_alert(
                     f"Rich Features Loaded",
                     f"{loaded_layouts} advanced layouts enabled, {failed_layouts} using fallbacks",
-                    (
-                        AlertSeverity.INFO
-                        if failed_layouts == 0
-                        else AlertSeverity.WARNING
-                    ),
+                    (AlertSeverity.INFO if failed_layouts == 0 else AlertSeverity.WARNING),
                     AlertCategory.SYSTEM,
                     "layout_loader",
                 )
@@ -1352,9 +1270,7 @@ class ProductionIoTDashboard:
     def _start_performance_monitoring_safe(self):
         """Start performance monitoring with error handling"""
         try:
-            if self.performance_monitor and hasattr(
-                self.performance_monitor, "start_monitoring"
-            ):
+            if self.performance_monitor and hasattr(self.performance_monitor, "start_monitoring"):
                 self.performance_monitor.start_monitoring()
                 logger.info("Performance monitoring started")
         except Exception as e:

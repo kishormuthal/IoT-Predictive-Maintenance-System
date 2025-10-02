@@ -64,9 +64,7 @@ class MLflowTrainingOrchestrator:
 
         self.data_pipeline = data_pipeline or DataPipeline()
 
-        self.retraining_system = retraining_system or RetrainingTriggerSystem(
-            mlflow_tracker=self.mlflow_tracker
-        )
+        self.retraining_system = retraining_system or RetrainingTriggerSystem(mlflow_tracker=self.mlflow_tracker)
 
         logger.info("MLflow training orchestrator initialized")
 
@@ -121,9 +119,7 @@ class MLflowTrainingOrchestrator:
                     quality_issues=quality_report.issues,
                 )
                 if quality_trigger:
-                    logger.warning(
-                        f"Data quality issues detected: {quality_report.issues}"
-                    )
+                    logger.warning(f"Data quality issues detected: {quality_report.issues}")
 
             # Create model
             model = NASATelemanom(sensor_id=sensor_id, config=config)
@@ -136,34 +132,26 @@ class MLflowTrainingOrchestrator:
                 "train_samples": len(train_data),
                 "val_samples": len(val_data),
                 "test_samples": len(test_data),
-                "quality_status": (
-                    quality_report.status.value if quality_report else "unknown"
-                ),
+                "quality_status": (quality_report.status.value if quality_report else "unknown"),
             }
 
             # Prepare tags
             tags = {
                 "sensor_id": sensor_id,
                 "model_type": model_type,
-                "data_quality": (
-                    quality_report.status.value if quality_report else "unknown"
-                ),
+                "data_quality": (quality_report.status.value if quality_report else "unknown"),
             }
             if run_tags:
                 tags.update(run_tags)
 
             # Start MLflow run
-            run_name = (
-                f"{model_type}_{sensor_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            )
+            run_name = f"{model_type}_{sensor_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
             with self.mlflow_tracker.start_run(run_name=run_name, tags=tags) as run:
                 # Log parameters
                 for key, value in params.items():
                     try:
-                        self.mlflow_tracker.client.log_param(
-                            run.info.run_id, key, str(value)
-                        )
+                        self.mlflow_tracker.client.log_param(run.info.run_id, key, str(value))
                     except Exception as e:
                         logger.warning(f"Could not log param {key}: {e}")
 
@@ -183,9 +171,7 @@ class MLflowTrainingOrchestrator:
                 for key, value in training_metrics.items():
                     try:
                         if isinstance(value, (int, float)) and not np.isnan(value):
-                            self.mlflow_tracker.client.log_metric(
-                                run.info.run_id, f"train_{key}", float(value)
-                            )
+                            self.mlflow_tracker.client.log_metric(run.info.run_id, f"train_{key}", float(value))
                     except Exception as e:
                         logger.warning(f"Could not log training metric {key}: {e}")
 
@@ -193,9 +179,7 @@ class MLflowTrainingOrchestrator:
                 for key, value in val_metrics.items():
                     try:
                         if isinstance(value, (int, float)) and not np.isnan(value):
-                            self.mlflow_tracker.client.log_metric(
-                                run.info.run_id, f"val_{key}", float(value)
-                            )
+                            self.mlflow_tracker.client.log_metric(run.info.run_id, f"val_{key}", float(value))
                     except Exception as e:
                         logger.warning(f"Could not log validation metric {key}: {e}")
 
@@ -206,9 +190,7 @@ class MLflowTrainingOrchestrator:
 
                 # Log model artifact
                 try:
-                    self.mlflow_tracker.client.log_artifact(
-                        run.info.run_id, str(model_path)
-                    )
+                    self.mlflow_tracker.client.log_artifact(run.info.run_id, str(model_path))
                 except Exception as e:
                     logger.warning(f"Could not log model artifact: {e}")
 
@@ -237,12 +219,8 @@ class MLflowTrainingOrchestrator:
 
                         if production_version:
                             # Get production performance
-                            prod_run = self.mlflow_tracker.client.get_run(
-                                production_version.run_id
-                            )
-                            prod_performance = prod_run.data.metrics.get(
-                                "val_accuracy", 0.0
-                            )
+                            prod_run = self.mlflow_tracker.client.get_run(production_version.run_id)
+                            prod_performance = prod_run.data.metrics.get("val_accuracy", 0.0)
                             new_performance = val_metrics.get("accuracy", 0.0)
 
                             self.retraining_system.auto_promote_model(
@@ -274,15 +252,11 @@ class MLflowTrainingOrchestrator:
                     "training_metrics": training_metrics,
                     "validation_metrics": val_metrics,
                     "data_hash": data_hash,
-                    "quality_status": (
-                        quality_report.status.value if quality_report else "unknown"
-                    ),
+                    "quality_status": (quality_report.status.value if quality_report else "unknown"),
                 }
 
         except Exception as e:
-            logger.error(
-                f"Error training {model_type} for {sensor_id}: {e}", exc_info=True
-            )
+            logger.error(f"Error training {model_type} for {sensor_id}: {e}", exc_info=True)
             return {
                 "success": False,
                 "sensor_id": sensor_id,
@@ -343,34 +317,26 @@ class MLflowTrainingOrchestrator:
                 "train_samples": len(train_data),
                 "val_samples": len(val_data),
                 "test_samples": len(test_data),
-                "quality_status": (
-                    quality_report.status.value if quality_report else "unknown"
-                ),
+                "quality_status": (quality_report.status.value if quality_report else "unknown"),
             }
 
             # Prepare tags
             tags = {
                 "sensor_id": sensor_id,
                 "model_type": model_type,
-                "data_quality": (
-                    quality_report.status.value if quality_report else "unknown"
-                ),
+                "data_quality": (quality_report.status.value if quality_report else "unknown"),
             }
             if run_tags:
                 tags.update(run_tags)
 
             # Start MLflow run
-            run_name = (
-                f"{model_type}_{sensor_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            )
+            run_name = f"{model_type}_{sensor_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
             with self.mlflow_tracker.start_run(run_name=run_name, tags=tags) as run:
                 # Log parameters
                 for key, value in params.items():
                     try:
-                        self.mlflow_tracker.client.log_param(
-                            run.info.run_id, key, str(value)
-                        )
+                        self.mlflow_tracker.client.log_param(run.info.run_id, key, str(value))
                     except Exception as e:
                         logger.warning(f"Could not log param {key}: {e}")
 
@@ -389,10 +355,7 @@ class MLflowTrainingOrchestrator:
                 # Compute validation metrics
                 val_metrics = self._compute_forecast_metrics(
                     val_result["forecast_values"],
-                    val_data[
-                        config.lookback_window : config.lookback_window
-                        + config.forecast_horizon
-                    ],
+                    val_data[config.lookback_window : config.lookback_window + config.forecast_horizon],
                 )
 
                 # Log training metrics
@@ -400,9 +363,7 @@ class MLflowTrainingOrchestrator:
                 for key, value in training_metrics.items():
                     try:
                         if isinstance(value, (int, float)) and not np.isnan(value):
-                            self.mlflow_tracker.client.log_metric(
-                                run.info.run_id, f"train_{key}", float(value)
-                            )
+                            self.mlflow_tracker.client.log_metric(run.info.run_id, f"train_{key}", float(value))
                     except Exception as e:
                         logger.warning(f"Could not log training metric {key}: {e}")
 
@@ -410,9 +371,7 @@ class MLflowTrainingOrchestrator:
                 for key, value in val_metrics.items():
                     try:
                         if isinstance(value, (int, float)) and not np.isnan(value):
-                            self.mlflow_tracker.client.log_metric(
-                                run.info.run_id, f"val_{key}", float(value)
-                            )
+                            self.mlflow_tracker.client.log_metric(run.info.run_id, f"val_{key}", float(value))
                     except Exception as e:
                         logger.warning(f"Could not log validation metric {key}: {e}")
 
@@ -450,9 +409,7 @@ class MLflowTrainingOrchestrator:
                 }
 
         except Exception as e:
-            logger.error(
-                f"Error training {model_type} for {sensor_id}: {e}", exc_info=True
-            )
+            logger.error(f"Error training {model_type} for {sensor_id}: {e}", exc_info=True)
             return {
                 "success": False,
                 "sensor_id": sensor_id,
@@ -545,9 +502,7 @@ class MLflowTrainingOrchestrator:
 
         return results
 
-    def _compute_validation_metrics(
-        self, detection_result: Dict[str, Any]
-    ) -> Dict[str, float]:
+    def _compute_validation_metrics(self, detection_result: Dict[str, Any]) -> Dict[str, float]:
         """Compute validation metrics for anomaly detection"""
         # Extract anomaly predictions
         anomalies = detection_result.get("anomalies", [])
@@ -563,9 +518,7 @@ class MLflowTrainingOrchestrator:
             "std_score": float(np.std(anomaly_scores)),
         }
 
-    def _compute_forecast_metrics(
-        self, forecast: np.ndarray, actual: np.ndarray
-    ) -> Dict[str, float]:
+    def _compute_forecast_metrics(self, forecast: np.ndarray, actual: np.ndarray) -> Dict[str, float]:
         """Compute validation metrics for forecasting"""
         if len(forecast) == 0 or len(actual) == 0:
             return {}

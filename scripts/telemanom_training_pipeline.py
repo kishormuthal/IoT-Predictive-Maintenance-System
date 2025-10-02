@@ -26,9 +26,7 @@ from src.anomaly_detection.telemanom import NASATelemanom, Telemanom_Config
 from src.data_ingestion.real_data_service import get_real_data_service
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -53,9 +51,7 @@ class TelemanamTrainingPipeline:
             "results": {},
         }
 
-        logger.info(
-            f"Telemanom Training Pipeline initialized for {len(self.equipment_registry)} equipment"
-        )
+        logger.info(f"Telemanom Training Pipeline initialized for {len(self.equipment_registry)} equipment")
 
     def train_all_equipment(self, force_retrain: bool = False):
         """Train Telemanom models for all equipment"""
@@ -96,9 +92,7 @@ class TelemanamTrainingPipeline:
             # Check if model already exists
             model_path = self.models_dir / f"{equipment_id}_anomaly_detector_best.h5"
             if model_path.exists() and not force_retrain:
-                logger.info(
-                    f"Model for {equipment_id} already exists, skipping (use --force to retrain)"
-                )
+                logger.info(f"Model for {equipment_id} already exists, skipping (use --force to retrain)")
                 return {
                     "success": True,
                     "action": "skipped",
@@ -126,15 +120,11 @@ class TelemanamTrainingPipeline:
             training_result = model.fit(training_data)
 
             # Save the trained model
-            model_save_path = (
-                self.models_dir / f"{equipment_id}_anomaly_detector_best.h5"
-            )
+            model_save_path = self.models_dir / f"{equipment_id}_anomaly_detector_best.h5"
             model.save_model(str(model_save_path))
 
             # Save metadata
-            metadata = self._create_model_metadata(
-                equipment_id, telemanom_config, training_result, start_time
-            )
+            metadata = self._create_model_metadata(equipment_id, telemanom_config, training_result, start_time)
             metadata_path = self.models_dir / f"{equipment_id}_metadata.json"
 
             with open(metadata_path, "w") as f:
@@ -143,9 +133,7 @@ class TelemanamTrainingPipeline:
             end_time = datetime.now()
             training_time = (end_time - start_time).total_seconds()
 
-            logger.info(
-                f"Successfully trained model for {equipment_id} in {training_time:.2f} seconds"
-            )
+            logger.info(f"Successfully trained model for {equipment_id} in {training_time:.2f} seconds")
 
             return {
                 "success": True,
@@ -165,17 +153,13 @@ class TelemanamTrainingPipeline:
         """Prepare training data for equipment"""
         try:
             # Get extended historical data for training
-            equipment_data = self.data_service.get_equipment_data(
-                equipment_id, hours_back=168
-            )  # 1 week
+            equipment_data = self.data_service.get_equipment_data(equipment_id, hours_back=168)  # 1 week
 
             # Extract values and normalize
             values = equipment_data["values"]
 
             if len(values) < 100:
-                logger.warning(
-                    f"Insufficient data for {equipment_id}: only {len(values)} points"
-                )
+                logger.warning(f"Insufficient data for {equipment_id}: only {len(values)} points")
                 return None
 
             # Simple normalization (can be enhanced)
@@ -184,9 +168,7 @@ class TelemanamTrainingPipeline:
             # Reshape for Telemanom (expects 2D array)
             training_data = normalized_values.reshape(-1, 1)
 
-            logger.info(
-                f"Prepared training data for {equipment_id}: {training_data.shape}"
-            )
+            logger.info(f"Prepared training data for {equipment_id}: {training_data.shape}")
             return training_data
 
         except Exception as e:
@@ -254,9 +236,7 @@ class TelemanamTrainingPipeline:
 
         return config
 
-    def _create_model_metadata(
-        self, equipment_id: str, config, training_result, start_time
-    ):
+    def _create_model_metadata(self, equipment_id: str, config, training_result, start_time):
         """Create model metadata"""
         end_time = datetime.now()
         training_time = (end_time - start_time).total_seconds()
@@ -304,28 +284,18 @@ class TelemanamTrainingPipeline:
             "training_summary": self.training_stats,
             "equipment_results": self.training_stats["results"],
             "total_duration": (
-                (
-                    self.training_stats["training_end"]
-                    - self.training_stats["training_start"]
-                ).total_seconds()
+                (self.training_stats["training_end"] - self.training_stats["training_start"]).total_seconds()
                 if self.training_stats["training_end"]
                 else 0
             ),
             "success_rate": (
-                (
-                    self.training_stats["trained_models"]
-                    / self.training_stats["total_equipment"]
-                )
-                * 100
+                (self.training_stats["trained_models"] / self.training_stats["total_equipment"]) * 100
                 if self.training_stats["total_equipment"] > 0
                 else 0
             ),
         }
 
-        report_path = (
-            self.models_dir
-            / f"training_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        )
+        report_path = self.models_dir / f"training_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
 
         with open(report_path, "w") as f:
             json.dump(report, f, indent=2, default=str)
@@ -340,9 +310,7 @@ class TelemanamTrainingPipeline:
 
         for equipment_id in self.equipment_registry.keys():
             try:
-                model_path = (
-                    self.models_dir / f"{equipment_id}_anomaly_detector_best.h5"
-                )
+                model_path = self.models_dir / f"{equipment_id}_anomaly_detector_best.h5"
                 metadata_path = self.models_dir / f"{equipment_id}_metadata.json"
 
                 if not model_path.exists():
@@ -378,19 +346,12 @@ class TelemanamTrainingPipeline:
                 validation_results[equipment_id] = {"valid": False, "error": str(e)}
 
         # Save validation report
-        validation_report_path = (
-            self.models_dir
-            / f"validation_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        )
+        validation_report_path = self.models_dir / f"validation_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         with open(validation_report_path, "w") as f:
             json.dump(validation_results, f, indent=2, default=str)
 
-        valid_models = sum(
-            1 for result in validation_results.values() if result.get("valid", False)
-        )
-        logger.info(
-            f"Model validation completed: {valid_models}/{len(validation_results)} models valid"
-        )
+        valid_models = sum(1 for result in validation_results.values() if result.get("valid", False))
+        logger.info(f"Model validation completed: {valid_models}/{len(validation_results)} models valid")
 
         return validation_results
 
@@ -398,18 +359,10 @@ class TelemanamTrainingPipeline:
 def main():
     """Main training pipeline entry point"""
     parser = argparse.ArgumentParser(description="Telemanom Training Pipeline")
-    parser.add_argument(
-        "--equipment", type=str, help="Train specific equipment (equipment ID)"
-    )
-    parser.add_argument(
-        "--force", action="store_true", help="Force retrain existing models"
-    )
-    parser.add_argument(
-        "--validate", action="store_true", help="Validate existing models only"
-    )
-    parser.add_argument(
-        "--models-dir", type=str, default="data/models", help="Models directory"
-    )
+    parser.add_argument("--equipment", type=str, help="Train specific equipment (equipment ID)")
+    parser.add_argument("--force", action="store_true", help="Force retrain existing models")
+    parser.add_argument("--validate", action="store_true", help="Validate existing models only")
+    parser.add_argument("--models-dir", type=str, default="data/models", help="Models directory")
 
     args = parser.parse_args()
 
@@ -422,23 +375,15 @@ def main():
         if args.validate:
             print("Validating existing models...")
             validation_results = pipeline.validate_models()
-            valid_count = sum(
-                1 for r in validation_results.values() if r.get("valid", False)
-            )
-            print(
-                f"Validation completed: {valid_count}/{len(validation_results)} models valid"
-            )
+            valid_count = sum(1 for r in validation_results.values() if r.get("valid", False))
+            print(f"Validation completed: {valid_count}/{len(validation_results)} models valid")
 
         elif args.equipment:
             print(f"Training model for equipment: {args.equipment}")
-            result = pipeline.train_equipment_model(
-                args.equipment, force_retrain=args.force
-            )
+            result = pipeline.train_equipment_model(args.equipment, force_retrain=args.force)
 
             if result["success"]:
-                print(
-                    f"SUCCESS: Model trained in {result['training_time']:.2f} seconds"
-                )
+                print(f"SUCCESS: Model trained in {result['training_time']:.2f} seconds")
             else:
                 print(f"FAILED: {result['error']}")
 
@@ -450,9 +395,7 @@ def main():
             print(f"Training completed:")
             print(f"  Successful: {stats['trained_models']}")
             print(f"  Failed: {stats['failed_training']}")
-            print(
-                f"  Total duration: {(stats['training_end'] - stats['training_start']).total_seconds():.2f} seconds"
-            )
+            print(f"  Total duration: {(stats['training_end'] - stats['training_start']).total_seconds():.2f} seconds")
 
         print("Training pipeline completed successfully!")
 

@@ -120,16 +120,12 @@ class DashboardCallbacks:
         try:
             # Start Kafka consumer threads
             if "telemetry" not in STREAMING_THREADS:
-                telemetry_thread = threading.Thread(
-                    target=self.stream_telemetry_data, daemon=True
-                )
+                telemetry_thread = threading.Thread(target=self.stream_telemetry_data, daemon=True)
                 telemetry_thread.start()
                 STREAMING_THREADS["telemetry"] = telemetry_thread
 
             if "anomalies" not in STREAMING_THREADS:
-                anomaly_thread = threading.Thread(
-                    target=self.stream_anomaly_data, daemon=True
-                )
+                anomaly_thread = threading.Thread(target=self.stream_anomaly_data, daemon=True)
                 anomaly_thread.start()
                 STREAMING_THREADS["anomalies"] = anomaly_thread
 
@@ -142,9 +138,7 @@ class DashboardCallbacks:
         """Stream telemetry data from Kafka"""
         while True:
             try:
-                messages = kafka_consumer.consume_messages(
-                    topic=settings.kafka["topics"]["smap"], timeout=1.0
-                )
+                messages = kafka_consumer.consume_messages(topic=settings.kafka["topics"]["smap"], timeout=1.0)
 
                 for message in messages:
                     if len(TELEMETRY_BUFFER) >= TELEMETRY_BUFFER.maxlen:
@@ -158,9 +152,7 @@ class DashboardCallbacks:
         """Stream anomaly detection results"""
         while True:
             try:
-                messages = kafka_consumer.consume_messages(
-                    topic=settings.kafka["topics"]["anomalies"], timeout=1.0
-                )
+                messages = kafka_consumer.consume_messages(topic=settings.kafka["topics"]["anomalies"], timeout=1.0)
 
                 for message in messages:
                     if len(ANOMALY_BUFFER) >= ANOMALY_BUFFER.maxlen:
@@ -168,10 +160,7 @@ class DashboardCallbacks:
                     ANOMALY_BUFFER.append(message)
 
                     # Check if alert needed
-                    if (
-                        message.get("severity", 0)
-                        > settings.anomaly["severity_levels"]["medium"]
-                    ):
+                    if message.get("severity", 0) > settings.anomaly["severity_levels"]["medium"]:
                         if not ALERT_QUEUE.full():
                             ALERT_QUEUE.put(message)
 
@@ -190,9 +179,7 @@ class DashboardCallbacks:
     def register_navigation_callbacks(self):
         """Register navigation and page routing callbacks"""
 
-        @self.app.callback(
-            Output("page-content", "children"), [Input("url", "pathname")]
-        )
+        @self.app.callback(Output("page-content", "children"), [Input("url", "pathname")])
         def display_page(pathname):
             """Route to appropriate dashboard page"""
             if pathname == "/" or pathname == "/overview":
@@ -253,9 +240,7 @@ class DashboardCallbacks:
             """Update live data stores from buffers"""
             try:
                 # Get latest telemetry data
-                telemetry_data = (
-                    list(TELEMETRY_BUFFER)[-100:] if TELEMETRY_BUFFER else []
-                )
+                telemetry_data = list(TELEMETRY_BUFFER)[-100:] if TELEMETRY_BUFFER else []
 
                 # Get latest anomaly data
                 anomaly_data = list(ANOMALY_BUFFER)[-50:] if ANOMALY_BUFFER else []
@@ -296,9 +281,7 @@ class DashboardCallbacks:
                 health_df = db_manager.execute_query(query)
 
                 # Calculate health scores
-                health_df["health_score"] = health_df.apply(
-                    lambda row: self.calculate_health_score(row), axis=1
-                )
+                health_df["health_score"] = health_df.apply(lambda row: self.calculate_health_score(row), axis=1)
 
                 return health_df.to_dict("records")
 
@@ -322,20 +305,14 @@ class DashboardCallbacks:
                 State("selected-timerange", "value"),
             ],
         )
-        def update_main_charts(
-            telemetry_data, anomaly_data, health_data, selected_equipment, timerange
-        ):
+        def update_main_charts(telemetry_data, anomaly_data, health_data, selected_equipment, timerange):
             """Update main dashboard charts"""
             try:
                 # Create telemetry chart
-                telemetry_fig = self.create_telemetry_chart(
-                    telemetry_data, selected_equipment, timerange
-                )
+                telemetry_fig = self.create_telemetry_chart(telemetry_data, selected_equipment, timerange)
 
                 # Create anomaly timeline
-                anomaly_fig = self.create_anomaly_timeline(
-                    anomaly_data, selected_equipment, timerange
-                )
+                anomaly_fig = self.create_anomaly_timeline(anomaly_data, selected_equipment, timerange)
 
                 # Create health heatmap
                 health_fig = self.create_health_heatmap(health_data)
@@ -411,9 +388,7 @@ class DashboardCallbacks:
 
             except Exception as e:
                 logger.error(f"Error starting retraining: {str(e)}")
-                return html.Div(
-                    [html.Span(f"Error: {str(e)}", className="status-message error")]
-                )
+                return html.Div([html.Span(f"Error: {str(e)}", className="status-message error")])
 
     def register_alert_callbacks(self):
         """Register callbacks for alert management"""
@@ -579,9 +554,7 @@ class DashboardCallbacks:
 
             except Exception as e:
                 logger.error(f"Error saving settings: {str(e)}")
-                return html.Div(
-                    [html.Span(f"Error: {str(e)}", className="status-message error")]
-                )
+                return html.Div([html.Span(f"Error: {str(e)}", className="status-message error")])
 
         @self.app.callback(
             [
@@ -688,9 +661,7 @@ class DashboardCallbacks:
             logger.error(f"Error calculating health score: {str(e)}")
             return 50.0
 
-    def create_telemetry_chart(
-        self, telemetry_data: List, equipment: str, timerange: str
-    ) -> go.Figure:
+    def create_telemetry_chart(self, telemetry_data: List, equipment: str, timerange: str) -> go.Figure:
         """Create telemetry time series chart"""
         try:
             if not telemetry_data:
@@ -736,9 +707,7 @@ class DashboardCallbacks:
             logger.error(f"Error creating telemetry chart: {str(e)}")
             return go.Figure()
 
-    def create_anomaly_timeline(
-        self, anomaly_data: List, equipment: str, timerange: str
-    ) -> go.Figure:
+    def create_anomaly_timeline(self, anomaly_data: List, equipment: str, timerange: str) -> go.Figure:
         """Create anomaly timeline chart"""
         try:
             if not anomaly_data:
@@ -806,9 +775,7 @@ class DashboardCallbacks:
             df = pd.DataFrame(health_data)
 
             # Pivot data for heatmap
-            pivot_df = df.pivot_table(
-                values="health_score", index="equipment_name", aggfunc="mean"
-            )
+            pivot_df = df.pivot_table(values="health_score", index="equipment_name", aggfunc="mean")
 
             fig = go.Figure(
                 data=go.Heatmap(
@@ -997,9 +964,7 @@ class DashboardCallbacks:
             model.train(features, **params)
 
             # Save model
-            model.save(
-                f"models/{model_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            )
+            model.save(f"models/{model_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
 
             # Update active models
             ACTIVE_MODELS[model_name] = {
@@ -1015,9 +980,7 @@ class DashboardCallbacks:
         except Exception as e:
             logger.error(f"Error retraining model: {str(e)}")
 
-    def export_telemetry_data(
-        self, start_date: str, end_date: str, format: str
-    ) -> Optional[str]:
+    def export_telemetry_data(self, start_date: str, end_date: str, format: str) -> Optional[str]:
         """Export telemetry data to file"""
         try:
             query = """
@@ -1046,9 +1009,7 @@ class DashboardCallbacks:
             logger.error(f"Error exporting telemetry data: {str(e)}")
             return None
 
-    def export_anomaly_data(
-        self, start_date: str, end_date: str, format: str
-    ) -> Optional[str]:
+    def export_anomaly_data(self, start_date: str, end_date: str, format: str) -> Optional[str]:
         """Export anomaly data to file"""
         try:
             query = """
@@ -1083,9 +1044,7 @@ class DashboardCallbacks:
             logger.error(f"Error exporting anomaly data: {str(e)}")
             return None
 
-    def export_work_orders(
-        self, start_date: str, end_date: str, format: str
-    ) -> Optional[str]:
+    def export_work_orders(self, start_date: str, end_date: str, format: str) -> Optional[str]:
         """Export work orders to file"""
         try:
             query = """
@@ -1121,9 +1080,7 @@ class DashboardCallbacks:
             logger.error(f"Error exporting work orders: {str(e)}")
             return None
 
-    def generate_report(
-        self, start_date: str, end_date: str, format: str
-    ) -> Optional[str]:
+    def generate_report(self, start_date: str, end_date: str, format: str) -> Optional[str]:
         """Generate comprehensive system report"""
         try:
             # Gather all report data
@@ -1132,9 +1089,7 @@ class DashboardCallbacks:
                 "generated_at": datetime.now().isoformat(),
                 "system_metrics": self.calculate_system_metrics(),
                 "anomaly_summary": self.get_anomaly_summary(start_date, end_date),
-                "maintenance_summary": self.get_maintenance_summary(
-                    start_date, end_date
-                ),
+                "maintenance_summary": self.get_maintenance_summary(start_date, end_date),
                 "model_performance": model_evaluator.get_all_performance(),
                 "equipment_health": self.get_equipment_health_summary(),
             }
@@ -1307,9 +1262,7 @@ class DashboardCallbacks:
         """Generate PDF report (requires reportlab or similar)"""
         # Placeholder for PDF generation
         # In production, use reportlab or weasyprint
-        logger.info(
-            f"PDF report generation not implemented. Data saved to {filepath}.json"
-        )
+        logger.info(f"PDF report generation not implemented. Data saved to {filepath}.json")
         with open(f"{filepath}.json", "w") as f:
             json.dump(report_data, f, indent=2, default=str)
 

@@ -23,9 +23,7 @@ sys.path.insert(0, str(project_root))
 sys.path.insert(0, str(project_root / "src"))
 
 # Configure logging for tests
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 
 # Pytest configuration
@@ -103,9 +101,7 @@ def sample_sensor_data():
     import pandas as pd
 
     # Generate sample time series data
-    timestamps = pd.date_range(
-        start=datetime.now() - timedelta(hours=24), end=datetime.now(), freq="1min"
-    )
+    timestamps = pd.date_range(start=datetime.now() - timedelta(hours=24), end=datetime.now(), freq="1min")
 
     data = {
         "timestamp": timestamps,

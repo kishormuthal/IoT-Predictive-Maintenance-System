@@ -87,9 +87,7 @@ class TestAdvancedAlgorithms:
         # Generate normal data
         data = np.random.normal(100, 10, 1000)
 
-        result = AdaptiveThresholdCalculator.gev_threshold(
-            data, confidence_level=0.99, block_size=100
-        )
+        result = AdaptiveThresholdCalculator.gev_threshold(data, confidence_level=0.99, block_size=100)
 
         assert result.threshold > np.mean(data)
         assert result.method == "GEV"
@@ -105,9 +103,7 @@ class TestAdvancedAlgorithms:
 
         data = np.random.normal(50, 5, 500)
 
-        result = AdaptiveThresholdCalculator.consensus_threshold(
-            data, confidence_level=0.99, aggregation="median"
-        )
+        result = AdaptiveThresholdCalculator.consensus_threshold(data, confidence_level=0.99, aggregation="median")
 
         assert result.method == "Consensus"
         assert "methods_used" in result.parameters
@@ -165,9 +161,7 @@ class TestAdvancedAlgorithms:
 
         data = np.array([1.0, 2.0, 3.0, np.nan, 5.0, 6.0])
 
-        mean_imputed, std_imputed = AdvancedImputer.impute_with_confidence(
-            data, method="auto", n_bootstrap=50
-        )
+        mean_imputed, std_imputed = AdvancedImputer.impute_with_confidence(data, method="auto", n_bootstrap=50)
 
         assert len(mean_imputed) == len(data)
         assert len(std_imputed) == len(data)
@@ -181,9 +175,7 @@ class TestAdvancedAlgorithms:
         predictions = [73.5, 76.2, 74.8, 77.1, 72.9]
         performance = [0.85, 0.90, 0.92, 0.80, 0.87]
 
-        result = EnsembleAggregator.performance_weighted_average(
-            predictions, performance
-        )
+        result = EnsembleAggregator.performance_weighted_average(predictions, performance)
 
         assert result.prediction > 0
         assert len(result.weights) == len(predictions)
@@ -250,9 +242,7 @@ class TestMonitoringAndEvaluation:
         y_true = np.array([0, 1, 1, 0, 1, 0, 1, 1, 0, 0])
         y_pred = np.array([0, 1, 1, 0, 0, 1, 1, 1, 0, 0])
 
-        metrics = EvaluationMetricsCalculator.compute_classification_metrics(
-            y_true, y_pred
-        )
+        metrics = EvaluationMetricsCalculator.compute_classification_metrics(y_true, y_pred)
 
         assert 0 <= metrics.accuracy <= 1
         assert 0 <= metrics.precision <= 1
@@ -363,17 +353,13 @@ class TestIntegration:
         training_data = np.random.normal(50, 5, 1000)
 
         # 2. Calculate adaptive threshold
-        threshold_result = AdaptiveThresholdCalculator.consensus_threshold(
-            training_data, confidence_level=0.99
-        )
+        threshold_result = AdaptiveThresholdCalculator.consensus_threshold(training_data, confidence_level=0.99)
 
         # 3. Test new data point
         test_value = 75.0  # Anomalous
 
         # 4. Calculate probabilistic score
-        prob_score = ProbabilisticAnomalyScorer.bayesian_anomaly_probability(
-            test_value, training_data
-        )
+        prob_score = ProbabilisticAnomalyScorer.bayesian_anomaly_probability(test_value, training_data)
 
         # 5. Make decision
         is_anomaly = test_value > threshold_result.threshold and prob_score.score > 0.5
@@ -395,9 +381,7 @@ class TestIntegration:
         performance_scores = [0.85, 0.92, 0.78]  # R² scores
 
         # Ensemble predictions
-        ensemble_result = EnsembleAggregator.performance_weighted_average(
-            predictions, performance_scores
-        )
+        ensemble_result = EnsembleAggregator.performance_weighted_average(predictions, performance_scores)
 
         # Transformer has best performance, should get highest weight
         assert ensemble_result.weights[1] > ensemble_result.weights[0]

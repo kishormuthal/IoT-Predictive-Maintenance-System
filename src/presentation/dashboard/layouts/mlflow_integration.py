@@ -64,9 +64,7 @@ def create_mlflow_layout() -> html.Div:
                                     ),
                                     dbc.Button(
                                         [
-                                            html.I(
-                                                className="fas fa-external-link-alt me-2"
-                                            ),
+                                            html.I(className="fas fa-external-link-alt me-2"),
                                             "Open MLflow UI",
                                         ],
                                         id="mlflow-open-ui-btn",
@@ -95,9 +93,7 @@ def create_mlflow_layout() -> html.Div:
                                         [
                                             html.Div(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-flask fa-2x text-primary mb-2"
-                                                    ),
+                                                    html.I(className="fas fa-flask fa-2x text-primary mb-2"),
                                                     html.H3(
                                                         id="mlflow-total-experiments",
                                                         children="0",
@@ -124,9 +120,7 @@ def create_mlflow_layout() -> html.Div:
                                         [
                                             html.Div(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-play fa-2x text-success mb-2"
-                                                    ),
+                                                    html.I(className="fas fa-play fa-2x text-success mb-2"),
                                                     html.H3(
                                                         id="mlflow-total-runs",
                                                         children="0",
@@ -153,9 +147,7 @@ def create_mlflow_layout() -> html.Div:
                                         [
                                             html.Div(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-cube fa-2x text-info mb-2"
-                                                    ),
+                                                    html.I(className="fas fa-cube fa-2x text-info mb-2"),
                                                     html.H3(
                                                         id="mlflow-registered-models",
                                                         children="0",
@@ -182,9 +174,7 @@ def create_mlflow_layout() -> html.Div:
                                         [
                                             html.Div(
                                                 [
-                                                    html.I(
-                                                        className="fas fa-rocket fa-2x text-warning mb-2"
-                                                    ),
+                                                    html.I(className="fas fa-rocket fa-2x text-warning mb-2"),
                                                     html.H3(
                                                         id="mlflow-deployed-models",
                                                         children="0",
@@ -220,9 +210,7 @@ def create_mlflow_layout() -> html.Div:
                                                 [
                                                     html.P(
                                                         [
-                                                            html.I(
-                                                                className="fas fa-info-circle me-2"
-                                                            ),
+                                                            html.I(className="fas fa-info-circle me-2"),
                                                             "MLflow UI is embedded below. You can also ",
                                                             html.A(
                                                                 "open it in a new tab",
@@ -239,9 +227,7 @@ def create_mlflow_layout() -> html.Div:
                                                         children=[
                                                             dbc.Alert(
                                                                 [
-                                                                    html.I(
-                                                                        className="fas fa-spinner fa-spin me-2"
-                                                                    ),
+                                                                    html.I(className="fas fa-spinner fa-spin me-2"),
                                                                     "Checking MLflow connection...",
                                                                 ],
                                                                 color="info",
@@ -281,9 +267,7 @@ def create_mlflow_layout() -> html.Div:
                                                 [
                                                     dbc.Col(
                                                         [
-                                                            html.Label(
-                                                                "Select Experiments to Compare:"
-                                                            ),
+                                                            html.Label("Select Experiments to Compare:"),
                                                             dcc.Dropdown(
                                                                 id="mlflow-experiment-selector",
                                                                 multi=True,
@@ -294,9 +278,7 @@ def create_mlflow_layout() -> html.Div:
                                                     ),
                                                     dbc.Col(
                                                         [
-                                                            html.Label(
-                                                                "Metric to Compare:"
-                                                            ),
+                                                            html.Label("Metric to Compare:"),
                                                             dcc.Dropdown(
                                                                 id="mlflow-metric-selector",
                                                                 options=[
@@ -339,13 +321,9 @@ def create_mlflow_layout() -> html.Div:
                                                 className="mb-4",
                                             ),
                                             # Comparison Chart
-                                            dcc.Graph(
-                                                id="mlflow-experiment-comparison-chart"
-                                            ),
+                                            dcc.Graph(id="mlflow-experiment-comparison-chart"),
                                             # Detailed Comparison Table
-                                            html.Div(
-                                                id="mlflow-experiment-comparison-table"
-                                            ),
+                                            html.Div(id="mlflow-experiment-comparison-table"),
                                         ]
                                     )
                                 ]
@@ -365,9 +343,7 @@ def create_mlflow_layout() -> html.Div:
                                                 [
                                                     dbc.Col(
                                                         [
-                                                            html.Label(
-                                                                "Filter by Model Type:"
-                                                            ),
+                                                            html.Label("Filter by Model Type:"),
                                                             dcc.Dropdown(
                                                                 id="mlflow-model-type-filter",
                                                                 options=[
@@ -396,9 +372,7 @@ def create_mlflow_layout() -> html.Div:
                                                     ),
                                                     dbc.Col(
                                                         [
-                                                            html.Label(
-                                                                "Filter by Stage:"
-                                                            ),
+                                                            html.Label("Filter by Stage:"),
                                                             dcc.Dropdown(
                                                                 id="mlflow-model-stage-filter",
                                                                 options=[
@@ -454,14 +428,10 @@ def create_mlflow_layout() -> html.Div:
                                                 className="mb-3",
                                             ),
                                             # Deployment status cards
-                                            html.Div(
-                                                id="mlflow-deployment-status-cards"
-                                            ),
+                                            html.Div(id="mlflow-deployment-status-cards"),
                                             html.Hr(),
                                             # Deployment timeline
-                                            html.H5(
-                                                "Deployment Timeline", className="mb-3"
-                                            ),
+                                            html.H5("Deployment Timeline", className="mb-3"),
                                             dcc.Graph(id="mlflow-deployment-timeline"),
                                         ]
                                     )
@@ -616,14 +586,8 @@ def register_mlflow_callbacks(app: dash.Dash):
 
                 # Store data
                 data = {
-                    "experiments": [
-                        {"id": exp.experiment_id, "name": exp.name}
-                        for exp in experiments
-                    ],
-                    "runs": [
-                        {"id": run.info.run_id, "name": run.info.run_name}
-                        for run in all_runs
-                    ],
+                    "experiments": [{"id": exp.experiment_id, "name": exp.name} for exp in experiments],
+                    "runs": [{"id": run.info.run_id, "name": run.info.run_name} for run in all_runs],
                     "models": [{"name": model.name} for model in registered_models],
                     "last_updated": datetime.now().isoformat(),
                 }
@@ -679,21 +643,15 @@ def register_mlflow_callbacks(app: dash.Dash):
         if not data or "experiments" not in data:
             return []
 
-        return [
-            {"label": exp["name"], "value": exp["id"]} for exp in data["experiments"]
-        ]
+        return [{"label": exp["name"], "value": exp["id"]} for exp in data["experiments"]]
 
-    @callback(
-        Output("mlflow-model-selector", "options"), Input("mlflow-data-store", "data")
-    )
+    @callback(Output("mlflow-model-selector", "options"), Input("mlflow-data-store", "data"))
     def update_model_selector(data):
         """Update model selector options"""
         if not data or "models" not in data:
             return []
 
-        return [
-            {"label": model["name"], "value": model["name"]} for model in data["models"]
-        ]
+        return [{"label": model["name"], "value": model["name"]} for model in data["models"]]
 
     @callback(
         Output("mlflow-experiment-comparison-chart", "figure"),
@@ -716,9 +674,7 @@ def register_mlflow_callbacks(app: dash.Dash):
                 showarrow=False,
                 font=dict(size=16, color="gray"),
             )
-            fig.update_layout(
-                height=400, xaxis=dict(visible=False), yaxis=dict(visible=False)
-            )
+            fig.update_layout(height=400, xaxis=dict(visible=False), yaxis=dict(visible=False))
             return fig
 
         # Placeholder - would fetch actual data from MLflow
@@ -887,21 +843,15 @@ def register_mlflow_callbacks(app: dash.Dash):
                                 dbc.CardHeader(dep["name"]),
                                 dbc.CardBody(
                                     [
-                                        html.P(
-                                            [html.Strong("Version: "), dep["version"]]
-                                        ),
+                                        html.P([html.Strong("Version: "), dep["version"]]),
                                         html.P(
                                             [
                                                 html.Strong("Status: "),
                                                 dbc.Badge(dep["status"], color=color),
                                             ]
                                         ),
-                                        html.P(
-                                            [html.Strong("Health: "), dep["health"]]
-                                        ),
-                                        html.P(
-                                            [html.Strong("Uptime: "), dep["uptime"]]
-                                        ),
+                                        html.P([html.Strong("Health: "), dep["health"]]),
+                                        html.P([html.Strong("Uptime: "), dep["uptime"]]),
                                         html.P(
                                             [
                                                 html.Strong("Requests: "),
@@ -941,9 +891,7 @@ def register_mlflow_callbacks(app: dash.Dash):
                 showarrow=False,
                 font=dict(size=16, color="gray"),
             )
-            fig.update_layout(
-                height=400, xaxis=dict(visible=False), yaxis=dict(visible=False)
-            )
+            fig.update_layout(height=400, xaxis=dict(visible=False), yaxis=dict(visible=False))
             return fig
 
         # Generate sample trend data
@@ -998,9 +946,7 @@ def register_mlflow_callbacks(app: dash.Dash):
                 showarrow=False,
                 font=dict(size=16, color="gray"),
             )
-            fig.update_layout(
-                height=300, xaxis=dict(visible=False), yaxis=dict(visible=False)
-            )
+            fig.update_layout(height=300, xaxis=dict(visible=False), yaxis=dict(visible=False))
             return fig
 
         # Sample parameter importance data

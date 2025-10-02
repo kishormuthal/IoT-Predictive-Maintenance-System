@@ -115,9 +115,7 @@ def test_database():
         )
 
         # Test data retrieval
-        cursor.execute(
-            "SELECT COUNT(*) FROM telemetry_data WHERE spacecraft='SMAP_TEST'"
-        )
+        cursor.execute("SELECT COUNT(*) FROM telemetry_data WHERE spacecraft='SMAP_TEST'")
         count = cursor.fetchone()[0]
 
         conn.commit()
@@ -211,12 +209,8 @@ def test_dashboard_components():
                                     [
                                         dbc.CardBody(
                                             [
-                                                html.H4(
-                                                    "Database", className="card-title"
-                                                ),
-                                                html.P(
-                                                    f"Tables: 7", className="card-text"
-                                                ),
+                                                html.H4("Database", className="card-title"),
+                                                html.P(f"Tables: 7", className="card-text"),
                                                 dbc.Badge("Connected", color="success"),
                                             ]
                                         )
@@ -271,18 +265,14 @@ def test_basic_data_processing():
 
         print(f"[OK] MinMax normalization: {normalized_data.shape}")
         print(f"    Original range: [{smap_data.min():.3f}, {smap_data.max():.3f}]")
-        print(
-            f"    Normalized range: [{normalized_data.min():.3f}, {normalized_data.max():.3f}]"
-        )
+        print(f"    Normalized range: [{normalized_data.min():.3f}, {normalized_data.max():.3f}]")
 
         # Test standardization
         std_scaler = StandardScaler()
         standardized_data = std_scaler.fit_transform(smap_data)
 
         print(f"[OK] Standard normalization: {standardized_data.shape}")
-        print(
-            f"    Mean: {standardized_data.mean():.3f}, Std: {standardized_data.std():.3f}"
-        )
+        print(f"    Mean: {standardized_data.mean():.3f}, Std: {standardized_data.std():.3f}")
 
         # Test windowing
         window_size = 50
@@ -294,9 +284,7 @@ def test_basic_data_processing():
             windowed_data.append(window)
 
         windowed_data = np.array(windowed_data)
-        print(
-            f"[OK] Windowing: {windowed_data.shape} (window_size={window_size}, stride={stride})"
-        )
+        print(f"[OK] Windowing: {windowed_data.shape} (window_size={window_size}, stride={stride})")
 
         return True
 
@@ -348,9 +336,7 @@ def main():
         print("3. Run: python scripts/run_dashboard.py")
         print("4. Access dashboard at http://localhost:8050")
     else:
-        print(
-            f"\n[WARNING] {total - passed} tests failed. Please fix issues before proceeding."
-        )
+        print(f"\n[WARNING] {total - passed} tests failed. Please fix issues before proceeding.")
 
     return passed == total
 

@@ -73,9 +73,7 @@ class CallbackOptimizer:
 
         # Incremental update tracking
         self.last_data_snapshots: Dict[str, Dict[str, Any]] = {}
-        self.incremental_updates: Dict[str, deque] = defaultdict(
-            lambda: deque(maxlen=100)
-        )
+        self.incremental_updates: Dict[str, deque] = defaultdict(lambda: deque(maxlen=100))
 
         # Performance settings
         self.default_cache_ttl = 30  # 30 seconds default cache
@@ -86,9 +84,7 @@ class CallbackOptimizer:
         self.cleanup_interval = 300  # 5 minutes
         self.last_cleanup = datetime.now()
 
-        logger.info(
-            "Callback Optimizer initialized for sub-second dashboard performance"
-        )
+        logger.info("Callback Optimizer initialized for sub-second dashboard performance")
 
     def memoize_callback(
         self,
@@ -108,9 +104,7 @@ class CallbackOptimizer:
         def decorator(func: Callable) -> Callable:
             @functools.wraps(func)
             def wrapper(*args, **kwargs):
-                return self._execute_optimized_callback(
-                    func, args, kwargs, ttl, use_incremental, cache_key_func
-                )
+                return self._execute_optimized_callback(func, args, kwargs, ttl, use_incremental, cache_key_func)
 
             return wrapper
 
@@ -132,37 +126,25 @@ class CallbackOptimizer:
         # Initialize metrics if needed
         if callback_name not in self.metrics:
             with self.metrics_lock:
-                self.metrics[callback_name] = CallbackMetrics(
-                    callback_name=callback_name
-                )
+                self.metrics[callback_name] = CallbackMetrics(callback_name=callback_name)
 
         try:
             # Generate cache key
             cache_key = self._generate_cache_key(func, args, kwargs, cache_key_func)
 
             # Try memoization cache first (fastest)
-            memo_result = self._get_from_memo_cache(
-                cache_key, ttl or self.default_cache_ttl
-            )
+            memo_result = self._get_from_memo_cache(cache_key, ttl or self.default_cache_ttl)
             if memo_result is not None:
-                self._update_callback_metrics(
-                    callback_name, time.time() - start_time, True, False
-                )
+                self._update_callback_metrics(callback_name, time.time() - start_time, True, False)
                 return memo_result
 
             # Try incremental update if enabled
             if use_incremental:
-                incremental_result = self._try_incremental_update(
-                    callback_name, args, kwargs
-                )
+                incremental_result = self._try_incremental_update(callback_name, args, kwargs)
                 if incremental_result is not None:
                     # Cache the incremental result
-                    self._set_memo_cache(
-                        cache_key, incremental_result, ttl or self.default_cache_ttl
-                    )
-                    self._update_callback_metrics(
-                        callback_name, time.time() - start_time, False, True
-                    )
+                    self._set_memo_cache(cache_key, incremental_result, ttl or self.default_cache_ttl)
+                    self._update_callback_metrics(callback_name, time.time() - start_time, False, True)
                     return incremental_result
 
             # Execute full callback
@@ -185,9 +167,7 @@ class CallbackOptimizer:
             logger.error(f"Callback optimization error for {callback_name}: {e}")
             # Fallback to direct execution
             result = func(*args, **kwargs)
-            self._update_callback_metrics(
-                callback_name, time.time() - start_time, False, False
-            )
+            self._update_callback_metrics(callback_name, time.time() - start_time, False, False)
             return result
 
     def _generate_cache_key(
@@ -232,18 +212,14 @@ class CallbackOptimizer:
             # Evict oldest entries if cache is full
             if len(self.memo_cache) >= self.max_memo_cache_size:
                 # Remove 20% of oldest entries
-                sorted_items = sorted(
-                    self.memo_cache.items(), key=lambda x: x[1][1]  # Sort by timestamp
-                )
+                sorted_items = sorted(self.memo_cache.items(), key=lambda x: x[1][1])  # Sort by timestamp
                 items_to_remove = len(sorted_items) // 5
                 for item in sorted_items[:items_to_remove]:
                     del self.memo_cache[item[0]]
 
             self.memo_cache[cache_key] = (result, datetime.now())
 
-    def _try_incremental_update(
-        self, callback_name: str, args: tuple, kwargs: dict
-    ) -> Any:
+    def _try_incremental_update(self, callback_name: str, args: tuple, kwargs: dict) -> Any:
         """Attempt incremental update instead of full refresh"""
         if callback_name not in self.last_data_snapshots:
             return None
@@ -255,13 +231,9 @@ class CallbackOptimizer:
 
             # Check if we can determine what data might have changed
             # For sensor data callbacks, we might check timestamps or specific sensors
-            if self._should_use_incremental_update(
-                callback_name, args, kwargs, last_snapshot
-            ):
+            if self._should_use_incremental_update(callback_name, args, kwargs, last_snapshot):
                 # Generate incremental update
-                return self._generate_incremental_update(
-                    callback_name, last_snapshot, args, kwargs
-                )
+                return self._generate_incremental_update(callback_name, last_snapshot, args, kwargs)
 
         except Exception as e:
             logger.debug(f"Incremental update failed for {callback_name}: {e}")
@@ -304,9 +276,7 @@ class CallbackOptimizer:
         elif "chart" in callback_name.lower() or "graph" in callback_name.lower():
             return self._generate_chart_incremental_update(last_snapshot, args, kwargs)
         else:
-            return self._generate_generic_incremental_update(
-                last_snapshot, args, kwargs
-            )
+            return self._generate_generic_incremental_update(last_snapshot, args, kwargs)
 
     def _generate_sensor_incremental_update(
         self, last_snapshot: Dict[str, Any], args: tuple, kwargs: dict
@@ -324,30 +294,22 @@ class CallbackOptimizer:
                 # Add a few new data points
                 new_points = 5
                 last_timestamp = (
-                    updated_data["timestamps"][-1]
-                    if updated_data["timestamps"]
-                    else current_time.isoformat()
+                    updated_data["timestamps"][-1] if updated_data["timestamps"] else current_time.isoformat()
                 )
-                last_time = datetime.fromisoformat(
-                    last_timestamp.replace("Z", "+00:00")
-                )
+                last_time = datetime.fromisoformat(last_timestamp.replace("Z", "+00:00"))
 
                 for i in range(new_points):
                     new_timestamp = last_time + timedelta(seconds=i + 1)
                     updated_data["timestamps"].append(new_timestamp.isoformat())
                     # Simulate new sensor value
-                    last_value = (
-                        updated_data["values"][-1] if updated_data["values"] else 0
-                    )
+                    last_value = updated_data["values"][-1] if updated_data["values"] else 0
                     new_value = last_value + np.random.normal(0, 0.1)
                     updated_data["values"].append(new_value)
 
                 # Keep only recent data
                 max_points = 1000
                 if len(updated_data["timestamps"]) > max_points:
-                    updated_data["timestamps"] = updated_data["timestamps"][
-                        -max_points:
-                    ]
+                    updated_data["timestamps"] = updated_data["timestamps"][-max_points:]
                     updated_data["values"] = updated_data["values"][-max_points:]
 
             return {
@@ -430,16 +392,12 @@ class CallbackOptimizer:
 
             # Update average execution time (exponential moving average)
             alpha = 0.1
-            metrics.avg_execution_time = (
-                alpha * execution_time + (1 - alpha) * metrics.avg_execution_time
-            )
+            metrics.avg_execution_time = alpha * execution_time + (1 - alpha) * metrics.avg_execution_time
 
             metrics.total_execution_time += execution_time
             metrics.last_updated = datetime.now()
 
-    def get_callback_metrics(
-        self, callback_name: str = None
-    ) -> Union[CallbackMetrics, Dict[str, CallbackMetrics]]:
+    def get_callback_metrics(self, callback_name: str = None) -> Union[CallbackMetrics, Dict[str, CallbackMetrics]]:
         """Get callback performance metrics"""
         with self.metrics_lock:
             if callback_name:
@@ -451,18 +409,12 @@ class CallbackOptimizer:
         with self.metrics_lock:
             total_calls = sum(m.total_calls for m in self.metrics.values())
             total_cache_hits = sum(m.cache_hits for m in self.metrics.values())
-            total_incremental = sum(
-                m.incremental_updates for m in self.metrics.values()
-            )
+            total_incremental = sum(m.incremental_updates for m in self.metrics.values())
 
             cache_hit_rate = total_cache_hits / total_calls if total_calls > 0 else 0
             incremental_rate = total_incremental / total_calls if total_calls > 0 else 0
 
-            avg_response_time = (
-                np.mean([m.avg_execution_time for m in self.metrics.values()])
-                if self.metrics
-                else 0
-            )
+            avg_response_time = np.mean([m.avg_execution_time for m in self.metrics.values()]) if self.metrics else 0
 
             return {
                 "total_callbacks": len(self.metrics),
@@ -480,9 +432,7 @@ class CallbackOptimizer:
         with self.memo_lock:
             if callback_name:
                 # Clear cache for specific callback
-                keys_to_remove = [
-                    k for k in self.memo_cache.keys() if callback_name in k
-                ]
+                keys_to_remove = [k for k in self.memo_cache.keys() if callback_name in k]
                 for key in keys_to_remove:
                     del self.memo_cache[key]
 
@@ -501,9 +451,7 @@ class CallbackOptimizer:
         with self.memo_lock:
             expired_keys = []
             for key, (result, timestamp) in self.memo_cache.items():
-                if current_time - timestamp > timedelta(
-                    seconds=self.default_cache_ttl * 2
-                ):
+                if current_time - timestamp > timedelta(seconds=self.default_cache_ttl * 2):
                     expired_keys.append(key)
 
             for key in expired_keys:
@@ -522,9 +470,7 @@ class CallbackOptimizer:
         self.last_cleanup = current_time
 
         if expired_keys or expired_snapshots:
-            logger.debug(
-                f"Cleaned up {len(expired_keys)} cache entries and {len(expired_snapshots)} snapshots"
-            )
+            logger.debug(f"Cleaned up {len(expired_keys)} cache entries and {len(expired_snapshots)} snapshots")
 
 
 # Global callback optimizer instance
@@ -532,9 +478,7 @@ callback_optimizer = CallbackOptimizer()
 
 
 # Convenience decorators
-def optimize_callback(
-    ttl: int = 30, use_incremental: bool = True, cache_key_func: Callable = None
-):
+def optimize_callback(ttl: int = 30, use_incremental: bool = True, cache_key_func: Callable = None):
     """Convenience decorator for callback optimization"""
     return callback_optimizer.memoize_callback(ttl, use_incremental, cache_key_func)
 
@@ -553,9 +497,7 @@ def sensor_callback(ttl: int = 5):
         time_range = kwargs.get("time_range", "recent")
         return f"sensor:{hash(tuple(sensor_ids) if sensor_ids else ())}:{time_range}"
 
-    return callback_optimizer.memoize_callback(
-        ttl, use_incremental=True, cache_key_func=sensor_cache_key
-    )
+    return callback_optimizer.memoize_callback(ttl, use_incremental=True, cache_key_func=sensor_cache_key)
 
 
 def chart_callback(ttl: int = 15):

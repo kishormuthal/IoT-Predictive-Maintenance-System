@@ -249,9 +249,7 @@ class PipelineDashboard:
                                             children="--",
                                             className="text-info mb-1",
                                         ),
-                                        html.Small(
-                                            "Total Processed", className="text-muted"
-                                        ),
+                                        html.Small("Total Processed", className="text-muted"),
                                     ],
                                     width=6,
                                 ),
@@ -262,9 +260,7 @@ class PipelineDashboard:
                                             children="--",
                                             className="text-warning mb-1",
                                         ),
-                                        html.Small(
-                                            "Anomalies Found", className="text-muted"
-                                        ),
+                                        html.Small("Anomalies Found", className="text-muted"),
                                     ],
                                     width=6,
                                 ),
@@ -449,9 +445,7 @@ class PipelineDashboard:
                                             children="--",
                                             className="text-primary mb-1",
                                         ),
-                                        html.Small(
-                                            "Total Equipment", className="text-muted"
-                                        ),
+                                        html.Small("Total Equipment", className="text-muted"),
                                     ],
                                     className="text-center mb-3",
                                 ),
@@ -466,9 +460,7 @@ class PipelineDashboard:
                                                     children="--",
                                                     className="text-info mb-1",
                                                 ),
-                                                html.Small(
-                                                    "SMAP", className="text-muted"
-                                                ),
+                                                html.Small("SMAP", className="text-muted"),
                                             ],
                                             className="text-center",
                                             width=6,
@@ -480,9 +472,7 @@ class PipelineDashboard:
                                                     children="--",
                                                     className="text-warning mb-1",
                                                 ),
-                                                html.Small(
-                                                    "MSL", className="text-muted"
-                                                ),
+                                                html.Small("MSL", className="text-muted"),
                                             ],
                                             className="text-center",
                                             width=6,
@@ -575,9 +565,7 @@ class PipelineDashboard:
             [
                 dbc.CardHeader(
                     [
-                        html.H5(
-                            "🤖 NASA Model Status - 80 Models Active", className="mb-0"
-                        ),
+                        html.H5("🤖 NASA Model Status - 80 Models Active", className="mb-0"),
                         dbc.Badge("Live Updates", color="success", className="ms-2"),
                         html.Div(
                             [
@@ -649,9 +637,7 @@ class PipelineDashboard:
                                             children="80",
                                             className="text-primary mb-1",
                                         ),
-                                        html.Small(
-                                            "NASA Models", className="text-muted"
-                                        ),
+                                        html.Small("NASA Models", className="text-muted"),
                                     ],
                                     className="text-center mb-3",
                                 ),
@@ -666,9 +652,7 @@ class PipelineDashboard:
                                                     children="--",
                                                     className="text-success mb-1",
                                                 ),
-                                                html.Small(
-                                                    "Active", className="text-muted"
-                                                ),
+                                                html.Small("Active", className="text-muted"),
                                             ],
                                             className="text-center",
                                             width=6,
@@ -680,9 +664,7 @@ class PipelineDashboard:
                                                     children="--",
                                                     className="text-info mb-1",
                                                 ),
-                                                html.Small(
-                                                    "Processing", className="text-muted"
-                                                ),
+                                                html.Small("Processing", className="text-muted"),
                                             ],
                                             className="text-center",
                                             width=6,
@@ -877,9 +859,7 @@ def update_pipeline_metrics(n):
         )
 
 
-@callback(
-    Output("throughput-chart", "figure"), [Input("pipeline-interval", "n_intervals")]
-)
+@callback(Output("throughput-chart", "figure"), [Input("pipeline-interval", "n_intervals")])
 def update_throughput_chart(n):
     """Update real-time throughput chart"""
     try:
@@ -926,9 +906,7 @@ def update_throughput_chart(n):
         fig.add_trace(
             go.Scatter(
                 x=throughput_data["timestamps"],
-                y=[
-                    rate * 100 for rate in throughput_data["anomaly_rates"]
-                ],  # Convert to percentage
+                y=[rate * 100 for rate in throughput_data["anomaly_rates"]],  # Convert to percentage
                 mode="lines",
                 name="Anomaly Rate %",
                 line=dict(color="#dc3545", width=1, dash="dash"),
@@ -946,9 +924,7 @@ def update_throughput_chart(n):
             title="Real-time Processing Throughput",
             height=280,
             margin=dict(l=40, r=40, t=40, b=40),
-            legend=dict(
-                orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-            ),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
             hovermode="x unified",
         )
 
@@ -987,9 +963,7 @@ def update_data_sources_status(n):
                             [
                                 html.P(
                                     [
-                                        dbc.Badge(
-                                            "●", color=source["color"], className="me-2"
-                                        ),
+                                        dbc.Badge("●", color=source["color"], className="me-2"),
                                         html.Strong(source["name"]),
                                     ],
                                     className="mb-1",
@@ -1088,9 +1062,7 @@ def update_heatmap_summary(n):
         )
 
 
-@callback(
-    Output("model-status-grid", "children"), [Input("pipeline-interval", "n_intervals")]
-)
+@callback(Output("model-status-grid", "children"), [Input("pipeline-interval", "n_intervals")])
 def update_model_status_grid(n):
     """Update model status grid display"""
     try:
@@ -1101,9 +1073,7 @@ def update_model_status_grid(n):
 
         # Create grid of model status cards
         model_cards = []
-        for i, model_id in enumerate(
-            grid_data["model_ids"][:80]
-        ):  # Show up to 80 models
+        for i, model_id in enumerate(grid_data["model_ids"][:80]):  # Show up to 80 models
             status = grid_data["statuses"][i]
             health = grid_data["health_scores"][i]
             processing = grid_data["processing_states"][i]
@@ -1219,9 +1189,7 @@ def update_model_performance_chart(n):
             barmode="group",
             height=180,
             margin=dict(l=40, r=40, t=40, b=40),
-            legend=dict(
-                orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-            ),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         )
 
         return fig

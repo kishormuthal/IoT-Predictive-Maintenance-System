@@ -21,9 +21,7 @@ from src.anomaly_detection.nasa_telemanom import NASATelemanom, Telemanom_Config
 from src.data_ingestion.equipment_mapper import IoTEquipmentMapper
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -38,9 +36,7 @@ def load_nasa_raw_data():
         msl_train = np.load("data/raw/msl/train.npy")
         msl_test = np.load("data/raw/msl/test.npy")
 
-        logger.info(
-            f"Loaded NASA data - SMAP: {smap_train.shape}, MSL: {msl_train.shape}"
-        )
+        logger.info(f"Loaded NASA data - SMAP: {smap_train.shape}, MSL: {msl_train.shape}")
 
         return {
             "smap_train": smap_train,
@@ -53,9 +49,7 @@ def load_nasa_raw_data():
         return None
 
 
-def train_sensor_model(
-    sensor_id: str, data: np.ndarray, models_dir: Path, quick_mode=True
-):
+def train_sensor_model(sensor_id: str, data: np.ndarray, models_dir: Path, quick_mode=True):
     """Train a single sensor model with NASA Telemanom"""
     try:
         # Ensure we have enough data
@@ -84,9 +78,7 @@ def train_sensor_model(
         model_path = models_dir / f"{sensor_id}.pkl"
         model.save_model(str(model_path))
 
-        logger.info(
-            f"Successfully trained {sensor_id} - threshold: {model.error_threshold:.4f}"
-        )
+        logger.info(f"Successfully trained {sensor_id} - threshold: {model.error_threshold:.4f}")
 
         return {
             "sensor_id": sensor_id,
@@ -177,16 +169,11 @@ def train_all_80_sensors():
         "results": results,
     }
 
-    summary_path = (
-        models_dir
-        / f"comprehensive_training_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-    )
+    summary_path = models_dir / f"comprehensive_training_summary_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     with open(summary_path, "w") as f:
         json.dump(summary, f, indent=2)
 
-    logger.info(
-        f"Training completed: {successful}/{80} successful ({successful/80*100:.1f}%)"
-    )
+    logger.info(f"Training completed: {successful}/{80} successful ({successful/80*100:.1f}%)")
     logger.info(f"Summary saved to: {summary_path}")
 
     return summary

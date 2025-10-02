@@ -242,9 +242,7 @@ class TestForecastSummary:
             forecast = ForecastResult(
                 sensor_id=sensor_id,
                 forecast_horizon_hours=12,
-                historical_timestamps=[
-                    now - timedelta(hours=j) for j in range(24, 0, -1)
-                ],
+                historical_timestamps=[now - timedelta(hours=j) for j in range(24, 0, -1)],
                 historical_values=np.random.normal(50, 10, 24),
                 forecast_timestamps=[now + timedelta(hours=j) for j in range(1, 13)],
                 forecast_values=np.random.normal(55, 8, 12),
@@ -391,9 +389,7 @@ class TestForecastModelIntegration:
             result = ForecastResult(
                 sensor_id=sensor_id,
                 forecast_horizon_hours=24,
-                historical_timestamps=[
-                    now - timedelta(hours=i) for i in range(48, 0, -1)
-                ],
+                historical_timestamps=[now - timedelta(hours=i) for i in range(48, 0, -1)],
                 historical_values=np.random.normal(50, 10, 48),
                 forecast_timestamps=[now + timedelta(hours=i) for i in range(1, 25)],
                 forecast_values=np.random.normal(52, 8, 24),
@@ -471,17 +467,8 @@ class TestForecastModelIntegration:
         )
 
         # Validate confidence intervals width
-        high_conf_width = (
-            high_confidence_point.confidence_upper
-            - high_confidence_point.confidence_lower
-        )
-        low_conf_width = (
-            low_confidence_point.confidence_upper
-            - low_confidence_point.confidence_lower
-        )
+        high_conf_width = high_confidence_point.confidence_upper - high_confidence_point.confidence_lower
+        low_conf_width = low_confidence_point.confidence_upper - low_confidence_point.confidence_lower
 
         assert high_conf_width < low_conf_width  # High confidence = narrower interval
-        assert (
-            high_confidence_point.confidence_level
-            != low_confidence_point.confidence_level
-        )
+        assert high_confidence_point.confidence_level != low_confidence_point.confidence_level
