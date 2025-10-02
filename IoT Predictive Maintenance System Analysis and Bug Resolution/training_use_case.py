@@ -4,13 +4,13 @@ Application layer for training operations
 """
 
 import logging
-from typing import Dict, List, Any, Optional
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
+from config.equipment_config import get_equipment_by_id, get_equipment_list
 from src.infrastructure.ml.model_registry import ModelRegistry
 from src.infrastructure.ml.telemanom_wrapper import NASATelemanom
 from src.infrastructure.ml.transformer_wrapper import TransformerForecaster
-from config.equipment_config import get_equipment_list, get_equipment_by_id
 
 logger = logging.getLogger(__name__)
 

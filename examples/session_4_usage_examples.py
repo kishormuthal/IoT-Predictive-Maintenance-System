@@ -3,18 +3,20 @@ SESSION 4 Data Management - Usage Examples
 Complete examples for all new data management components
 """
 
-import numpy as np
 from datetime import datetime, timedelta
+
+import numpy as np
 
 # =============================================================================
 # Example 1: Data Processing Service - Normalization and Quality Assessment
 # =============================================================================
 
+
 def example_1_data_processing():
     """Example: Use DataProcessingService for normalization and quality checks"""
     from src.core.services.data_processing_service import (
         DataProcessingService,
-        NormalizationMethod
+        NormalizationMethod,
     )
 
     # Initialize service
@@ -22,7 +24,7 @@ def example_1_data_processing():
         cache_dir="data/processing_cache",
         default_normalization=NormalizationMethod.ZSCORE,
         outlier_threshold=3.0,
-        missing_threshold=0.1
+        missing_threshold=0.1,
     )
 
     # Generate sample sensor data (with some issues)
@@ -32,14 +34,17 @@ def example_1_data_processing():
 
     # Assess data quality
     quality_report = processor.assess_data_quality(
-        data=sensor_data,
-        sensor_id="SENSOR_001"
+        data=sensor_data, sensor_id="SENSOR_001"
     )
 
     print("=== Data Quality Report ===")
     print(f"Status: {quality_report.status.value}")
-    print(f"Missing: {quality_report.missing_count} ({quality_report.missing_percentage:.2f}%)")
-    print(f"Outliers: {quality_report.outlier_count} ({quality_report.outlier_percentage:.2f}%)")
+    print(
+        f"Missing: {quality_report.missing_count} ({quality_report.missing_percentage:.2f}%)"
+    )
+    print(
+        f"Outliers: {quality_report.outlier_count} ({quality_report.outlier_percentage:.2f}%)"
+    )
     print(f"Issues: {quality_report.issues}")
     print(f"Recommendations: {quality_report.recommendations}")
 
@@ -52,7 +57,7 @@ def example_1_data_processing():
         sensor_id="SENSOR_001",
         split_ratio=(0.7, 0.15, 0.15),
         normalize=True,
-        assess_quality=True
+        assess_quality=True,
     )
 
     print("\n=== Training Data Prepared ===")
@@ -65,10 +70,7 @@ def example_1_data_processing():
     print(f"Data hash: {prepared['data_hash']}")
 
     # Denormalize for visualization
-    denormalized = processor.denormalize(
-        prepared['train_data'],
-        sensor_id="SENSOR_001"
-    )
+    denormalized = processor.denormalize(prepared["train_data"], sensor_id="SENSOR_001")
     print(f"Denormalized mean: {np.mean(denormalized):.3f}")
 
 
@@ -76,9 +78,10 @@ def example_1_data_processing():
 # Example 2: Feature Engineering - Create 40+ Features
 # =============================================================================
 
+
 def example_2_feature_engineering():
     """Example: Engineer comprehensive feature set from raw sensor data"""
-    from src.core.services.feature_engineering import FeatureEngineer, FeatureConfig
+    from src.core.services.feature_engineering import FeatureConfig, FeatureEngineer
 
     # Configure feature engineering
     config = FeatureConfig(
@@ -93,7 +96,7 @@ def example_2_feature_engineering():
         include_ewm=True,
         include_fft=True,
         include_time_features=True,
-        include_cyclical_encoding=True
+        include_cyclical_encoding=True,
     )
 
     # Initialize engineer
@@ -101,22 +104,20 @@ def example_2_feature_engineering():
 
     # Generate sample sensor data with temporal pattern
     hours = 168  # 1 week
-    timestamps = [datetime.now() - timedelta(hours=hours-i) for i in range(hours)]
+    timestamps = [datetime.now() - timedelta(hours=hours - i) for i in range(hours)]
 
     # Simulate sensor data with daily cycle + trend
     t = np.arange(hours)
     sensor_data = (
-        50 +  # Base value
-        5 * np.sin(2 * np.pi * t / 24) +  # Daily cycle
-        0.1 * t +  # Trend
-        np.random.normal(0, 1, hours)  # Noise
+        50  # Base value
+        + 5 * np.sin(2 * np.pi * t / 24)  # Daily cycle
+        + 0.1 * t  # Trend
+        + np.random.normal(0, 1, hours)  # Noise
     )
 
     # Engineer features
     features = engineer.engineer_features(
-        data=sensor_data,
-        timestamps=timestamps,
-        sensor_id="SENSOR_001"
+        data=sensor_data, timestamps=timestamps, sensor_id="SENSOR_001"
     )
 
     print("=== Feature Engineering Results ===")
@@ -125,19 +126,18 @@ def example_2_feature_engineering():
 
     # Create feature matrix for ML
     selected_features = [
-        'raw',
-        'rolling_12_mean',
-        'rolling_12_std',
-        'lag_6',
-        'diff_1',
-        'ewm',
-        'hour_sin',
-        'hour_cos'
+        "raw",
+        "rolling_12_mean",
+        "rolling_12_std",
+        "lag_6",
+        "diff_1",
+        "ewm",
+        "hour_sin",
+        "hour_cos",
     ]
 
     feature_matrix = engineer.create_feature_matrix(
-        features,
-        selected_features=selected_features
+        features, selected_features=selected_features
     )
 
     print(f"\nFeature matrix shape: {feature_matrix.shape}")
@@ -153,15 +153,14 @@ def example_2_feature_engineering():
 # Example 3: DVC Manager - Data Versioning
 # =============================================================================
 
+
 def example_3_dvc_versioning():
     """Example: Version datasets with DVC for reproducibility"""
     from src.infrastructure.data.dvc_manager import DVCManager
 
     # Initialize DVC manager
     dvc = DVCManager(
-        repo_root=".",
-        data_dir="data",
-        dvc_remote=None  # Use local storage for demo
+        repo_root=".", data_dir="data", dvc_remote=None  # Use local storage for demo
     )
 
     # Create sample dataset
@@ -178,7 +177,7 @@ def example_3_dvc_versioning():
         description="Processed sensor data with normalization",
         tags=["normalized", "stable", "v1"],
         sensor_ids=["SENSOR_001"],
-        push_to_remote=False  # Set True if remote configured
+        push_to_remote=False,  # Set True if remote configured
     )
 
     if dataset_version:
@@ -202,7 +201,7 @@ def example_3_dvc_versioning():
         dataset_id="SENSOR_001",
         dataset_version=dataset_version.version,
         model_id="telemanom_SENSOR_001",
-        model_version="v1.0"
+        model_version="v1.0",
     )
     print(f"✅ Linked dataset to model for reproducibility")
 
@@ -211,12 +210,13 @@ def example_3_dvc_versioning():
 # Example 4: Data Drift Detection - Monitor Distribution Shifts
 # =============================================================================
 
+
 def example_4_drift_detection():
     """Example: Detect data drift using statistical tests"""
     from src.core.services.data_drift_detector import (
         DataDriftDetector,
         DriftConfig,
-        DriftSeverity
+        DriftSeverity,
     )
 
     # Configure drift detection
@@ -224,7 +224,7 @@ def example_4_drift_detection():
         psi_threshold=0.2,
         jensen_shannon_threshold=0.1,
         mean_shift_threshold=2.0,
-        std_ratio_threshold=2.0
+        std_ratio_threshold=2.0,
     )
 
     # Initialize detector
@@ -235,26 +235,25 @@ def example_4_drift_detection():
     # Baseline data (reference distribution)
     baseline_data = np.random.normal(0, 1, 1000)
     baseline_timestamps = [
-        datetime.now() - timedelta(days=7) + timedelta(hours=i)
-        for i in range(1000)
+        datetime.now() - timedelta(days=7) + timedelta(hours=i) for i in range(1000)
     ]
 
     # Fit reference distribution
     detector.fit_reference(
-        data=baseline_data,
-        sensor_id="SENSOR_001",
-        timestamps=baseline_timestamps
+        data=baseline_data, sensor_id="SENSOR_001", timestamps=baseline_timestamps
     )
     print("✅ Reference distribution fitted")
 
     # Test 1: No drift (similar distribution)
     similar_data = np.random.normal(0, 1, 1000)
-    similar_timestamps = [datetime.now() - timedelta(hours=1000-i) for i in range(1000)]
+    similar_timestamps = [
+        datetime.now() - timedelta(hours=1000 - i) for i in range(1000)
+    ]
 
     report1 = detector.detect_drift(
         current_data=similar_data,
         sensor_id="SENSOR_001",
-        current_timestamps=similar_timestamps
+        current_timestamps=similar_timestamps,
     )
 
     print("\n--- Test 1: Similar Data (No Drift Expected) ---")
@@ -272,7 +271,7 @@ def example_4_drift_detection():
     report2 = detector.detect_drift(
         current_data=shifted_data,
         sensor_id="SENSOR_001",
-        current_timestamps=similar_timestamps
+        current_timestamps=similar_timestamps,
     )
 
     print("\n--- Test 2: Shifted Data (Drift Expected) ---")
@@ -295,11 +294,12 @@ def example_4_drift_detection():
 # Example 5: End-to-End Data Pipeline
 # =============================================================================
 
+
 def example_5_full_pipeline():
     """Example: Run complete data processing pipeline"""
-    from src.infrastructure.data.data_pipeline import DataPipeline
     from src.core.services.data_processing_service import NormalizationMethod
     from src.core.services.feature_engineering import FeatureConfig
+    from src.infrastructure.data.data_pipeline import DataPipeline
 
     print("=== End-to-End Data Pipeline ===")
 
@@ -314,23 +314,21 @@ def example_5_full_pipeline():
         normalization_method=NormalizationMethod.ZSCORE,
         engineer_features=True,
         feature_config=FeatureConfig(
-            rolling_windows=[6, 12, 24],
-            lag_periods=[1, 6, 12],
-            include_fft=True
+            rolling_windows=[6, 12, 24], lag_periods=[1, 6, 12], include_fft=True
         ),
         detect_drift=True,
         version_dataset=True,
-        save_processed=True
+        save_processed=True,
     )
 
     print(f"\nPipeline ID: {results['pipeline_id']}")
     print(f"Success: {results['success']}")
     print(f"Duration: {results.get('duration_seconds', 0):.2f}s")
 
-    if results['success']:
+    if results["success"]:
         print(f"\n✅ Pipeline completed successfully!")
         print(f"\nData Quality:")
-        quality = results['quality_report']
+        quality = results["quality_report"]
         print(f"  Status: {quality.status.value}")
         print(f"  Missing: {quality.missing_percentage:.2f}%")
         print(f"  Outliers: {quality.outlier_percentage:.2f}%")
@@ -358,6 +356,7 @@ def example_5_full_pipeline():
 # Example 6: Batch Processing Multiple Sensors
 # =============================================================================
 
+
 def example_6_batch_processing():
     """Example: Process multiple sensors in batch"""
     from src.infrastructure.data.data_pipeline import DataPipeline
@@ -376,14 +375,14 @@ def example_6_batch_processing():
         engineer_features=True,
         detect_drift=False,  # Skip drift for speed
         version_dataset=False,
-        save_processed=True
+        save_processed=True,
     )
 
     print(f"\nProcessed {len(sensor_ids)} sensors")
 
     for sensor_id, results in batch_results.items():
-        if results.get('success'):
-            quality_status = results['quality_report'].status.value
+        if results.get("success"):
+            quality_status = results["quality_report"].status.value
             print(f"  ✅ {sensor_id}: {quality_status}")
         else:
             print(f"  ❌ {sensor_id}: {results.get('errors', ['Unknown error'])[0]}")
@@ -392,6 +391,7 @@ def example_6_batch_processing():
 # =============================================================================
 # Example 7: Training Data Preparation
 # =============================================================================
+
 
 def example_7_training_preparation():
     """Example: Prepare data specifically for model training"""
@@ -407,7 +407,7 @@ def example_7_training_preparation():
         split_ratio=(0.7, 0.15, 0.15),
         hours_back=168,
         normalize=True,
-        assess_quality=True
+        assess_quality=True,
     )
 
     print(f"\nTraining data prepared:")
@@ -416,16 +416,16 @@ def example_7_training_preparation():
     print(f"  Test samples: {len(training_data['test_data'])}")
     print(f"  Data hash: {training_data['data_hash']}")
 
-    if 'quality_report' in training_data:
-        quality = training_data['quality_report']
+    if "quality_report" in training_data:
+        quality = training_data["quality_report"]
         print(f"\nData quality: {quality.status.value}")
         if quality.issues:
             print(f"  Issues: {quality.issues}")
 
     # Access normalized data for training
-    train_data = training_data['train_data']
-    val_data = training_data['val_data']
-    test_data = training_data['test_data']
+    train_data = training_data["train_data"]
+    val_data = training_data["val_data"]
+    test_data = training_data["test_data"]
 
     print(f"\nReady for model training!")
     print(f"  Train: {train_data.shape}")

@@ -4,24 +4,26 @@ Official NASA algorithm for spacecraft telemetry anomaly detection
 Based on https://github.com/khundman/telemanom
 """
 
+import json
+import logging
+import pickle
+import warnings
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Tuple, Optional, Any
-import logging
-from dataclasses import dataclass
-from pathlib import Path
-import pickle
-import json
-from datetime import datetime
-from sklearn.preprocessing import StandardScaler
 from scipy import stats
-import warnings
+from sklearn.preprocessing import StandardScaler
 
 # TensorFlow lazy loading to prevent hanging
 TENSORFLOW_AVAILABLE = False
 tf = None
 keras = None
 layers = None
+
 
 def _load_tensorflow():
     """Lazy load TensorFlow only when needed"""
@@ -31,6 +33,7 @@ def _load_tensorflow():
             import tensorflow as tf_module
             from tensorflow import keras as keras_module
             from tensorflow.keras import layers as layers_module
+
             tf = tf_module
             keras = keras_module
             layers = layers_module
@@ -41,6 +44,7 @@ def _load_tensorflow():
             _setup_mock_implementations()
     return TENSORFLOW_AVAILABLE
 
+
 # Mock implementations for when TensorFlow is not available
 def _setup_mock_implementations():
     """Setup mock TensorFlow implementations"""
@@ -50,10 +54,13 @@ def _setup_mock_implementations():
         class Sequential:
             def __init__(self, layers=None):
                 self.layers = layers or []
+
             def compile(self, **kwargs):
                 pass
+
             def fit(self, X, y, **kwargs):
-                return type('MockHistory', (), {'history': {'loss': [0.1]}})()
+                return type("MockHistory", (), {"history": {"loss": [0.1]}})()
+
             def predict(self, X):
                 return np.zeros((len(X), 1))
 
@@ -90,15 +97,17 @@ def _setup_mock_implementations():
 
     class MockHistory:
         def __init__(self):
-            self.history = {'loss': [0.1, 0.08, 0.06], 'val_loss': [0.12, 0.09, 0.07]}
+            self.history = {"loss": [0.1, 0.08, 0.06], "val_loss": [0.12, 0.09, 0.07]}
 
-warnings.filterwarnings('ignore')
+
+warnings.filterwarnings("ignore")
 logger = logging.getLogger(__name__)
 
 
 @dataclass
 class Telemanom_Config:
     """Configuration for NASA Telemanom model"""
+
     # Model architecture
     sequence_length: int = 250  # NASA default l_s
     lstm_units: List[int] = None  # Will default to [80, 80]
@@ -157,34 +166,41 @@ class NASATelemanom:
 
     def _build_model(self):
         """Build LSTM model following NASA Telemanom architecture"""
-        model = keras.Sequential([
-            # First LSTM layer
-            layers.LSTM(
-                units=self.config.lstm_units[0],
-                return_sequences=True,
-                input_shape=(self.config.sequence_length, self.n_features),
-                dropout=self.config.dropout_rate,
-                recurrent_dropout=self.config.dropout_rate
-            ),
-
-            # Second LSTM layer (if specified)
-            layers.LSTM(
-                units=self.config.lstm_units[1] if len(self.config.lstm_units) > 1 else self.config.lstm_units[0],
-                return_sequences=False,
-                dropout=self.config.dropout_rate,
-                recurrent_dropout=self.config.dropout_rate
-            ),
-
-            # Dense layers for prediction
-            layers.Dense(units=self.n_features * self.config.prediction_length, activation='linear'),
-            layers.Reshape((self.config.prediction_length, self.n_features))
-        ])
+        model = keras.Sequential(
+            [
+                # First LSTM layer
+                layers.LSTM(
+                    units=self.config.lstm_units[0],
+                    return_sequences=True,
+                    input_shape=(self.config.sequence_length, self.n_features),
+                    dropout=self.config.dropout_rate,
+                    recurrent_dropout=self.config.dropout_rate,
+                ),
+                # Second LSTM layer (if specified)
+                layers.LSTM(
+                    units=(
+                        self.config.lstm_units[1]
+                        if len(self.config.lstm_units) > 1
+                        else self.config.lstm_units[0]
+                    ),
+                    return_sequences=False,
+                    dropout=self.config.dropout_rate,
+                    recurrent_dropout=self.config.dropout_rate,
+                ),
+                # Dense layers for prediction
+                layers.Dense(
+                    units=self.n_features * self.config.prediction_length,
+                    activation="linear",
+                ),
+                layers.Reshape((self.config.prediction_length, self.n_features)),
+            ]
+        )
 
         # Compile with Adam optimizer (NASA default)
         model.compile(
             optimizer=keras.optimizers.Adam(learning_rate=self.config.learning_rate),
-            loss='mse',
-            metrics=['mae']
+            loss="mse",
+            metrics=["mae"],
         )
 
         return model
@@ -198,14 +214,16 @@ class NASATelemanom:
         pred_len = self.config.prediction_length
 
         for i in range(len(data) - seq_len - pred_len + 1):
-            sequence = data[i:i + seq_len]
-            target = data[i + seq_len:i + seq_len + pred_len]
+            sequence = data[i : i + seq_len]
+            target = data[i + seq_len : i + seq_len + pred_len]
             sequences.append(sequence)
             targets.append(target)
 
         return np.array(sequences), np.array(targets)
 
-    def _calculate_prediction_errors(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
+    def _calculate_prediction_errors(
+        self, y_true: np.ndarray, y_pred: np.ndarray
+    ) -> np.ndarray:
         """Calculate prediction errors for anomaly detection"""
         # Mean absolute error for each timestep
         errors = np.mean(np.abs(y_true - y_pred), axis=(1, 2))
@@ -213,11 +231,12 @@ class NASATelemanom:
 
     def _smooth_errors(self, errors: np.ndarray) -> np.ndarray:
         """Apply smoothing to prediction errors"""
-        smoothed = pd.Series(errors).rolling(
-            window=self.config.smoothing_window,
-            center=True,
-            min_periods=1
-        ).mean().values
+        smoothed = (
+            pd.Series(errors)
+            .rolling(window=self.config.smoothing_window, center=True, min_periods=1)
+            .mean()
+            .values
+        )
         return smoothed
 
     def _calculate_dynamic_threshold(self, errors: np.ndarray) -> float:
@@ -228,7 +247,7 @@ class NASATelemanom:
             threshold = np.percentile(errors, (1 - self.config.contamination) * 100)
         else:
             # Use last error_buffer errors for threshold calculation
-            recent_errors = errors[-self.config.error_buffer:]
+            recent_errors = errors[-self.config.error_buffer :]
 
             # Calculate threshold as mean + 3*std (NASA approach)
             threshold = np.mean(recent_errors) + 3 * np.std(recent_errors)
@@ -256,7 +275,9 @@ class NASATelemanom:
         X, y = self._create_sequences(scaled_data)
 
         if len(X) == 0:
-            raise ValueError(f"Not enough data to create sequences for sensor {self.sensor_id}")
+            raise ValueError(
+                f"Not enough data to create sequences for sensor {self.sensor_id}"
+            )
 
         # Build and train model
         self.model = self._build_model()
@@ -264,26 +285,22 @@ class NASATelemanom:
         # Training callbacks
         callbacks = [
             keras.callbacks.EarlyStopping(
-                monitor='val_loss',
-                patience=10,
-                restore_best_weights=True
+                monitor="val_loss", patience=10, restore_best_weights=True
             ),
             keras.callbacks.ReduceLROnPlateau(
-                monitor='val_loss',
-                factor=0.5,
-                patience=5,
-                min_lr=1e-6
-            )
+                monitor="val_loss", factor=0.5, patience=5, min_lr=1e-6
+            ),
         ]
 
         # Train model
         history = self.model.fit(
-            X, y,
+            X,
+            y,
             epochs=self.config.epochs,
             batch_size=self.config.batch_size,
             validation_split=self.config.validation_split,
             callbacks=callbacks,
-            verbose=0
+            verbose=0,
         )
 
         # Calculate training errors for threshold
@@ -300,12 +317,12 @@ class NASATelemanom:
         logger.info(f"Error threshold: {self.error_threshold:.4f}")
 
         return {
-            'sensor_id': self.sensor_id,
-            'training_samples': len(X),
-            'model_parameters': self.model.count_params(),
-            'error_threshold': self.error_threshold,
-            'final_loss': history.history['loss'][-1],
-            'final_val_loss': history.history['val_loss'][-1]
+            "sensor_id": self.sensor_id,
+            "training_samples": len(X),
+            "model_parameters": self.model.count_params(),
+            "error_threshold": self.error_threshold,
+            "final_loss": history.history["loss"][-1],
+            "final_val_loss": history.history["val_loss"][-1],
         }
 
     def detect_anomalies(self, data: np.ndarray) -> Dict[str, Any]:
@@ -325,11 +342,11 @@ class NASATelemanom:
 
         if len(X) == 0:
             return {
-                'sensor_id': self.sensor_id,
-                'anomalies': [],
-                'scores': [],
-                'threshold': self.error_threshold,
-                'total_points': len(data)
+                "sensor_id": self.sensor_id,
+                "anomalies": [],
+                "scores": [],
+                "threshold": self.error_threshold,
+                "total_points": len(data),
             }
 
         # Predict
@@ -354,15 +371,17 @@ class NASATelemanom:
         adjusted_indices = anomaly_indices + self.config.sequence_length
 
         results = {
-            'sensor_id': self.sensor_id,
-            'anomalies': adjusted_indices.tolist(),
-            'scores': scores.tolist(),
-            'threshold': self.error_threshold,
-            'total_points': len(data),
-            'anomaly_count': len(anomaly_indices)
+            "sensor_id": self.sensor_id,
+            "anomalies": adjusted_indices.tolist(),
+            "scores": scores.tolist(),
+            "threshold": self.error_threshold,
+            "total_points": len(data),
+            "anomaly_count": len(anomaly_indices),
         }
 
-        logger.info(f"Detected {len(anomaly_indices)} anomalies for sensor {self.sensor_id}")
+        logger.info(
+            f"Detected {len(anomaly_indices)} anomalies for sensor {self.sensor_id}"
+        )
 
         return results
 
@@ -376,27 +395,27 @@ class NASATelemanom:
 
         # Save Keras model
         if TENSORFLOW_AVAILABLE:
-            self.model.save(model_dir / 'model.h5')
+            self.model.save(model_dir / "model.h5")
 
         # Save scaler and metadata
-        with open(model_dir / 'scaler.pkl', 'wb') as f:
+        with open(model_dir / "scaler.pkl", "wb") as f:
             pickle.dump(self.scaler, f)
 
         metadata = {
-            'sensor_id': self.sensor_id,
-            'config': self.config.__dict__,
-            'error_threshold': self.error_threshold,
-            'n_features': self.n_features,
-            'is_trained': self.is_trained,
-            'training_history': self.training_history
+            "sensor_id": self.sensor_id,
+            "config": self.config.__dict__,
+            "error_threshold": self.error_threshold,
+            "n_features": self.n_features,
+            "is_trained": self.is_trained,
+            "training_history": self.training_history,
         }
 
-        with open(model_dir / 'metadata.json', 'w') as f:
+        with open(model_dir / "metadata.json", "w") as f:
             json.dump(metadata, f, indent=2, default=str)
 
         # Save training errors
-        np.save(model_dir / 'training_errors.npy', self.training_errors)
-        np.save(model_dir / 'smoothed_errors.npy', self.smoothed_errors)
+        np.save(model_dir / "training_errors.npy", self.training_errors)
+        np.save(model_dir / "smoothed_errors.npy", self.smoothed_errors)
 
         logger.info(f"Model saved for sensor {self.sensor_id}")
 
@@ -406,27 +425,27 @@ class NASATelemanom:
             model_dir = model_path / self.sensor_id
 
             # Load metadata
-            with open(model_dir / 'metadata.json', 'r') as f:
+            with open(model_dir / "metadata.json", "r") as f:
                 metadata = json.load(f)
 
-            self.sensor_id = metadata['sensor_id']
-            self.config = Telemanom_Config(**metadata['config'])
-            self.error_threshold = metadata['error_threshold']
-            self.n_features = metadata['n_features']
-            self.is_trained = metadata['is_trained']
-            self.training_history = metadata.get('training_history')
+            self.sensor_id = metadata["sensor_id"]
+            self.config = Telemanom_Config(**metadata["config"])
+            self.error_threshold = metadata["error_threshold"]
+            self.n_features = metadata["n_features"]
+            self.is_trained = metadata["is_trained"]
+            self.training_history = metadata.get("training_history")
 
             # Load Keras model
-            if TENSORFLOW_AVAILABLE and (model_dir / 'model.h5').exists():
-                self.model = keras.models.load_model(model_dir / 'model.h5')
+            if TENSORFLOW_AVAILABLE and (model_dir / "model.h5").exists():
+                self.model = keras.models.load_model(model_dir / "model.h5")
 
             # Load scaler
-            with open(model_dir / 'scaler.pkl', 'rb') as f:
+            with open(model_dir / "scaler.pkl", "rb") as f:
                 self.scaler = pickle.load(f)
 
             # Load training errors
-            self.training_errors = np.load(model_dir / 'training_errors.npy')
-            self.smoothed_errors = np.load(model_dir / 'smoothed_errors.npy')
+            self.training_errors = np.load(model_dir / "training_errors.npy")
+            self.smoothed_errors = np.load(model_dir / "smoothed_errors.npy")
 
             logger.info(f"Model loaded for sensor {self.sensor_id}")
             return True

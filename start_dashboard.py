@@ -12,6 +12,7 @@ from pathlib import Path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
+
 def main():
     print("=" * 60)
     print("IoT PREDICTIVE MAINTENANCE DASHBOARD")
@@ -31,27 +32,28 @@ def main():
         dashboard = UnifiedIoTDashboard(debug=False)
 
         print("[URL] Dashboard starting at: http://127.0.0.1:8050")
-        print("[FEATURES] Overview | Monitoring | Anomalies | Forecasting | Maintenance | Work Orders | Performance")
-        print("[ARCHITECTURE] Clean Architecture (Core, Application, Infrastructure, Presentation)")
+        print(
+            "[FEATURES] Overview | Monitoring | Anomalies | Forecasting | Maintenance | Work Orders | Performance"
+        )
+        print(
+            "[ARCHITECTURE] Clean Architecture (Core, Application, Infrastructure, Presentation)"
+        )
         print("[CONTROL] Press Ctrl+C to stop the server")
         print("-" * 60)
 
         # Start the server
-        dashboard.run(
-            host='127.0.0.1',
-            port=8050,
-            debug=False
-        )
+        dashboard.run(host="127.0.0.1", port=8050, debug=False)
 
     except ImportError as e:
         print(f"[ERROR] Unified dashboard import failed: {e}")
         print("[FALLBACK] Trying alternative dashboard...")
         try:
             from src.presentation.dashboard.enhanced_app_optimized import create_app
+
             app = create_app()
 
             print("[INFO] Starting fallback dashboard...")
-            app.run_server(host='127.0.0.1', port=8050, debug=False)
+            app.run_server(host="127.0.0.1", port=8050, debug=False)
 
         except Exception as e2:
             print(f"[ERROR] Failed to start fallback dashboard: {e2}")
@@ -63,6 +65,7 @@ def main():
         return 1
 
     return 0
+
 
 if __name__ == "__main__":
     exit_code = main()

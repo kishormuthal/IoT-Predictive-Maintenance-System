@@ -42,11 +42,7 @@ if __name__ == "__main__":
         print("=" * 70)
 
         # Run the server
-        app.run_server(
-            host='127.0.0.1',
-            port=8050,
-            debug=False
-        )
+        app.run_server(host="127.0.0.1", port=8050, debug=False)
 
     except KeyboardInterrupt:
         print("\n\nDashboard stopped by user")
@@ -54,5 +50,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n\nERROR: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

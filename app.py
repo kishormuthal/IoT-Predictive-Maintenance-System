@@ -4,24 +4,23 @@ IoT Predictive Maintenance System - Clean Architecture
 Restructured system using Telemanom + Transformer with 12-sensor configuration
 """
 
+import logging
 import os
 import sys
-import logging
 import warnings
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 # Suppress warnings for cleaner output
-warnings.filterwarnings('ignore')
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+warnings.filterwarnings("ignore")
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 # Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -32,8 +31,8 @@ def check_dependencies():
 
     try:
         import dash
-        import pandas as pd
         import numpy as np
+        import pandas as pd
         import plotly
     except ImportError as e:
         missing_deps.append(str(e))
@@ -79,11 +78,7 @@ def main():
         logger.info("   - Clean Architecture: Complete 4-layer implementation")
 
         # Run the dashboard
-        dashboard.run(
-            host='127.0.0.1',
-            port=8050,
-            debug=True
-        )
+        dashboard.run(host="127.0.0.1", port=8050, debug=True)
 
     except KeyboardInterrupt:
         logger.info("🛑 Application stopped by user")
@@ -102,6 +97,7 @@ def main():
 # Initialize the UNIFIED dashboard for Gunicorn deployment
 try:
     from src.presentation.dashboard.unified_dashboard import UnifiedIoTDashboard
+
     dashboard = UnifiedIoTDashboard(debug=False)  # Production mode for Gunicorn
     server = dashboard.app.server  # Expose Flask server for Gunicorn
     logger.info("Unified dashboard initialized for Gunicorn deployment")
@@ -110,6 +106,7 @@ except Exception as e:
     # Fallback to enhanced dashboard
     try:
         from src.presentation.dashboard.enhanced_app import EnhancedIoTDashboard
+
         dashboard = EnhancedIoTDashboard(debug=False)
         server = dashboard.app.server
         logger.info("Fallback to enhanced dashboard for Gunicorn deployment")

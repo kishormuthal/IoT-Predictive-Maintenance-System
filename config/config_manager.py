@@ -3,13 +3,14 @@ Centralized Configuration Manager
 Handles loading, validation, and access to all system configuration
 """
 
+import logging
 import os
-import yaml
-from pathlib import Path
-from typing import Any, Dict, Optional, List
 from dataclasses import dataclass, field
 from datetime import datetime
-import logging
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ConfigValidationError(Exception):
     """Exception raised for configuration validation errors"""
+
     field: str
     message: str
     expected_type: Optional[type] = None
@@ -26,6 +28,7 @@ class ConfigValidationError(Exception):
 @dataclass
 class EnvironmentConfig:
     """Environment-specific configuration"""
+
     name: str
     debug: bool
     log_level: str
@@ -62,10 +65,10 @@ class ConfigurationManager:
 
     def __init__(self):
         """Initialize configuration manager"""
-        if not hasattr(self, '_initialized'):
+        if not hasattr(self, "_initialized"):
             self._initialized = True
             self._config = {}
-            self._env = os.getenv('ENVIRONMENT', 'development')
+            self._env = os.getenv("ENVIRONMENT", "development")
             self._config_path = None
             self._last_loaded = None
             self._validators = {}
@@ -74,17 +77,20 @@ class ConfigurationManager:
     def _setup_validators(self):
         """Setup configuration validators"""
         self._validators = {
-            'system.log_level': lambda v: v in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-            'dashboard.server.port': lambda v: isinstance(v, int) and 1024 <= v <= 65535,
-            'preprocessing.window.size': lambda v: isinstance(v, int) and v > 0,
-            'forecasting.general.forecast_horizon': lambda v: isinstance(v, int) and v > 0,
+            "system.log_level": lambda v: v
+            in ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+            "dashboard.server.port": lambda v: isinstance(v, int)
+            and 1024 <= v <= 65535,
+            "preprocessing.window.size": lambda v: isinstance(v, int) and v > 0,
+            "forecasting.general.forecast_horizon": lambda v: isinstance(v, int)
+            and v > 0,
         }
 
     def load_config(
         self,
         config_path: str = "config/config.yaml",
         env: Optional[str] = None,
-        override_path: Optional[str] = None
+        override_path: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Load configuration from YAML file
@@ -99,14 +105,14 @@ class ConfigurationManager:
         """
         try:
             # Determine environment
-            self._env = env or os.getenv('ENVIRONMENT', 'development')
+            self._env = env or os.getenv("ENVIRONMENT", "development")
 
             # Load main configuration
             main_config_path = Path(config_path)
             if not main_config_path.exists():
                 raise FileNotFoundError(f"Configuration file not found: {config_path}")
 
-            with open(main_config_path, 'r') as f:
+            with open(main_config_path, "r") as f:
                 self._config = yaml.safe_load(f)
 
             self._config_path = main_config_path
@@ -115,14 +121,14 @@ class ConfigurationManager:
             env_config_path = main_config_path.parent / f"config.{self._env}.yaml"
             if env_config_path.exists():
                 logger.info(f"Loading environment config: {env_config_path}")
-                with open(env_config_path, 'r') as f:
+                with open(env_config_path, "r") as f:
                     env_config = yaml.safe_load(f)
                     self._merge_configs(self._config, env_config)
 
             # Load custom overrides
             if override_path and Path(override_path).exists():
                 logger.info(f"Loading override config: {override_path}")
-                with open(override_path, 'r') as f:
+                with open(override_path, "r") as f:
                     override_config = yaml.safe_load(f)
                     self._merge_configs(self._config, override_config)
 
@@ -133,10 +139,12 @@ class ConfigurationManager:
             self._validate_config()
 
             # Set environment in config
-            self._config['environment'] = self._env
+            self._config["environment"] = self._env
             self._last_loaded = datetime.now()
 
-            logger.info(f"Configuration loaded successfully for environment: {self._env}")
+            logger.info(
+                f"Configuration loaded successfully for environment: {self._env}"
+            )
             return self._config
 
         except Exception as e:
@@ -164,31 +172,31 @@ class ConfigurationManager:
     def _apply_env_vars(self):
         """Apply environment variable overrides"""
         # Database connection
-        if db_uri := os.getenv('DATABASE_URI'):
-            self._set_nested('data_ingestion.database.postgresql.uri', db_uri)
+        if db_uri := os.getenv("DATABASE_URI"):
+            self._set_nested("data_ingestion.database.postgresql.uri", db_uri)
 
         # MLflow tracking URI
-        if mlflow_uri := os.getenv('MLFLOW_TRACKING_URI'):
-            self._set_nested('mlflow.tracking_uri', mlflow_uri)
+        if mlflow_uri := os.getenv("MLFLOW_TRACKING_URI"):
+            self._set_nested("mlflow.tracking_uri", mlflow_uri)
 
         # Redis settings
-        if redis_host := os.getenv('REDIS_HOST'):
-            self._set_nested('data_ingestion.redis.host', redis_host)
+        if redis_host := os.getenv("REDIS_HOST"):
+            self._set_nested("data_ingestion.redis.host", redis_host)
 
-        if redis_port := os.getenv('REDIS_PORT'):
-            self._set_nested('data_ingestion.redis.port', int(redis_port))
+        if redis_port := os.getenv("REDIS_PORT"):
+            self._set_nested("data_ingestion.redis.port", int(redis_port))
 
         # Kafka settings
-        if kafka_servers := os.getenv('KAFKA_BOOTSTRAP_SERVERS'):
-            self._set_nested('data_ingestion.kafka.bootstrap_servers', kafka_servers)
+        if kafka_servers := os.getenv("KAFKA_BOOTSTRAP_SERVERS"):
+            self._set_nested("data_ingestion.kafka.bootstrap_servers", kafka_servers)
 
         # Dashboard settings
-        if dashboard_port := os.getenv('DASHBOARD_PORT'):
-            self._set_nested('dashboard.server.port', int(dashboard_port))
+        if dashboard_port := os.getenv("DASHBOARD_PORT"):
+            self._set_nested("dashboard.server.port", int(dashboard_port))
 
         # Log level
-        if log_level := os.getenv('LOG_LEVEL'):
-            self._set_nested('system.log_level', log_level.upper())
+        if log_level := os.getenv("LOG_LEVEL"):
+            self._set_nested("system.log_level", log_level.upper())
 
     def _validate_config(self):
         """Validate configuration values"""
@@ -202,7 +210,7 @@ class ConfigurationManager:
         if errors:
             raise ConfigValidationError(
                 field="multiple",
-                message=f"Configuration validation failed: {'; '.join(errors)}"
+                message=f"Configuration validation failed: {'; '.join(errors)}",
             )
 
     def get(self, path: str, default: Any = None) -> Any:
@@ -216,7 +224,7 @@ class ConfigurationManager:
         Returns:
             Configuration value or default
         """
-        keys = path.split('.')
+        keys = path.split(".")
         value = self._config
 
         for key in keys:
@@ -229,7 +237,7 @@ class ConfigurationManager:
 
     def _set_nested(self, path: str, value: Any):
         """Set nested configuration value using dot notation"""
-        keys = path.split('.')
+        keys = path.split(".")
         config = self._config
 
         for key in keys[:-1]:
@@ -278,15 +286,15 @@ class ConfigurationManager:
 
     def is_production(self) -> bool:
         """Check if running in production environment"""
-        return self._env == 'production'
+        return self._env == "production"
 
     def is_development(self) -> bool:
         """Check if running in development environment"""
-        return self._env == 'development'
+        return self._env == "development"
 
     def is_staging(self) -> bool:
         """Check if running in staging environment"""
-        return self._env == 'staging'
+        return self._env == "staging"
 
     @property
     def environment(self) -> str:
@@ -302,28 +310,34 @@ class ConfigurationManager:
         """Get environment-specific configuration object"""
         return EnvironmentConfig(
             name=self._env,
-            debug=self.get('system.debug', False),
-            log_level=self.get('system.log_level', 'INFO'),
+            debug=self.get("system.debug", False),
+            log_level=self.get("system.log_level", "INFO"),
             database_uri=self._get_database_uri(),
-            mlflow_tracking_uri=self.get('mlflow.tracking_uri'),
-            redis_enabled=self.get('data_ingestion.redis.enabled', False),
-            kafka_enabled=self.get('data_ingestion.kafka.enabled', False)
+            mlflow_tracking_uri=self.get("mlflow.tracking_uri"),
+            redis_enabled=self.get("data_ingestion.redis.enabled", False),
+            kafka_enabled=self.get("data_ingestion.kafka.enabled", False),
         )
 
     def _get_database_uri(self) -> str:
         """Construct database URI from configuration"""
-        db_type = self.get('data_ingestion.database.type', 'sqlite')
+        db_type = self.get("data_ingestion.database.type", "sqlite")
 
-        if db_type == 'sqlite':
-            db_path = self.get('data_ingestion.database.sqlite.path', './data/iot_telemetry.db')
+        if db_type == "sqlite":
+            db_path = self.get(
+                "data_ingestion.database.sqlite.path", "./data/iot_telemetry.db"
+            )
             return f"sqlite:///{db_path}"
 
-        elif db_type == 'postgresql':
-            host = self.get('data_ingestion.database.postgresql.host', 'localhost')
-            port = self.get('data_ingestion.database.postgresql.port', 5432)
-            database = self.get('data_ingestion.database.postgresql.database', 'iot_telemetry')
-            username = self.get('data_ingestion.database.postgresql.username', 'iot_user')
-            password = self.get('data_ingestion.database.postgresql.password', '')
+        elif db_type == "postgresql":
+            host = self.get("data_ingestion.database.postgresql.host", "localhost")
+            port = self.get("data_ingestion.database.postgresql.port", 5432)
+            database = self.get(
+                "data_ingestion.database.postgresql.database", "iot_telemetry"
+            )
+            username = self.get(
+                "data_ingestion.database.postgresql.username", "iot_user"
+            )
+            password = self.get("data_ingestion.database.postgresql.password", "")
             return f"postgresql://{username}:{password}@{host}:{port}/{database}"
 
         else:
@@ -331,23 +345,27 @@ class ConfigurationManager:
 
     def get_model_config(self, model_name: str) -> Dict[str, Any]:
         """Get configuration for specific model"""
-        if model_name in ['lstm_predictor', 'lstm_autoencoder', 'lstm_vae']:
-            return self.get_section(f'anomaly_detection.{model_name}')
-        elif model_name in ['transformer', 'lstm']:
-            return self.get_section(f'forecasting.{model_name}')
+        if model_name in ["lstm_predictor", "lstm_autoencoder", "lstm_vae"]:
+            return self.get_section(f"anomaly_detection.{model_name}")
+        elif model_name in ["transformer", "lstm"]:
+            return self.get_section(f"forecasting.{model_name}")
         else:
             return {}
 
     def get_paths(self) -> Dict[str, Path]:
         """Get all configured paths as Path objects"""
-        paths_config = self.get_section('paths')
-        return {key: Path(value) for key, value in paths_config.items() if isinstance(value, str)}
+        paths_config = self.get_section("paths")
+        return {
+            key: Path(value)
+            for key, value in paths_config.items()
+            if isinstance(value, str)
+        }
 
     def ensure_paths(self):
         """Ensure all configured directories exist"""
         paths = self.get_paths()
         for name, path in paths.items():
-            if not name.endswith('_pattern'):  # Skip pattern keys
+            if not name.endswith("_pattern"):  # Skip pattern keys
                 path.mkdir(parents=True, exist_ok=True)
                 logger.debug(f"Ensured path exists: {path}")
 
@@ -359,27 +377,27 @@ class ConfigurationManager:
             output_path: Path to save configuration
             include_defaults: Include default values
         """
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             yaml.dump(self._config, f, default_flow_style=False, indent=2)
         logger.info(f"Configuration exported to: {output_path}")
 
     def get_dashboard_config(self) -> Dict[str, Any]:
         """Get dashboard-specific configuration"""
         return {
-            'server': self.get_section('dashboard.server'),
-            'ui': self.get_section('dashboard.ui'),
-            'components': self.get_section('dashboard.components'),
-            'pages': self.get('dashboard.pages', []),
-            'performance': self.get_section('dashboard.performance')
+            "server": self.get_section("dashboard.server"),
+            "ui": self.get_section("dashboard.ui"),
+            "components": self.get_section("dashboard.components"),
+            "pages": self.get("dashboard.pages", []),
+            "performance": self.get_section("dashboard.performance"),
         }
 
     def get_mlflow_config(self) -> Dict[str, Any]:
         """Get MLflow-specific configuration"""
-        return self.get_section('mlflow')
+        return self.get_section("mlflow")
 
     def get_alert_config(self) -> Dict[str, Any]:
         """Get alert system configuration"""
-        return self.get_section('alerts')
+        return self.get_section("alerts")
 
     def __repr__(self) -> str:
         """String representation"""
@@ -400,8 +418,7 @@ def get_config() -> ConfigurationManager:
 
 
 def load_config(
-    config_path: str = "config/config.yaml",
-    env: Optional[str] = None
+    config_path: str = "config/config.yaml", env: Optional[str] = None
 ) -> ConfigurationManager:
     """
     Load configuration and return manager instance
