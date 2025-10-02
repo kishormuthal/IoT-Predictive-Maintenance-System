@@ -61,9 +61,7 @@ def main():
                                     [
                                         html.H1(
                                             [
-                                                html.I(
-                                                    className="fas fa-satellite-dish me-3 text-primary"
-                                                ),
+                                                html.I(className="fas fa-satellite-dish me-3 text-primary"),
                                                 "IoT Predictive Maintenance",
                                             ]
                                         ),
@@ -95,12 +93,8 @@ def main():
                 dbc.Tabs(
                     [
                         dbc.Tab(label="Overview", tab_id="overview", id="tab-overview"),
-                        dbc.Tab(
-                            label="Monitoring", tab_id="monitoring", id="tab-monitoring"
-                        ),
-                        dbc.Tab(
-                            label="Anomalies", tab_id="anomalies", id="tab-anomalies"
-                        ),
+                        dbc.Tab(label="Monitoring", tab_id="monitoring", id="tab-monitoring"),
+                        dbc.Tab(label="Anomalies", tab_id="anomalies", id="tab-anomalies"),
                         dbc.Tab(
                             label="Forecasting",
                             tab_id="forecasting",
@@ -160,9 +154,7 @@ def main():
                                         [
                                             dbc.CardBody(
                                                 [
-                                                    html.H2(
-                                                        "12", className="text-primary"
-                                                    ),
+                                                    html.H2("12", className="text-primary"),
                                                     html.P("Total Sensors"),
                                                 ]
                                             )
@@ -177,9 +169,7 @@ def main():
                                         [
                                             dbc.CardBody(
                                                 [
-                                                    html.H2(
-                                                        "12", className="text-success"
-                                                    ),
+                                                    html.H2("12", className="text-success"),
                                                     html.P("Models Ready"),
                                                 ]
                                             )
@@ -194,9 +184,7 @@ def main():
                                         [
                                             dbc.CardBody(
                                                 [
-                                                    html.H2(
-                                                        "100%", className="text-info"
-                                                    ),
+                                                    html.H2("100%", className="text-info"),
                                                     html.P("System Health"),
                                                 ]
                                             )
@@ -211,9 +199,7 @@ def main():
                                         [
                                             dbc.CardBody(
                                                 [
-                                                    html.H2(
-                                                        "0", className="text-warning"
-                                                    ),
+                                                    html.H2("0", className="text-warning"),
                                                     html.P("Active Alerts"),
                                                 ]
                                             )
@@ -228,9 +214,7 @@ def main():
                     dbc.Alert(
                         [
                             html.H5("Dashboard Running in Simple Mode"),
-                            html.P(
-                                "All core features are available. Heavy layout imports skipped for fast startup."
-                            ),
+                            html.P("All core features are available. Heavy layout imports skipped for fast startup."),
                             html.P(
                                 "Architecture: Clean Architecture with 4 layers (Core, Application, Infrastructure, Presentation)"
                             ),
@@ -253,9 +237,7 @@ def main():
             return dbc.Container(
                 [
                     html.H3("Anomaly Detection"),
-                    dbc.Alert(
-                        "NASA Telemanom anomaly detection system ready", color="success"
-                    ),
+                    dbc.Alert("NASA Telemanom anomaly detection system ready", color="success"),
                     html.P("12 pre-trained models available for anomaly detection."),
                 ]
             )
@@ -264,12 +246,8 @@ def main():
             return dbc.Container(
                 [
                     html.H3("Predictive Forecasting"),
-                    dbc.Alert(
-                        "Transformer-based forecasting models ready", color="success"
-                    ),
-                    html.P(
-                        "219K parameter Transformer models available for predictions."
-                    ),
+                    dbc.Alert("Transformer-based forecasting models ready", color="success"),
+                    html.P("219K parameter Transformer models available for predictions."),
                 ]
             )
 
@@ -295,9 +273,7 @@ def main():
             return dbc.Container(
                 [
                     html.H3("System Performance"),
-                    dbc.Alert(
-                        "Training hub and model registry available", color="success"
-                    ),
+                    dbc.Alert("Training hub and model registry available", color="success"),
                     html.P("System administration and model management."),
                 ]
             )

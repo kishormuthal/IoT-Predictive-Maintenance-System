@@ -31,9 +31,7 @@ try:
     print(f"  Data range: [{df['value'].min():.2f}, {df['value'].max():.2f}]")
 
     # Test detect_anomalies
-    anomalies = service.detect_anomalies(
-        "SMAP-PWR-001", df["value"].values, df["timestamp"].tolist()
-    )
+    anomalies = service.detect_anomalies("SMAP-PWR-001", df["value"].values, df["timestamp"].tolist())
     print(f"✓ detect_anomalies(): Found {len(anomalies)} anomalies")
 
     # Test generate_forecast
@@ -81,9 +79,7 @@ for layout_file in layout_files:
         print(f"  ? {layout_file:40} - Error: {e}")
 
 print()
-print(
-    f"Summary: {len(layouts_with_integration)}/{len(layout_files)} layouts have integration"
-)
+print(f"Summary: {len(layouts_with_integration)}/{len(layout_files)} layouts have integration")
 
 if layouts_without_integration:
     print(f"⚠ Missing integration: {', '.join(layouts_without_integration)}")
@@ -114,9 +110,7 @@ try:
 
     # Run anomaly detection
     anomaly_service = AnomalyDetectionService()
-    result = anomaly_service.detect_anomalies(
-        sensor_id, np.array(data["values"]), data["timestamps"]
-    )
+    result = anomaly_service.detect_anomalies(sensor_id, np.array(data["values"]), data["timestamps"])
     print(f"✓ Anomaly Service: {len(result['anomalies'])} anomalies detected")
 
     # Run forecasting

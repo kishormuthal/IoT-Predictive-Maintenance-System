@@ -33,18 +33,12 @@ def example_1_data_processing():
     sensor_data[500:510] = 10  # Add outliers
 
     # Assess data quality
-    quality_report = processor.assess_data_quality(
-        data=sensor_data, sensor_id="SENSOR_001"
-    )
+    quality_report = processor.assess_data_quality(data=sensor_data, sensor_id="SENSOR_001")
 
     print("=== Data Quality Report ===")
     print(f"Status: {quality_report.status.value}")
-    print(
-        f"Missing: {quality_report.missing_count} ({quality_report.missing_percentage:.2f}%)"
-    )
-    print(
-        f"Outliers: {quality_report.outlier_count} ({quality_report.outlier_percentage:.2f}%)"
-    )
+    print(f"Missing: {quality_report.missing_count} ({quality_report.missing_percentage:.2f}%)")
+    print(f"Outliers: {quality_report.outlier_count} ({quality_report.outlier_percentage:.2f}%)")
     print(f"Issues: {quality_report.issues}")
     print(f"Recommendations: {quality_report.recommendations}")
 
@@ -116,9 +110,7 @@ def example_2_feature_engineering():
     )
 
     # Engineer features
-    features = engineer.engineer_features(
-        data=sensor_data, timestamps=timestamps, sensor_id="SENSOR_001"
-    )
+    features = engineer.engineer_features(data=sensor_data, timestamps=timestamps, sensor_id="SENSOR_001")
 
     print("=== Feature Engineering Results ===")
     print(f"Total feature sets created: {len(features)}")
@@ -136,9 +128,7 @@ def example_2_feature_engineering():
         "hour_cos",
     ]
 
-    feature_matrix = engineer.create_feature_matrix(
-        features, selected_features=selected_features
-    )
+    feature_matrix = engineer.create_feature_matrix(features, selected_features=selected_features)
 
     print(f"\nFeature matrix shape: {feature_matrix.shape}")
     print(f"Selected features: {selected_features}")
@@ -159,9 +149,7 @@ def example_3_dvc_versioning():
     from src.infrastructure.data.dvc_manager import DVCManager
 
     # Initialize DVC manager
-    dvc = DVCManager(
-        repo_root=".", data_dir="data", dvc_remote=None  # Use local storage for demo
-    )
+    dvc = DVCManager(repo_root=".", data_dir="data", dvc_remote=None)  # Use local storage for demo
 
     # Create sample dataset
     sample_data = np.random.randn(1000, 10)
@@ -234,21 +222,15 @@ def example_4_drift_detection():
 
     # Baseline data (reference distribution)
     baseline_data = np.random.normal(0, 1, 1000)
-    baseline_timestamps = [
-        datetime.now() - timedelta(days=7) + timedelta(hours=i) for i in range(1000)
-    ]
+    baseline_timestamps = [datetime.now() - timedelta(days=7) + timedelta(hours=i) for i in range(1000)]
 
     # Fit reference distribution
-    detector.fit_reference(
-        data=baseline_data, sensor_id="SENSOR_001", timestamps=baseline_timestamps
-    )
+    detector.fit_reference(data=baseline_data, sensor_id="SENSOR_001", timestamps=baseline_timestamps)
     print("✅ Reference distribution fitted")
 
     # Test 1: No drift (similar distribution)
     similar_data = np.random.normal(0, 1, 1000)
-    similar_timestamps = [
-        datetime.now() - timedelta(hours=1000 - i) for i in range(1000)
-    ]
+    similar_timestamps = [datetime.now() - timedelta(hours=1000 - i) for i in range(1000)]
 
     report1 = detector.detect_drift(
         current_data=similar_data,
@@ -313,9 +295,7 @@ def example_5_full_pipeline():
         normalize=True,
         normalization_method=NormalizationMethod.ZSCORE,
         engineer_features=True,
-        feature_config=FeatureConfig(
-            rolling_windows=[6, 12, 24], lag_periods=[1, 6, 12], include_fft=True
-        ),
+        feature_config=FeatureConfig(rolling_windows=[6, 12, 24], lag_periods=[1, 6, 12], include_fft=True),
         detect_drift=True,
         version_dataset=True,
         save_processed=True,

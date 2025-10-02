@@ -50,9 +50,7 @@ try:
     print(f"✓ First 3 data points:")
     for idx in range(min(3, len(df))):
         row = df.iloc[idx]
-        print(
-            f"  [{idx}] timestamp={row['timestamp']}, value={row['value']:.4f}, sensor={row['sensor_id']}"
-        )
+        print(f"  [{idx}] timestamp={row['timestamp']}, value={row['value']:.4f}, sensor={row['sensor_id']}")
     print()
 
     # Check if this is real NASA data or mock data
@@ -61,17 +59,13 @@ try:
     value_range = df["value"].max() - df["value"].min()
 
     if has_negative and df["value"].min() < -2:
-        print(
-            "  ✅ REAL NASA DATA - Has characteristic negative values for power sensors"
-        )
+        print("  ✅ REAL NASA DATA - Has characteristic negative values for power sensors")
         print(f"     (Range: {df['value'].min():.2f} to {df['value'].max():.2f})")
     elif value_range < 5 and 45 < df["value"].mean() < 60:
         print("  ❌ MOCK DATA - Values centered around 50 with sinusoidal pattern")
         print(f"     (Range: {df['value'].min():.2f} to {df['value'].max():.2f})")
     else:
-        print(
-            f"  ⚠ UNKNOWN - Value range: {df['value'].min():.2f} to {df['value'].max():.2f}"
-        )
+        print(f"  ⚠ UNKNOWN - Value range: {df['value'].min():.2f} to {df['value'].max():.2f}")
 
     print()
     print("=" * 80)

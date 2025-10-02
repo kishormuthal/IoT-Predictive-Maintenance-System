@@ -19,9 +19,7 @@ def test_imports():
         from src.infrastructure.data.nasa_data_loader import NASADataLoader
 
         loader = NASADataLoader()
-        print(
-            f"✓ NASA Data Loader: SMAP {loader.smap_data['data'].shape}, MSL {loader.msl_data['data'].shape}"
-        )
+        print(f"✓ NASA Data Loader: SMAP {loader.smap_data['data'].shape}, MSL {loader.msl_data['data'].shape}")
     except Exception as e:
         print(f"✗ NASA Data Loader failed: {e}")
         return False

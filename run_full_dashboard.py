@@ -16,9 +16,7 @@ sys.path.insert(0, str(project_root))
 # Suppress TensorFlow warnings
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
@@ -78,9 +76,7 @@ if __name__ == "__main__":
                                     [
                                         html.H1(
                                             [
-                                                html.I(
-                                                    className="fas fa-satellite me-3 text-primary"
-                                                ),
+                                                html.I(className="fas fa-satellite me-3 text-primary"),
                                                 "IoT Predictive Maintenance",
                                             ],
                                             className="mb-1",
@@ -119,9 +115,7 @@ if __name__ == "__main__":
                         dbc.Tab(label="Forecasting", tab_id="forecasting"),
                         dbc.Tab(label="Maintenance", tab_id="maintenance"),
                         dbc.Tab(label="Work Orders", tab_id="work_orders"),
-                        dbc.Tab(
-                            label="System Performance", tab_id="system_performance"
-                        ),
+                        dbc.Tab(label="System Performance", tab_id="system_performance"),
                     ],
                     id="tabs",
                     active_tab="overview",
@@ -183,9 +177,7 @@ if __name__ == "__main__":
                     )
 
                     if active_tab not in loaded_tabs:
-                        if hasattr(
-                            enhanced_maintenance_scheduler, "register_callbacks"
-                        ):
+                        if hasattr(enhanced_maintenance_scheduler, "register_callbacks"):
                             enhanced_maintenance_scheduler.register_callbacks(app)
                         loaded_tabs.add(active_tab)
                     return enhanced_maintenance_scheduler.create_layout()

@@ -32,12 +32,8 @@ def main():
         dashboard = UnifiedIoTDashboard(debug=False)
 
         print("[URL] Dashboard starting at: http://127.0.0.1:8050")
-        print(
-            "[FEATURES] Overview | Monitoring | Anomalies | Forecasting | Maintenance | Work Orders | Performance"
-        )
-        print(
-            "[ARCHITECTURE] Clean Architecture (Core, Application, Infrastructure, Presentation)"
-        )
+        print("[FEATURES] Overview | Monitoring | Anomalies | Forecasting | Maintenance | Work Orders | Performance")
+        print("[ARCHITECTURE] Clean Architecture (Core, Application, Infrastructure, Presentation)")
         print("[CONTROL] Press Ctrl+C to stop the server")
         print("-" * 60)
 

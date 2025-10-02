@@ -15,9 +15,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -70,9 +68,7 @@ def main():
                                     [
                                         html.H1(
                                             [
-                                                html.I(
-                                                    className="fas fa-satellite-dish me-3 text-primary"
-                                                ),
+                                                html.I(className="fas fa-satellite-dish me-3 text-primary"),
                                                 "IoT Predictive Maintenance",
                                             ],
                                             className="mb-1",
@@ -101,11 +97,7 @@ def main():
                                     width=10,
                                 ),
                                 dbc.Col(
-                                    [
-                                        html.Div(
-                                            id="status-indicator", className="text-end"
-                                        )
-                                    ],
+                                    [html.Div(id="status-indicator", className="text-end")],
                                     width=2,
                                 ),
                             ]
@@ -143,9 +135,7 @@ def main():
                     dbc.Alert(
                         [
                             html.H4(f"{name} - Layout Loading..."),
-                            html.P(
-                                f"{description} feature is available but layout failed to load."
-                            ),
+                            html.P(f"{description} feature is available but layout failed to load."),
                             html.P("Using fallback display.", className="mb-0"),
                         ],
                         color="warning",
@@ -154,9 +144,7 @@ def main():
             )
 
         # Tab switching callback with dynamic imports
-        @app.callback(
-            Output("tab-content", "children"), Input("main-tabs", "active_tab")
-        )
+        @app.callback(Output("tab-content", "children"), Input("main-tabs", "active_tab"))
         def render_tab(active_tab):
             """Render tab content with lazy loading"""
             try:

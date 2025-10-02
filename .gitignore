@@ -69,3 +69,5 @@ htmlcov/
 *.temp
 temp/
 tmp/
+# Exclude old analysis directory with malformed Python files
+IoT Predictive Maintenance System Analysis and Bug Resolution/

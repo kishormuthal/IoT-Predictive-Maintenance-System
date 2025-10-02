@@ -14,9 +14,7 @@ project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
 # Setup logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
 
@@ -87,9 +85,7 @@ def main():
                                     [
                                         html.H1(
                                             [
-                                                html.I(
-                                                    className="fas fa-satellite-dish me-3 text-primary"
-                                                ),
+                                                html.I(className="fas fa-satellite-dish me-3 text-primary"),
                                                 "IoT Predictive Maintenance",
                                             ],
                                             className="mb-1",
@@ -137,9 +133,7 @@ def main():
                         dbc.Tab(label="Forecasting", tab_id="forecasting"),
                         dbc.Tab(label="Maintenance", tab_id="maintenance"),
                         dbc.Tab(label="Work Orders", tab_id="work_orders"),
-                        dbc.Tab(
-                            label="System Performance", tab_id="system_performance"
-                        ),
+                        dbc.Tab(label="System Performance", tab_id="system_performance"),
                     ],
                     id="unified-tabs",
                     active_tab="overview",
@@ -148,9 +142,7 @@ def main():
                 # Tab content
                 html.Div(id="unified-tab-content", className="p-4"),
                 # Refresh interval
-                dcc.Interval(
-                    id="global-refresh-interval", interval=30 * 1000, n_intervals=0
-                ),
+                dcc.Interval(id="global-refresh-interval", interval=30 * 1000, n_intervals=0),
             ]
         )
 
@@ -305,12 +297,8 @@ def create_overview_tab(equipment_list, sensor_ids):
                                             html.H5("✓ Core Layer"),
                                             html.Ul(
                                                 [
-                                                    html.Li(
-                                                        "Domain Models & Business Logic"
-                                                    ),
-                                                    html.Li(
-                                                        "Anomaly Detection Service"
-                                                    ),
+                                                    html.Li("Domain Models & Business Logic"),
+                                                    html.Li("Anomaly Detection Service"),
                                                     html.Li("Forecasting Service"),
                                                 ]
                                             ),
@@ -322,12 +310,8 @@ def create_overview_tab(equipment_list, sensor_ids):
                                             html.H5("✓ Infrastructure Layer"),
                                             html.Ul(
                                                 [
-                                                    html.Li(
-                                                        "NASA SMAP/MSL Data Integration"
-                                                    ),
-                                                    html.Li(
-                                                        "Model Registry & Versioning"
-                                                    ),
+                                                    html.Li("NASA SMAP/MSL Data Integration"),
+                                                    html.Li("Model Registry & Versioning"),
                                                     html.Li("Performance Monitoring"),
                                                 ]
                                             ),
@@ -372,9 +356,7 @@ def create_monitoring_tab(equipment_list, data_loader):
     return dbc.Container(
         [
             html.H3("Real-time Monitoring"),
-            dbc.Alert(
-                f"Monitoring {len(equipment_list)} NASA SMAP/MSL sensors", color="info"
-            ),
+            dbc.Alert(f"Monitoring {len(equipment_list)} NASA SMAP/MSL sensors", color="info"),
             dcc.Graph(figure=fig),
         ],
         fluid=True,
@@ -393,9 +375,7 @@ def create_anomalies_tab(sensor_ids):
                 f"NASA Telemanom models ready for {len(sensor_ids)} sensors",
                 color="success",
             ),
-            html.P(
-                "12 pre-trained Telemanom models available for real-time anomaly detection."
-            ),
+            html.P("12 pre-trained Telemanom models available for real-time anomaly detection."),
         ],
         fluid=True,
     )
@@ -413,9 +393,7 @@ def create_forecasting_tab(sensor_ids):
                 f"Transformer models ready for {len(sensor_ids)} sensors",
                 color="success",
             ),
-            html.P(
-                "219K parameter Transformer models available for time series forecasting."
-            ),
+            html.P("219K parameter Transformer models available for time series forecasting."),
         ],
         fluid=True,
     )
@@ -430,9 +408,7 @@ def create_maintenance_tab(equipment_list):
         [
             html.H3("Maintenance Scheduling"),
             dbc.Alert("Predictive maintenance system active", color="success"),
-            html.P(
-                f"Tracking {len(equipment_list)} equipment components for predictive maintenance."
-            ),
+            html.P(f"Tracking {len(equipment_list)} equipment components for predictive maintenance."),
         ],
         fluid=True,
     )
@@ -462,9 +438,7 @@ def create_system_performance_tab():
         [
             html.H3("System Performance"),
             dbc.Alert("Training hub and model registry available", color="success"),
-            html.P(
-                "System administration, model management, and performance monitoring."
-            ),
+            html.P("System administration, model management, and performance monitoring."),
         ],
         fluid=True,
     )
